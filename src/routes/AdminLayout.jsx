@@ -49,7 +49,7 @@ const Layout = () => {
 
 
   return (
-    <div className="flex h-screen bg-gray-100 font-sans text-gray-800 overflow-hidden">
+    <div className="flex h-screen bg-gray-100 font-plus-jakarta text-gray-800 overflow-hidden">
       <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       <div className="flex-1 flex flex-col min-w-0"> {/* min-w-0 prevents content from pushing flex item */}
         <Navbar toggleSidebar={toggleSidebar} />

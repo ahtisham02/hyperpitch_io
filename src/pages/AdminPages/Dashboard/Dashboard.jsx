@@ -1,5 +1,5 @@
 import React from 'react'
-import Header from '../../../ui-components/AdminPage/Dashboard/Header';
+import Header from '../../../ui-components/AdminPage/Dashboard/CampaignCreatorPage';
 
 export default function AboutPage() {
    return (

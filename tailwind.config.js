@@ -5,8 +5,6 @@ module.exports = {
     extend: {
       fontFamily: {
         "plus-jakarta": ['"Plus Jakarta Sans"', "sans-serif"],
-        mono: ['"JetBrains Mono"', "monospace"],
-        heading: ["Sora", "sans-serif"],
       },
     },
   },

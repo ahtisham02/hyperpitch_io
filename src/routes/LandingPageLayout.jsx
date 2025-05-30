@@ -6,7 +6,7 @@ import CtaSection from "../ui-components/LandingPage/Common/CtaSection";
 
 const Layout = () => {
   return (
-    <div className="text-black font-heading">
+    <div className="text-black font-plus-jakarta">
       <Navbar />
       <main>
         <Outlet />
