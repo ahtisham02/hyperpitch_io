@@ -1,172 +1,197 @@
-import React from "react";
-import { NavLink, Link } from "react-router-dom";
 import {
-  Feather,
-  LayoutGrid,
-  PieChart,
-  User,
-  // Settings2,
-  LogOut,
-  X,
-} from "lucide-react";
+    Box,
+    CalendarDays,
+    ChevronLeft,
+    LayoutGrid,
+    LogOut,
+    MapPin,
+    Menu as MenuIcon,
+    User,
+    X
+} from 'lucide-react';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
-  const accentColor = "emerald";
-  const siteName = "Hyperpitch.io";
+const menuItems = [
+    { titleKey: 'Dashboard', href: '/dashboard', Icon: LayoutGrid },
+    { titleKey: 'Coming Soon', href: '/tours', Icon: MapPin },
+];
 
-  const navItems = [
-    { name: "Dashboard", path: "/dashboard", icon: LayoutGrid },
-    { name: "Analytics", path: "/reports", icon: PieChart },
-  ];
+const userProfileFooterItems = [
+    { titleKey: 'Profile', href: '/settings/profile', LucideIcon: User },
+];
 
-  const userProfileItems = [
-    { name: "My Profile", path: "/profile", icon: User },
-    // { name: "Settings", path: "/settings", icon: Settings2 },
-  ];
+export default function Sidebar() {
+    const [collapsed, setCollapsed] = useState(false);
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
 
-  // Active/Default classes mostly for colors, not layout that changes with collapse
-  const activeLinkClass = `bg-${accentColor}-600 text-white shadow-md shadow-${accentColor}-600/40`;
-  const defaultLinkClass = `text-gray-400 hover:text-white hover:bg-gray-700/50`;
+    const siteName = "Hyperpitch.io";
+    const SiteIcon = Box;
 
-  const handleLinkClick = () => {
-    // On mobile, if sidebar is open and a link is clicked, close the sidebar.
-    // On desktop, clicking a link shouldn't affect collapsed/expanded state.
-    if (window.innerWidth < 768 && isSidebarOpen) {
-      toggleSidebar();
-    }
-  };
+    const activeBgColor = 'bg-[#2e8b57]';
+    const activeTextColor = 'text-white';
+    const hoverBgColor = 'hover:bg-[#2e8b57]';
+    const hoverTextColor = 'hover:text-white';
+    const defaultIconColor = 'text-gray-600';
+    const sidebarBgColor = 'bg-slate-50';
+    const defaultTextColor = 'text-gray-700';
 
-  const NavIcon = ({ icon: Icon, isActive }) => (
-    <Icon
-      size={isSidebarOpen ? 18 : 20} // Icon can be slightly larger when collapsed
-      className={`transition-all duration-300 ${
-        isActive ? "text-white" : `text-gray-500 group-hover:text-${accentColor}-300`
-      }`}
-      strokeWidth={isActive ? 2.25 : 2}
-    />
-  );
+    const toggleDesktopCollapse = () => setCollapsed(!collapsed);
+    const toggleMobileSidebar = () => setMobileSidebarOpen(!mobileSidebarOpen);
 
-  return (
-    <aside
-      className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-gray-900 text-gray-300 border-r border-gray-700/60
-                 transition-all duration-300 ease-in-out
-                 ${isSidebarOpen ? "w-64" : "md:w-20 w-64"} // Desktop collapsed width, mobile keeps w-64 when open
-                 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"} // Mobile toggle, desktop always 'visible'
-                 md:relative md:shadow-none`} // Desktop position
-    >
-      {/* Sidebar Header */}
-      <div
-        className={`flex items-center h-16 px-4 border-b border-gray-700/60 shrink-0
-                    ${isSidebarOpen ? "justify-between" : "md:justify-center"}`}
-      >
-        <Link
-          to="/"
-          onClick={handleLinkClick}
-          className={`flex items-center group ${isSidebarOpen ? "space-x-2.5" : "md:space-x-0"}`}
-        >
-          <div className={`p-1.5 rounded-md bg-gradient-to-br from-${accentColor}-500 to-${accentColor}-600 shadow-sm shadow-${accentColor}-500/30`}>
-            <Feather size={20} className="text-white" strokeWidth={2} />
-          </div>
-          <span
-            className={`text-lg font-semibold text-white group-hover:text-${accentColor}-300 transition-opacity duration-200
-                        ${isSidebarOpen ? "opacity-100 inline-block" : "md:opacity-0 md:hidden"}`}
-          >
-            {siteName}
-          </span>
-        </Link>
-        {/* Mobile close button: only shows if sidebar is open AND on mobile screen */}
-        {isSidebarOpen && (
+    const handleLinkClick = () => {
+        if (mobileSidebarOpen) {
+            setMobileSidebarOpen(false);
+        }
+    };
+
+    const handleLogout = () => {
+        handleLinkClick();
+        navigate('/login');
+    };
+
+    return (
+        <>
             <button
-                onClick={toggleSidebar}
-                className="md:hidden p-1 rounded-md text-gray-400 hover:bg-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                aria-label="Close sidebar"
+                onClick={toggleMobileSidebar}
+                className="fixed top-3 left-3 z-50 rounded-lg bg-white p-2 shadow-md md:hidden"
+                aria-label={mobileSidebarOpen ? "Close sidebar" : "Open sidebar"}
             >
-                <X size={22} />
+                {mobileSidebarOpen ? <X size={24} className="text-gray-700" /> : <MenuIcon size={24} className="text-gray-700" />}
             </button>
-        )}
-      </div>
 
-      {/* Navigation - Scrollable */}
-      <nav className="flex-1 overflow-y-auto py-4 space-y-1">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.name}
-            to={item.path}
-            onClick={handleLinkClick}
-            title={!isSidebarOpen ? item.name : undefined} // Show tooltip when collapsed
-            className={({ isActive }) =>
-              `flex items-center py-2.5 rounded-lg group transition-all duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 focus-visible:ring-${accentColor}-500
-              ${isSidebarOpen ? "px-3.5 mx-2 space-x-3" : "md:px-2 md:mx-auto md:w-12 md:h-12 md:justify-center md:items-center md:space-x-0"}
-              ${isActive ? activeLinkClass : defaultLinkClass}`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <NavIcon icon={item.icon} isActive={isActive} />
-                <span
-                  className={`transition-opacity duration-200 ${
-                    isSidebarOpen ? "opacity-100 inline-block" : "md:opacity-0 md:hidden"
-                  } ${isActive && isSidebarOpen ? "font-medium" : ""}`} // font-medium only if open and active
-                >
-                  {item.name}
-                </span>
-              </>
-            )}
-          </NavLink>
-        ))}
-      </nav>
+            <div
+                className={`fixed inset-y-0 left-0 z-40 flex h-screen flex-col ${sidebarBgColor} p-3 py-4 shadow-lg transition-all duration-300 ease-in-out md:relative md:shadow-none border-r border-gray-200
+                           ${collapsed && !mobileSidebarOpen ? 'md:w-[75px]' : 'w-64'}
+                           ${mobileSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full'}
+                           md:translate-x-0`}
+            >
+                <div className={`flex -mt-2.5 items-center pr-1 h-14 mb-4 ${collapsed && !mobileSidebarOpen ? 'justify-center' : 'justify-between'}`}>
+                    <Link
+                        to="/"
+                        onClick={handleLinkClick}
+                        className={`flex items-center group ${collapsed && !mobileSidebarOpen ? 'justify-center w-full' : ''}`}
+                    >
+                        <SiteIcon
+                            size={collapsed && !mobileSidebarOpen ? 0 : 24}
+                            className={`${collapsed && !mobileSidebarOpen ? '' : 'mr-2'} ${defaultIconColor} group-hover:text-green-700 transition-colors`}
+                        />
+                        {(!collapsed || mobileSidebarOpen) && (
+                            <span className={`text-xl font-semibold ${defaultTextColor} group-hover:text-green-700 transition-colors`}>
+                                {siteName}
+                            </span>
+                        )}
+                    </Link>
 
-      {/* Sidebar Footer / User Area */}
-      <div className="px-2 py-3 mt-auto border-t border-gray-700/60 space-y-1">
-        {userProfileItems.map((item) => (
-          <NavLink
-            key={item.name}
-            to={item.path}
-            onClick={handleLinkClick}
-            title={!isSidebarOpen ? item.name : undefined}
-            className={({ isActive }) =>
-              `flex items-center py-2.5 rounded-lg group transition-all duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 focus-visible:ring-${accentColor}-500
-              ${isSidebarOpen ? "px-3.5 mx-2 space-x-3" : "md:px-2 md:mx-auto md:w-12 md:h-12 md:justify-center md:items-center md:space-x-0"}
-              ${isActive ? activeLinkClass : defaultLinkClass}`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <NavIcon icon={item.icon} isActive={isActive} />
-                <span
-                  className={`transition-opacity duration-200 ${
-                    isSidebarOpen ? "opacity-100 inline-block" : "md:opacity-0 md:hidden"
-                  } ${isActive && isSidebarOpen ? "font-medium" : ""}`}
-                >
-                  {item.name}
-                </span>
-              </>
-            )}
-          </NavLink>
-        ))}
-        <button
-          onClick={() => { console.log("Signing out..."); handleLinkClick(); }}
-          title={!isSidebarOpen ? "Sign Out" : undefined}
-          className={`flex items-center py-2.5 rounded-lg group transition-all duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 focus-visible:ring-red-500
-            ${isSidebarOpen ? "px-3.5 mx-2 space-x-3 w-[calc(100%-1rem)]" : "md:px-2 md:mx-auto md:w-12 md:h-12 md:justify-center md:items-center md:space-x-0"}
-            ${defaultLinkClass} !text-gray-400 hover:!text-red-400 hover:!bg-red-500/10 group`}
-        >
-          <LogOut
-            size={isSidebarOpen ? 18 : 20}
-            className="text-gray-500 group-hover:text-red-400 transition-colors"
-            strokeWidth={2}
-          />
-          <span
-            className={`transition-opacity duration-200 ${
-              isSidebarOpen ? "opacity-100 inline-block" : "md:opacity-0 md:hidden"
-            }`}
-          >
-            Sign Out
-          </span>
-        </button>
-      </div>
-    </aside>
-  );
-};
+                    <button
+                        onClick={toggleDesktopCollapse}
+                        className={`hidden p-2 rounded-md hover:bg-gray-100 md:block ${collapsed && !mobileSidebarOpen ? 'absolute top-4 right-4' : ''}`}
+                        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    >
+                        <ChevronLeft size={24} className={`text-gray-600 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`} />
+                    </button>
+                </div>
 
-export default Sidebar;
+                <nav className="mt-4 flex-1 overflow-y-auto">
+                    <ul className="space-y-1">
+                        {menuItems.map((item) => {
+                            const isActive = location.pathname.startsWith(item.href);
+                            const IconComponent = item.Icon;
+                            return (
+                                <li key={item.titleKey}>
+                                    <Link
+                                        to={item.href}
+                                        onClick={handleLinkClick}
+                                        title={collapsed && !mobileSidebarOpen ? item.titleKey : undefined}
+                                        className={`flex items-center space-x-3 p-[11px] group rounded-lg transition-colors duration-150
+                                            ${isActive ? `${activeBgColor} ${activeTextColor}` : `${defaultTextColor} ${hoverBgColor} ${hoverTextColor}`}
+                                            ${collapsed && !mobileSidebarOpen ? "justify-center md:py-3 md:px-2" : ""}`
+                                        }
+                                    >
+                                        {IconComponent && (
+                                            <IconComponent
+                                                size={22}
+                                                className={`h-[22px] w-[22px] transition-colors duration-150 ${isActive ? activeTextColor : `${defaultIconColor} group-hover:text-white`}`}
+                                                strokeWidth={isActive ? 2.25 : 2}
+                                            />
+                                        )}
+                                        {(!collapsed || mobileSidebarOpen) && (
+                                            <span className="text-base">
+                                                {item.titleKey}
+                                            </span>
+                                        )}
+                                    </Link>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </nav>
+
+                {(!collapsed || mobileSidebarOpen) && (
+                    <div className="mt-auto pt-4 border-t border-gray-200">
+                        <ul className="space-y-1">
+                            {userProfileFooterItems.map((item) => {
+                                const isActive = location.pathname === item.href;
+                                return (
+                                    <li key={item.titleKey}>
+                                        <Link
+                                            to={item.href}
+                                            onClick={handleLinkClick}
+                                            className={`flex items-center space-x-3 p-[9px] group rounded-lg transition-colors duration-150
+                                                ${isActive ? `${activeBgColor} ${activeTextColor}` : `${defaultTextColor} ${hoverBgColor} ${hoverTextColor}`}`
+                                            }
+                                        >
+                                            {item.LucideIcon && <item.LucideIcon size={22} className={`h-[22px] w-[22px] transition-colors duration-150 ${isActive ? activeTextColor : `${defaultIconColor} group-hover:text-white`}`} />}
+                                            <span className="text-base">
+                                                {item.titleKey}
+                                            </span>
+                                        </Link>
+                                    </li>
+                                );
+                            })}
+                            <li>
+                                <button
+                                    onClick={handleLogout}
+                                    className={`flex w-full items-center space-x-3 p-[9px] group rounded-lg transition-colors duration-150 ${defaultTextColor} ${hoverBgColor} ${hoverTextColor}`}
+                                >
+                                    <LogOut size={22} className={`h-[22px] w-[22px] transition-colors duration-150 ${defaultIconColor} group-hover:text-white`} />
+                                    <span className="text-base">Sign Out</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                )}
+                 {collapsed && !mobileSidebarOpen && (
+                    <div className="mt-auto pt-4 border-t border-gray-200">
+                        <ul className="space-y-1">
+                            {userProfileFooterItems.map((item) => (
+                                <li key={item.titleKey + "-collapsed"}>
+                                    <Link
+                                        to={item.href}
+                                        title={item.titleKey}
+                                        className={`flex justify-center items-center py-3 px-2 group rounded-lg transition-colors duration-150
+                                            ${location.pathname === item.href ? `${activeBgColor} ${activeTextColor}` : `${defaultTextColor} ${hoverBgColor} ${hoverTextColor}`}`
+                                        }
+                                    >
+                                        {item.LucideIcon && <item.LucideIcon size={24} className={`h-[22px] w-[22px] transition-colors duration-150 ${location.pathname === item.href ? activeTextColor : `${defaultIconColor} group-hover:text-white`}`} />}
+                                    </Link>
+                                </li>
+                            ))}
+                             <li>
+                                <button
+                                    onClick={handleLogout}
+                                    title="Sign Out"
+                                    className={`flex w-full justify-center items-center py-3 px-2 group rounded-lg transition-colors duration-150 ${defaultTextColor} ${hoverBgColor} ${hoverTextColor}`}
+                                >
+                                    <LogOut size={24} className={`h-[22px] w-[22px] transition-colors duration-150 ${defaultIconColor} group-hover:text-white`} />
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                 )}
+            </div>
+        </>
+    );
+}
