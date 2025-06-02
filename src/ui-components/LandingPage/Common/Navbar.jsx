@@ -97,7 +97,7 @@ export default function UniqueNavbar() {
 
           <div className="hidden md:flex items-center space-x-3">
             <Link
-              to="/dashboard" // Navigate to dashboard
+              to="/login" // Navigate to dashboard
               className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50/80 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
             >
               Login

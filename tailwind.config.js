@@ -6,6 +6,9 @@ module.exports = {
       fontFamily: {
         "plus-jakarta": ['"Plus Jakarta Sans"', "sans-serif"],
       },
+      colors: {
+        'brand-green': '#2e8b57', // Or your preferred green
+      }
     },
   },
   plugins: [],
