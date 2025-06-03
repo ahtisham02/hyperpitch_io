@@ -78,7 +78,7 @@ export default function AppSidebarHeader() {
                         className={`flex items-center space-x-2 py-1 pl-1 pr-2 rounded-full hover:bg-gray-100 active:bg-gray-200/80 transition-all duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-${accentColor}-500 focus-visible:ring-offset-1`}
                         aria-label="User menu"
                     >
-                        <div className={`w-8 h-8 rounded-full bg-gradient-to-tr from-${accentColor}-500 to-${accentColor}-400 text-white flex items-center justify-center shadow-sm`}>
+                        <div className={`w-8 h-8 rounded-full bg-gradient-to-tr from-${accentColor}-500 to-${accentColor}-400 text-black flex items-center justify-center shadow-sm`}>
                             <User2 size={18} strokeWidth={2.25} />
                         </div>
                         <span className="text-sm font-medium text-gray-700 hidden md:block group-hover:text-gray-900">

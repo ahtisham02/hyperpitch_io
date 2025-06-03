@@ -2,6 +2,7 @@ import {
     Box,
     CalendarDays,
     ChevronLeft,
+    CreditCard,
     LayoutGrid,
     LogOut,
     MapPin,
@@ -15,6 +16,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 const menuItems = [
     { titleKey: 'Dashboard', href: '/dashboard', Icon: LayoutGrid },
     { titleKey: 'Coming Soon', href: '/tours', Icon: MapPin },
+    { titleKey: 'Pricing', href: '/pricing', Icon: CreditCard },
 ];
 
 const userProfileFooterItems = [

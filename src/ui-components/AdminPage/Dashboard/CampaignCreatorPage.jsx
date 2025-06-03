@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import * as LucideIcons from 'lucide-react';
-import ElementBuilderPage, { PagePreviewRenderer } from './Header'; // Assuming this path is correct
+import ElementBuilderPage, { PagePreviewRenderer } from './Header';
 
 const mockGenerateId = (prefix = 'tpl-id') => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`;
 
 const StepperNav = ({ currentStep, steps, setCurrentStep }) => {
   return (
-    <nav className="w-full md:w-64 lg:w-72 p-6 bg-white md:min-h-screen md:sticky md:top-0 border-r border-slate-200">
+    <nav className="w-full lg:w-72 lg:ml-64 lg:pt-24 p-6 bg-white border-r border-slate-200 
+                   lg:fixed lg:top-0 lg:left-0 lg:h-screen lg:overflow-y-auto">
       <div className="md:text-left mb-10 flex items-center md:block">
         <LucideIcons.ClipboardCheck className="w-10 h-10 text-green-600 mr-3 md:mr-0 md:mb-2" strokeWidth={1.5} />
         <div>
@@ -168,7 +169,7 @@ const SuccessModal = ({ isOpen, onConfirm }) => {
           stroke-dashoffset: 166;
           stroke-width: 3;
           stroke-miterlimit: 10;
-          stroke: #4ade80; /* green-400 */
+          stroke: #4ade80; 
           fill: none;
           animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) 0.3s forwards;
         }
@@ -177,7 +178,7 @@ const SuccessModal = ({ isOpen, onConfirm }) => {
           stroke-dasharray: 48;
           stroke-dashoffset: 48;
           stroke-width: 4;
-          stroke: #16a34a; /* green-600 */
+          stroke: #16a34a; 
           animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.7s forwards;
         }
         @keyframes stroke {
@@ -271,7 +272,7 @@ export default function CampaignCreatorPage() {
   const renderStepContent = () => {
     const stepConfig = {
       title: steps[currentStep-1].name,
-      icon: LucideIcons.ClipboardList, // default icon
+      icon: LucideIcons.ClipboardList, 
       description: ""
     };
 
@@ -448,9 +449,9 @@ export default function CampaignCreatorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-800 flex flex-col md:flex-row font-sans antialiased">
+    <div className="min-h-screen bg-slate-100 text-slate-800 flex flex-col lg:flex-row">
       <StepperNav currentStep={currentStep} steps={steps} setCurrentStep={setCurrentStep} />
-      <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
+      <main className="flex-1 p-4 md:p-6 lg:p-8 lg:ml-72 lg:h-screen lg:overflow-y-auto">
           {renderStepContent()}
       </main>
       <SuccessModal isOpen={showSuccessModal} onConfirm={resetCampaign} />

@@ -1,6 +1,8 @@
 import React from "react";
 import { Outlet, useLocation, Link } from "react-router-dom";
 import { Aperture } from "lucide-react";
+import bgimg from "../assets/Mask group (1).png";
+import illustrationImg from "../assets/Mask group.png";
 
 const getPageMeta = (pathname) => {
   switch (pathname) {
@@ -47,24 +49,44 @@ function AuthLayout() {
 
   return (
     <div
-      className={`flex ${
+      className={`relative flex ${
         location.pathname === "/signup" ? "min-h-screen " : "h-screen "
       } w-full bg-gray-100`}
     >
-      <div className="hidden w-[45%] items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 lg:flex flex-col p-10">
-        <Aperture
-          size={80}
-          className="text-brand-green mb-6"
-          strokeWidth={1.5}
-        />
-        <h2 className="text-4xl font-bold text-white mb-4 text-center">
-          Hyperpitch.io
-        </h2>
-        <p className="text-lg text-slate-300 text-center">
-          Powering the next generation of applications.
-        </p>
+      <img
+        src={bgimg}
+        alt=""
+        className="absolute bottom-0 left-0 z-50 pointer-events-none object-contain max-w-[250px] max-h-[250px] sm:max-w-[300px] sm:max-h-[300px] md:max-w-[350px] md:max-h-[350px]"
+      />
+
+      <div className="relative z-10 hidden w-[45%] bg-[#1B2235] lg:flex flex-col p-6 md:p-10 items-center overflow-hidden">
+        <div className="text-center flex-shrink-0">
+          <Aperture
+            size={80}
+            className="text-brand-green mb-6 mx-auto"
+            strokeWidth={1.5}
+          />
+          <h2 className="text-3xl font-medium text-gray-400 mb-4 text-center">
+            Welcome Back to  {' '}
+          <span className="text-3xl font-bold text-gray-200 mb-4 text-center">
+            Hyperpitch.io
+          </span>
+          </h2>
+          <p className="text-lg text-slate-300 text-center mb-8">
+            Powering the next generation of applications.
+          </p>
+        </div>
+        
+        <div className="w-full max-w-md xl:max-w-lg mt-4 flex-grow flex items-center justify-center">
+          <img
+            src={illustrationImg}
+            alt="Illustration"
+            className="w-full h-auto object-contain max-h-[200px] md:max-h-[270px]"
+          />
+        </div>
       </div>
-      <div className="flex w-full flex-col items-center justify-center py-12 lg:w-1/2">
+      
+      <div className="relative z-10 flex w-full flex-col items-center justify-center py-12 lg:w-1/2">
         <div className="w-full max-w-md p-6 sm:p-8 space-y-6">
           <div className="flex flex-col items-start gap-3">
             <Link

@@ -7,6 +7,9 @@ import HomePage from "../pages/LandingPages/Home/Home";
 
 import AdminLayout from "./AdminLayout";
 import Dashboard from "../pages/AdminPages/Dashboard/Dashboard";
+import Profile from "../pages/AdminPages/Profile/UserProfilePage";
+import Settings from "../pages/AdminPages/Settings/GeneralSettingsPage";
+import Pricing from "../pages/AdminPages/PricingPage/PricingPage";
 
 import AuthLayout from "../routes/AuthLayout";
 import LoginPage from "../pages/AuthPages/LoginPage";
@@ -17,6 +20,8 @@ import ResetPasswordPage from "../pages/AuthPages/ResetPasswordPage";
 import ScrollToTop from "../utils/ScrollToTop";
 import VerifyPage from "../pages/AuthPages/VerifyPage";
 import VerifyEmailPage from "../pages/AuthPages/VerifyEmailPage";
+import TermsOfServicePage from "../pages/Terms&Policy/TermsOfServicePage";
+import PrivacyPolicyPage from "../pages/Terms&Policy/PrivacyPolicyPage";
 // import OtpVerificationPage from "../pages/AuthPages/OtpVerificationPage";
 
 const MainRoutes = () => {
@@ -46,6 +51,11 @@ const MainRoutes = () => {
           }
         >
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/settings/profile" element={<Profile />} />
+          <Route path="/settings/general" element={<Settings />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/terms-and-conditions" element={<TermsOfServicePage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
