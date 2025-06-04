@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Menu, X, ChevronDown, LayoutDashboard, Zap } from "lucide-react";
+import { Menu, X, ChevronDown, Zap } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 export default function UniqueNavbar() {
@@ -16,10 +16,10 @@ export default function UniqueNavbar() {
       name: "Features",
       isDropdown: true,
       subLinks: [
-        { name: "Live Builder Demo", href: "/page-builder-demo" },
-        { name: "Drag & Drop Magic", href: "/features/drag-drop" },
-        { name: "Deep Customization", href: "/features/customization" },
-        { name: "Instant Preview", href: "/features/preview" },
+        { name: "Site Builder", href: "/feature" },
+        { name: "Themes", href: "/features/themes" },
+        { name: "Plugins", href: "/features/plugins" },
+        { name: "Hosting", href: "/features/hosting" },
       ],
     },
     { name: "Showcase", href: "/showcase" },
@@ -28,11 +28,7 @@ export default function UniqueNavbar() {
   ];
 
   const isActive = (href) => location.pathname === href;
-
-  const isSubLinkActive = (subLinks) => {
-    if (!subLinks) return false;
-    return subLinks.some((subLink) => location.pathname === subLink.href);
-  };
+  const isSubLinkActive = (subLinks) => subLinks?.some((subLink) => isActive(subLink.href));
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -45,37 +41,37 @@ export default function UniqueNavbar() {
   }, []);
 
   return (
-    <nav className="bg-white text-gray-700 border-b border-gray-200/80 sticky top-0 z-50 shadow-sm">
+    <nav className="bg-white/90 backdrop-blur-md text-gray-700 border-b border-gray-200/70 sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <div className="flex-shrink-0">
-            <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-indigo-600 hover:text-indigo-500 transition-colors">
-              <Zap size={28} className="text-amber-500" />
-              PageCraft
+            <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-gray-800 hover:text-gray-600 transition-colors">
+              <Zap size={28} className="text-gray-500" />
+              HyperPitch
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center space-x-2">
+          <div className="hidden md:flex items-center space-x-1">
             {navLinks.map((link) =>
               link.isDropdown ? (
                 <div key={link.name} className="relative" ref={featuresDropdownRef}>
                   <button
                     onClick={toggleFeaturesDropdown}
-                    className={`flex items-center gap-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ease-in-out
-                      ${isSubLinkActive(link.subLinks) || isFeaturesDropdownOpen ? "text-indigo-600 bg-indigo-50" : "text-gray-600 hover:text-indigo-600 hover:bg-gray-100/70"}`}
+                    className={`flex items-center gap-1 px-4 py-2.5 rounded-md text-sm font-medium transition-colors duration-150
+                      ${isSubLinkActive(link.subLinks) || isFeaturesDropdownOpen ? "text-gray-900 bg-gray-100" : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"}`}
                   >
                     {link.name}
-                    <ChevronDown className={`w-5 h-5 transition-transform ${isFeaturesDropdownOpen ? "rotate-180 text-indigo-500" : "text-gray-400"}`} />
+                    <ChevronDown className={`w-5 h-5 transition-transform ${isFeaturesDropdownOpen ? "rotate-180 text-gray-700" : "text-gray-400"}`} />
                   </button>
                   {isFeaturesDropdownOpen && (
-                    <div className="absolute left-0 mt-2 w-60 origin-top-left bg-white border border-gray-200/80 rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none py-2 z-20">
+                    <div className="absolute left-0 mt-2 w-56 origin-top-left bg-white border border-gray-200/80 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none py-1.5 z-20">
                       {link.subLinks.map((subLink) => (
                         <Link
                           key={subLink.name}
                           to={subLink.href}
                           onClick={() => setIsFeaturesDropdownOpen(false)}
-                          className={`block px-5 py-2.5 text-sm transition-colors duration-150
-                            ${isActive(subLink.href) ? "text-indigo-600 font-semibold bg-indigo-50/70" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"}`}
+                          className={`block px-4 py-2.5 text-sm transition-colors duration-150
+                            ${isActive(subLink.href) ? "text-gray-900 font-semibold bg-gray-100" : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"}`}
                         >
                           {subLink.name}
                         </Link>
@@ -87,7 +83,7 @@ export default function UniqueNavbar() {
                 <Link
                   key={link.name}
                   to={link.href}
-                  className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ease-in-out ${isActive(link.href) ? "text-indigo-600 bg-indigo-50 font-semibold" : "text-gray-600 hover:text-indigo-600 hover:bg-gray-100/70"}`}
+                  className={`px-4 py-2.5 rounded-md text-sm font-medium transition-colors duration-150 ${isActive(link.href) ? "text-gray-900 bg-gray-100 font-semibold" : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"}`}
                 >
                   {link.name}
                 </Link>
@@ -97,14 +93,14 @@ export default function UniqueNavbar() {
 
           <div className="hidden md:flex items-center space-x-3">
             <Link
-              to="/login" // Navigate to dashboard
-              className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50/80 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
+              to="/login"
+              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-5 py-2.5 rounded-md text-sm font-medium transition-colors"
             >
               Login
             </Link>
             <Link
-              to="/dashboard" // Navigate to dashboard
-              className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold text-sm px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-1.5"
+              to="/dashboard"
+              className="bg-gray-800 hover:bg-gray-700 text-white font-semibold text-sm px-6 py-2.5 rounded-md shadow-sm hover:shadow-md transition-all duration-150 transform hover:scale-105 flex items-center gap-1.5"
             >
                Get Started
             </Link>
@@ -114,7 +110,7 @@ export default function UniqueNavbar() {
             <button
               onClick={toggleMobileMenu}
               type="button"
-              className="inline-flex items-center justify-center p-2.5 rounded-lg text-gray-500 hover:text-indigo-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-colors"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-800 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-500 transition-colors"
             >
               <span className="sr-only">Open main menu</span>
               {isMobileMenuOpen ? <X className="block h-6 w-6" /> : <Menu className="block h-6 w-6" />}
@@ -131,7 +127,7 @@ export default function UniqueNavbar() {
                 <div key={link.name}>
                   <button
                     onClick={toggleFeaturesDropdown}
-                    className={`w-full text-left flex items-center justify-between px-3 py-3 rounded-lg text-base font-medium transition-colors ${isSubLinkActive(link.subLinks) || isFeaturesDropdownOpen ? "text-indigo-600 bg-indigo-50" : "text-gray-700 hover:text-indigo-600 hover:bg-gray-100"}`}
+                    className={`w-full text-left flex items-center justify-between px-3 py-3 rounded-md text-base font-medium transition-colors ${isSubLinkActive(link.subLinks) || isFeaturesDropdownOpen ? "text-gray-900 bg-gray-100" : "text-gray-700 hover:text-gray-900 hover:bg-gray-50"}`}
                   >
                     {link.name}
                     <ChevronDown className={`w-5 h-5 transition-transform ${isFeaturesDropdownOpen ? "rotate-180" : ""}`} />
@@ -143,7 +139,7 @@ export default function UniqueNavbar() {
                           key={subLink.name}
                           to={subLink.href}
                           onClick={() => {setIsMobileMenuOpen(false); setIsFeaturesDropdownOpen(false);}}
-                          className={`block px-3 py-2.5 rounded-md text-base font-medium ${isActive(subLink.href) ? "text-indigo-600 bg-indigo-50/70" : "text-gray-600 hover:text-indigo-600 hover:bg-gray-50"}`}
+                          className={`block px-3 py-2.5 rounded-md text-base font-medium ${isActive(subLink.href) ? "text-gray-900 bg-gray-100" : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"}`}
                         >
                           {subLink.name}
                         </Link>
@@ -158,7 +154,7 @@ export default function UniqueNavbar() {
                 key={link.name}
                 to={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`block px-3 py-3 rounded-lg text-base font-medium ${isActive(link.href) ? "text-indigo-600 bg-indigo-50" : "text-gray-700 hover:text-indigo-600 hover:bg-gray-100"}`}
+                className={`block px-3 py-3 rounded-md text-base font-medium ${isActive(link.href) ? "text-gray-900 bg-gray-100" : "text-gray-700 hover:text-gray-900 hover:bg-gray-50"}`}
               >
                 {link.name}
               </Link>
@@ -168,16 +164,16 @@ export default function UniqueNavbar() {
         <div className="pt-4 pb-4 border-t border-gray-200/80">
           <div className="px-3 space-y-3 sm:px-4">
             <Link
-              to="/dashboard" // Navigate to dashboard
+              to="/login"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="block w-full text-center px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-indigo-600 border border-gray-300"
+              className="block w-full text-center px-4 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 border border-gray-300"
             >
               Login
             </Link>
             <Link
-              to="/dashboard" // Navigate to dashboard
+              to="/dashboard"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="block w-full text-center mt-2 px-4 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+              className="block w-full text-center mt-2 px-4 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gray-800 hover:bg-gray-700"
             >
               Get Started
             </Link>

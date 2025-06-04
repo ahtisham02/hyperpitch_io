@@ -1,31 +1,33 @@
 import React from "react";
-import { Instagram, Twitter, Linkedin, Youtube, Mail, Zap } from "lucide-react";
+import { Instagram, Twitter, Linkedin, Youtube, Zap, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const footerSections = [
   {
-    title: "Product",
+    title: "Platform",
     items: [
-      { name: "Core Features", href: "/features" },
-      { name: "Builder In Action", href: "/page-builder-demo" },
-      { name: "Plans & Pricing", href: "/pricing" },
-      { name: "Request A Demo", href: "/dashboard" }, // Navigate to dashboard
+      { name: "Features", href: "/features" },
+      { name: "Themes", href: "/themes" },
+      { name: "Plugins", href: "/plugins" },
+      { name: "Pricing", href: "/pricing" },
     ],
   },
   {
     title: "Resources",
     items: [
-      { name: "Help Center", href: "/support" },
-      { name: "Tutorials", href: "/tutorials" },
-      { name: "Community Forum", href: "/community" },
+      { name: "Documentation", href: "/docs" },
+      { name: "Community", href: "/community" },
+      { name: "Blog", href: "/blog" },
+      { name: "Support Center", href: "/support" },
     ],
   },
   {
     title: "Company",
     items: [
-      { name: "Our Story", href: "/about" },
-      { name: "Contact Us", href: "/contact" },
-      { name: "Join Our Team", href: "/careers" },
+      { name: "About Us", href: "/about" },
+      { name: "Contact", href: "/contact" },
+      { name: "Careers", href: "/careers" },
+      { name: "Press", href: "/press" },
     ],
   },
 ];
@@ -46,23 +48,23 @@ export default function UniqueFooter() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-50 text-gray-600 border-t border-gray-200/80 pt-16 pb-12">
+    <footer className="bg-gray-100 text-gray-700 border-t border-gray-200/90 pt-16 pb-12">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
-          <div className="sm:col-span-2 lg:col-span-1 mb-6 lg:mb-0">
-             <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-indigo-600 mb-3">
-              <Zap size={28} className="text-amber-500" />
-              PageCraft
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-10 mb-12">
+          <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2 mb-6 lg:mb-0">
+             <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-gray-800 mb-4">
+              <Zap size={28} className="text-gray-500" />
+              HyperPitch
             </Link>
-            <p className="text-sm text-gray-500 max-w-xs leading-relaxed">
-              Empowering you to create beautiful, high-converting landing pages with ease and speed.
+            <p className="text-sm text-gray-600 max-w-md leading-relaxed mb-6">
+              The modern, intuitive platform for building and managing your professional website with WordPress-like power.
             </p>
              <Link
-                to="/dashboard" // Navigate to dashboard
-                className="mt-6 inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 font-semibold text-sm px-5 py-2.5 rounded-lg hover:bg-indigo-200 transition-colors"
+                to="/dashboard"
+                className="inline-flex items-center gap-2 bg-gray-800 text-white font-semibold text-sm px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors shadow-md"
             >
-                Start Building Now
-                <Mail size={16} />
+                Get Started Free
+                <ArrowRight size={18} />
             </Link>
           </div>
           {footerSections.map((section) => (
@@ -75,7 +77,7 @@ export default function UniqueFooter() {
                   <li key={item.name}>
                     <Link
                       to={item.href}
-                      className="text-sm text-gray-500 hover:text-indigo-600 hover:underline transition-colors"
+                      className="text-sm text-gray-600 hover:text-gray-900 hover:underline transition-colors"
                     >
                       {item.name}
                     </Link>
@@ -85,17 +87,17 @@ export default function UniqueFooter() {
             </div>
           ))}
         </div>
-        <div className="border-t border-gray-200/80 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="border-t border-gray-200/90 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-center md:text-left">
             <p className="text-xs text-gray-500">
-              © {currentYear} PageCraft Inc. All rights reserved.
+              © {currentYear} HyperPitch.io. All Rights Reserved.
             </p>
             <nav className="mt-2 flex flex-wrap justify-center md:justify-start gap-x-4 gap-y-1">
               {policyLinks.map((link) => (
                 <Link
                   key={link.name}
                   to={link.href}
-                  className="text-xs text-gray-400 hover:text-indigo-600 hover:underline transition-colors"
+                  className="text-xs text-gray-500 hover:text-gray-800 hover:underline transition-colors"
                 >
                   {link.name}
                 </Link>
@@ -109,7 +111,7 @@ export default function UniqueFooter() {
                 to={social.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-indigo-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+                className="text-gray-500 hover:text-gray-800 transition-colors p-1 rounded-full"
                 aria-label={social.name}
               >
                 <social.icon className="h-5 w-5" aria-hidden="true" />

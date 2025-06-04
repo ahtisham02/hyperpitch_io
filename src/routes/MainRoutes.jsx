@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import LandingPageLayout from "./LandingPageLayout";
 import HomePage from "../pages/LandingPages/Home/Home";
+import FeaturePage from "../pages/LandingPages/Feature/UniqueFeaturesPage";
 
 import AdminLayout from "./AdminLayout";
 import Dashboard from "../pages/AdminPages/Dashboard/Dashboard";
@@ -33,6 +34,7 @@ const MainRoutes = () => {
       <Routes>
         <Route element={<LandingPageLayout />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/feature" element={<FeaturePage />} />
         </Route>
 
         <Route element={<AuthLayout />}>
