@@ -1,4 +1,3 @@
-// src/routes/MainRoutes.jsx
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
@@ -11,6 +10,10 @@ import Dashboard from "../pages/AdminPages/Dashboard/Dashboard";
 import Profile from "../pages/AdminPages/Profile/UserProfilePage";
 import Settings from "../pages/AdminPages/Settings/GeneralSettingsPage";
 import Pricing from "../pages/AdminPages/PricingPage/PricingPage";
+import ContactsManager from "../pages/AdminPages/Contacts/ContactsManager"; 
+import CampaignCreatorPage from '../ui-components/AdminPage/Campaign/CampaignCreatorPage'; 
+import CampaignsListPage from '../pages/AdminPages/Campaigns/CampaignsListPage'; 
+import CampaignViewPage from "../pages/AdminPages/Campaigns/CampaignViewPage"; 
 
 import AuthLayout from "../routes/AuthLayout";
 import LoginPage from "../pages/AuthPages/LoginPage";
@@ -23,10 +26,10 @@ import VerifyPage from "../pages/AuthPages/VerifyPage";
 import VerifyEmailPage from "../pages/AuthPages/VerifyEmailPage";
 import TermsOfServicePage from "../pages/Terms&Policy/TermsOfServicePage";
 import PrivacyPolicyPage from "../pages/Terms&Policy/PrivacyPolicyPage";
-// import OtpVerificationPage from "../pages/AuthPages/OtpVerificationPage";
+
 
 const MainRoutes = () => {
-  const isAuthenticated = false; // Replace with actual authentication logic
+  const isAuthenticated = true; 
 
   return (
     <>
@@ -42,17 +45,21 @@ const MainRoutes = () => {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
-          {/* <Route path="/verify-otp" element={<OtpVerificationPage />} /> */}
           <Route path="/verify" element={<VerifyPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
         </Route>
 
         <Route
           element={
-            !isAuthenticated ? <AdminLayout /> : <Navigate to="/login" replace />
+            isAuthenticated ? <AdminLayout /> : <Navigate to="/login" replace />
           }
         >
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/contacts" element={<ContactsManager />} /> 
+          <Route path="/campaigns" element={<CampaignsListPage />} />
+          <Route path="/campaigns/create" element={<CampaignCreatorPage />} />
+          <Route path="/campaigns/edit/:campaignId" element={<CampaignCreatorPage />} /> 
+          <Route path="/campaigns/view/:campaignId" element={<CampaignViewPage />} />
           <Route path="/settings/profile" element={<Profile />} />
           <Route path="/settings/general" element={<Settings />} />
           <Route path="/pricing" element={<Pricing />} />
@@ -60,7 +67,7 @@ const MainRoutes = () => {
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/"} replace />} />
       </Routes>
     </>
   );

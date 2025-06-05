@@ -1,13 +1,15 @@
 import {
     Box,
-    CalendarDays,
+    // CalendarDays, // No longer used in provided snippet
     ChevronLeft,
     CreditCard,
     LayoutGrid,
     LogOut,
-    MapPin,
+    // MapPin, // No longer used if "Coming Soon" is replaced
+    Megaphone, // Icon for Campaigns
     Menu as MenuIcon,
     User,
+    Users, 
     X
 } from 'lucide-react';
 import React, { useState } from 'react';
@@ -15,7 +17,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const menuItems = [
     { titleKey: 'Dashboard', href: '/dashboard', Icon: LayoutGrid },
-    { titleKey: 'Coming Soon', href: '/tours', Icon: MapPin },
+    { titleKey: 'Campaigns', href: '/campaigns', Icon: Megaphone }, // <-- ADDED CAMPAIGNS LINK
+    { titleKey: 'Contacts', href: '/contacts', Icon: Users },
     { titleKey: 'Pricing', href: '/pricing', Icon: CreditCard },
 ];
 
@@ -30,14 +33,14 @@ export default function Sidebar() {
     const navigate = useNavigate();
 
     const siteName = "Hyperpitch.io";
-    const SiteIcon = Box;
+    const SiteIcon = Box; 
 
-    const activeBgColor = 'bg-[#2e8b57]';
+    const activeBgColor = 'bg-[#2e8b57]'; 
     const activeTextColor = 'text-white';
-    const hoverBgColor = 'hover:bg-[#2e8b57]';
+    const hoverBgColor = 'hover:bg-[#2e8b57]'; 
     const hoverTextColor = 'hover:text-white';
     const defaultIconColor = 'text-gray-600';
-    const sidebarBgColor = 'bg-slate-50';
+    const sidebarBgColor = 'bg-slate-50'; 
     const defaultTextColor = 'text-gray-700';
 
     const toggleDesktopCollapse = () => setCollapsed(!collapsed);
@@ -77,7 +80,7 @@ export default function Sidebar() {
                         className={`flex items-center group ${collapsed && !mobileSidebarOpen ? 'justify-center w-full' : ''}`}
                     >
                         <SiteIcon
-                            size={collapsed && !mobileSidebarOpen ? 0 : 24}
+                            size={collapsed && !mobileSidebarOpen ? 0 : 24} 
                             className={`${collapsed && !mobileSidebarOpen ? '' : 'mr-2'} ${defaultIconColor} group-hover:text-green-700 transition-colors`}
                         />
                         {(!collapsed || mobileSidebarOpen) && (
@@ -89,7 +92,7 @@ export default function Sidebar() {
 
                     <button
                         onClick={toggleDesktopCollapse}
-                        className={`hidden p-2 rounded-md hover:bg-gray-100 md:block ${collapsed && !mobileSidebarOpen ? 'absolute top-4 right-4' : ''}`}
+                        className={`hidden p-2 rounded-md hover:bg-gray-100 md:block ${collapsed && !mobileSidebarOpen ? 'absolute top-4 right-4' : ''}`} 
                         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                     >
                         <ChevronLeft size={24} className={`text-gray-600 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`} />
@@ -99,7 +102,7 @@ export default function Sidebar() {
                 <nav className="mt-4 flex-1 overflow-y-auto">
                     <ul className="space-y-1">
                         {menuItems.map((item) => {
-                            const isActive = location.pathname.startsWith(item.href);
+                            const isActive = location.pathname.startsWith(item.href) && (item.href === '/' ? location.pathname === '/' : true); 
                             const IconComponent = item.Icon;
                             return (
                                 <li key={item.titleKey}>
@@ -109,18 +112,18 @@ export default function Sidebar() {
                                         title={collapsed && !mobileSidebarOpen ? item.titleKey : undefined}
                                         className={`flex items-center space-x-3 p-[11px] group rounded-lg transition-colors duration-150
                                             ${isActive ? `${activeBgColor} ${activeTextColor}` : `${defaultTextColor} ${hoverBgColor} ${hoverTextColor}`}
-                                            ${collapsed && !mobileSidebarOpen ? "justify-center md:py-3 md:px-2" : ""}`
+                                            ${collapsed && !mobileSidebarOpen ? "justify-center md:py-3 md:px-2" : ""}` 
                                         }
                                     >
                                         {IconComponent && (
                                             <IconComponent
-                                                size={22}
+                                                size={22} 
                                                 className={`h-[22px] w-[22px] transition-colors duration-150 ${isActive ? activeTextColor : `${defaultIconColor} group-hover:text-white`}`}
-                                                strokeWidth={isActive ? 2.25 : 2}
+                                                strokeWidth={isActive ? 2.25 : 2} 
                                             />
                                         )}
                                         {(!collapsed || mobileSidebarOpen) && (
-                                            <span className="text-base">
+                                            <span className="text-base"> 
                                                 {item.titleKey}
                                             </span>
                                         )}
@@ -172,6 +175,7 @@ export default function Sidebar() {
                                 <li key={item.titleKey + "-collapsed"}>
                                     <Link
                                         to={item.href}
+                                        onClick={handleLinkClick} 
                                         title={item.titleKey}
                                         className={`flex justify-center items-center py-3 px-2 group rounded-lg transition-colors duration-150
                                             ${location.pathname === item.href ? `${activeBgColor} ${activeTextColor}` : `${defaultTextColor} ${hoverBgColor} ${hoverTextColor}`}`
