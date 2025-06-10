@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { getCampaigns, deleteCampaign } from '../../../utils/localStorageHelper';
 
-const StyledButton = ({ onClick, children, type = 'button', variant = 'primary', disabled = false, className = '', iconLeft, iconRight, size = 'medium' }) => {
+const StyledButton = ({ onClick, children, type = 'button', variant = 'primary', disabled = false, className = '', iconLeft, iconRight, iconCenter,size = 'medium' }) => {
     const baseStyle = "rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-150 ease-in-out inline-flex items-center justify-center group transform hover:-translate-y-px active:translate-y-0";
     const sizeStyles = {
         small: "px-3 py-1.5 text-xs",
@@ -26,6 +26,7 @@ const StyledButton = ({ onClick, children, type = 'button', variant = 'primary',
             className={`${baseStyle} ${sizeStyles[size]} ${variantStyles[variant]} ${disabled ? 'opacity-60 cursor-not-allowed saturate-50' : ''} ${className}`}
         >
             {iconLeft && React.cloneElement(iconLeft, {className: `w-4 h-4 ${size === 'small' ? 'mr-1' : 'mr-1.5'} ${size !== 'small' ? '-ml-1' : ''} group-hover:scale-105 transition-transform`})}
+            {iconCenter && React.cloneElement(iconCenter, {className: `w-4 h-4 group-hover:scale-105 transition-transform`})}
             {children}
             {iconRight && React.cloneElement(iconRight, {className: `w-4 h-4 ${size === 'small' ? 'ml-1' : 'ml-1.5'} ${size !== 'small' ? '-mr-1' : ''} group-hover:translate-x-0.5 transition-transform`})}
         </button>
@@ -159,7 +160,7 @@ export default function CampaignListPage() {
                                         <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Campaign Name</th>
                                         <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
                                         <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Start Date</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Audience Size</th>
+                                        <th scope="col" className="px-6 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Audience Size</th>
                                         <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Last Updated</th>
                                         <th scope="col" className="px-6 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
                                     </tr>
@@ -184,34 +185,45 @@ export default function CampaignListPage() {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                                                 {new Date(campaign.updatedAt || campaign.createdAt).toLocaleString()}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
-                                                <StyledButton
-                                                    onClick={() => navigate(`/campaigns/view/${campaign.id}`)}
-                                                    variant="outline"
-                                                    size="small"
-                                                    iconLeft={<LucideIcons.Eye size={14} />}
-                                                    className="!px-2.5 !py-1"
-                                                >
-                                                    View
-                                                </StyledButton>
-                                                <StyledButton
-                                                    onClick={() => navigate(`/campaigns/edit/${campaign.id}`)}
-                                                    variant="secondary"
-                                                    size="small"
-                                                    iconLeft={<LucideIcons.Edit3 size={14} />}
-                                                    className="!px-2.5 !py-1"
-                                                >
-                                                    Edit
-                                                </StyledButton>
-                                                <StyledButton
-                                                    onClick={() => promptDelete(campaign)}
-                                                    variant="danger"
-                                                    size="small"
-                                                    iconLeft={<LucideIcons.Trash2 size={14} />}
-                                                    className="!px-2.5 !py-1"
-                                                >
-                                                    Delete
-                                                </StyledButton>
+                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                                <div className="flex items-center justify-center space-x-1.5">
+                                                    <StyledButton
+                                                        onClick={() => navigate(`/analytics/${campaign.id}`)}
+                                                        variant="outline"
+                                                        size="small"
+                                                        iconLeft={<LucideIcons.BarChart3 size={14} />}
+                                                        className="!px-2.5 !py-1 border-green-300 text-green-700 hover:bg-green-50"
+                                                    >
+                                                        Analytics
+                                                    </StyledButton>
+                                                    <StyledButton
+                                                        onClick={() => navigate(`/campaigns/view/${campaign.id}`)}
+                                                        variant="outline"
+                                                        size="small"
+                                                        iconCenter={<LucideIcons.Eye size={14} />}
+                                                        className="!px-2.5 !py-1"
+                                                    >
+                                                        {/* View */}
+                                                    </StyledButton>
+                                                    <StyledButton
+                                                        onClick={() => navigate(`/campaigns/edit/${campaign.id}`)}
+                                                        variant="secondary"
+                                                        size="small"
+                                                        iconCenter={<LucideIcons.Edit3 size={14} />}
+                                                        className="!px-2.5 !py-1"
+                                                    >
+                                                        {/* Edit */}
+                                                    </StyledButton>
+                                                    <StyledButton
+                                                        onClick={() => promptDelete(campaign)}
+                                                        variant="danger"
+                                                        size="small"
+                                                        iconCenter={<LucideIcons.Trash2 size={14} />}
+                                                        className="!px-2.5 !py-1"
+                                                    >
+                                                        {/* Delete */}
+                                                    </StyledButton>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}

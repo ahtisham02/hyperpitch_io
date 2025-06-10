@@ -149,13 +149,13 @@ export default function CampaignViewPage() {
                                 <>
                                     <DetailItem label="Uploaded File" value={dataSource.fileName} icon={LucideIcons.FileArchive}/>
                                     <h4 className="text-xs font-semibold text-slate-500 pt-3 mt-3 border-t border-slate-200/80 mb-2">Column Mappings:</h4>
-                                    <div className="grid grid-cols-1 gap-1.5">
+                                    {/* <div className="grid grid-cols-1 gap-1.5">
                                         {dataSource.fields?.firstName && <AudienceDetailItem label="First Name" value={dataSource.fields.firstName} icon={LucideIcons.UserCircle}/>}
                                         {dataSource.fields?.lastName && <AudienceDetailItem label="Last Name" value={dataSource.fields.lastName} icon={LucideIcons.UserCircle2}/>}
                                         <AudienceDetailItem label="Email" value={dataSource.fields?.email} icon={LucideIcons.Mail} type="email"/>
                                         {dataSource.fields?.phoneNo && <AudienceDetailItem label="Phone" value={dataSource.fields.phoneNo} icon={LucideIcons.Phone}/>}
                                         {dataSource.fields?.linkedInUrl && <AudienceDetailItem label="LinkedIn" value={dataSource.fields.linkedInUrl} icon={LucideIcons.Linkedin} type="url"/>}
-                                    </div>
+                                    </div> */}
                                 </>
                             )}
                             {dataSource?.type === 'fromContacts' && (

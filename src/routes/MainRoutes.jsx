@@ -7,6 +7,7 @@ import FeaturePage from "../pages/LandingPages/Feature/UniqueFeaturesPage";
 
 import AdminLayout from "./AdminLayout";
 import Dashboard from "../pages/AdminPages/Dashboard/Dashboard";
+import CampaignAnalyticsPage from "../pages/AdminPages/Analytics/AnalyticsPage";
 import Profile from "../pages/AdminPages/Profile/UserProfilePage";
 import Settings from "../pages/AdminPages/Settings/GeneralSettingsPage";
 import Pricing from "../pages/AdminPages/PricingPage/PricingPage";
@@ -14,6 +15,7 @@ import ContactsManager from "../pages/AdminPages/Contacts/ContactsManager";
 import CampaignCreatorPage from '../ui-components/AdminPage/Campaign/CampaignCreatorPage'; 
 import CampaignsListPage from '../pages/AdminPages/Campaigns/CampaignsListPage'; 
 import CampaignViewPage from "../pages/AdminPages/Campaigns/CampaignViewPage"; 
+import CampaignComparePage from "../pages/AdminPages/Analytics/CampaignComparePage";
 
 import AuthLayout from "../routes/AuthLayout";
 import LoginPage from "../pages/AuthPages/LoginPage";
@@ -55,6 +57,8 @@ const MainRoutes = () => {
           }
         >
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/analytics/:campaignId" element={<CampaignAnalyticsPage />} />
+          <Route path="/compare" element={<CampaignComparePage />} />
           <Route path="/contacts" element={<ContactsManager />} /> 
           <Route path="/campaigns" element={<CampaignsListPage />} />
           <Route path="/campaigns/create" element={<CampaignCreatorPage />} />
