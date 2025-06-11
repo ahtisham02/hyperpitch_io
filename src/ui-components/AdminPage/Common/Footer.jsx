@@ -5,7 +5,7 @@ const Footer = () => {
   const accentColor = "emerald"; // << NEW ACCENT
 
   return (
-    <footer className="shrink-0 z-50 bg-gray-50 py-4 px-4 sm:px-6 border-t border-gray-200/70">
+    <footer className="shrink-0 z-40 bg-gray-50 py-4 px-4 sm:px-6 border-t border-gray-200/70">
       <div className="max-w-screen-xl mx-auto text-gray-500 text-xs flex flex-col sm:flex-row sm:justify-between items-center space-y-1 sm:space-y-0">
         <p>
           © {currentYear} Hyperpitch.io. All Rights Reserved.

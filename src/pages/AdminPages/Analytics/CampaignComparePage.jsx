@@ -1,10 +1,21 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { getCampaigns } from '../../../utils/localStorageHelper';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { Trophy, ArrowLeft, Scaling, Users, Target, MousePointerClick, CheckCircle } from 'lucide-react';
+import { Trophy, ArrowLeft, Scaling, Users, Target, MousePointerClick, CheckCircle2 } from 'lucide-react';
 
-// --- SELF-CONTAINED COMPONENTS ---
+// Assuming getCampaigns is imported from your helper file
+const getCampaigns = () => {
+    // Mock data for demonstration if localStorage is empty
+    const mockData = [
+        { id: '1', campaignDetails: { campaignName: 'Q2 Product Launch' }, createdAt: '2023-06-15T10:00:00Z', analyticsData: { kpi: { totalViews: { value: 12500 }, uniqueVisitors: { value: 8300 }, conversions: { value: 450 }, ctr: { value: 3.6 } } } },
+        { id: '2', campaignDetails: { campaignName: 'Summer Sale 2023' }, createdAt: '2023-07-01T10:00:00Z', analyticsData: { kpi: { totalViews: { value: 25000 }, uniqueVisitors: { value: 19800 }, conversions: { value: 1200 }, ctr: { value: 4.8 } } } },
+        { id: '3', campaignDetails: { campaignName: 'Developer Outreach' }, createdAt: '2023-05-20T10:00:00Z', analyticsData: { kpi: { totalViews: { value: 9800 }, uniqueVisitors: { value: 6500 }, conversions: { value: 320 }, ctr: { value: 3.2 } } } },
+        { id: '4', campaignDetails: { campaignName: 'Holiday Special' }, createdAt: '2023-11-15T10:00:00Z', analyticsData: { kpi: { totalViews: { value: 35000 }, uniqueVisitors: { value: 28000 }, conversions: { value: 2100 }, ctr: { value: 6.0 } } } },
+    ];
+    // In a real app, you would use:
+    // return JSON.parse(localStorage.getItem('campaigns') || '[]');
+    return mockData;
+};
 
 const kpiConfig = [
     { key: 'totalViews', name: 'Total Views', icon: Scaling, format: 'number' },
@@ -13,18 +24,19 @@ const kpiConfig = [
     { key: 'ctr', name: 'Click-Through Rate', icon: MousePointerClick, format: 'percentage' }
 ];
 
-const campaignColors = ['#2e8b57', '#0ea5e9', '#f97316', '#8b5cf6'];
+const campaignColors = ['#10b981', '#3b82f6', '#f97316', '#8b5cf6'];
+const campaignGradients = campaignColors.map((color, i) => `url(#gradient-${i})`);
 
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-xl border border-slate-200 text-sm">
-                <p className="font-semibold text-slate-700 mb-2">{label}</p>
+            <div className="bg-white/90 backdrop-blur-md p-4 rounded-lg shadow-xl border border-slate-200 text-sm">
+                <p className="font-bold text-slate-800 mb-2">{label}</p>
                 {payload.map((p, i) => (
-                    <div key={i} className="flex items-center">
-                        <div className="w-2.5 h-2.5 rounded-full mr-2" style={{ backgroundColor: p.fill }}></div>
-                        <span className="text-slate-500 mr-2">{p.name}:</span>
-                        <span className="text-slate-800 font-medium">{p.value.toLocaleString()}{label.includes('Rate') ? '%' : ''}</span>
+                    <div key={i} className="flex items-center space-x-2">
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: campaignColors[i] }}></div>
+                        <span className="text-slate-500">{p.name}:</span>
+                        <span className="text-slate-900 font-semibold">{p.value.toLocaleString()}{label.includes('Rate') ? '%' : ''}</span>
                     </div>
                 ))}
             </div>
@@ -33,7 +45,6 @@ const CustomTooltip = ({ active, payload, label }) => {
     return null;
 };
 
-// --- MAIN PAGE COMPONENT ---
 export default function CampaignComparePage() {
     const [allCampaigns] = useState(() => getCampaigns().filter(c => c.analyticsData));
     const [selectedCampaignIds, setSelectedCampaignIds] = useState([]);
@@ -43,11 +54,7 @@ export default function CampaignComparePage() {
             if (prev.includes(id)) {
                 return prev.filter(cid => cid !== id);
             }
-            if (prev.length < 4) {
-                return [...prev, id];
-            }
-            // Optional: Add a toast notification here if you want to inform the user about the 4-campaign limit.
-            return prev;
+            return prev.length < 4 ? [...prev, id] : prev;
         });
     };
 
@@ -60,9 +67,7 @@ export default function CampaignComparePage() {
         return kpiConfig.map(kpi => {
             const dataPoint = { name: kpi.name };
             selectedCampaigns.forEach((campaign) => {
-                const campaignName = campaign.campaignDetails.campaignName;
-                const value = campaign.analyticsData.kpi[kpi.key]?.value || 0;
-                dataPoint[campaignName] = value;
+                dataPoint[campaign.campaignDetails.campaignName] = campaign.analyticsData.kpi[kpi.key]?.value || 0;
             });
             return dataPoint;
         });
@@ -83,124 +88,137 @@ export default function CampaignComparePage() {
     };
 
     return (
-        <div className="bg-slate-50 min-h-screen text-slate-700 overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full z-0 overflow-hidden">
-                <div className="absolute top-0 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-green-500/10 to-transparent rounded-full filter blur-3xl opacity-50"></div>
-                <div className="absolute bottom-0 -right-1/4 w-2/3 h-2/3 bg-gradient-to-tl from-sky-500/10 to-transparent rounded-full filter blur-3xl opacity-50"></div>
-            </div>
-
-            <main className="relative z-10 p-4 sm:p-6 lg:p-8">
+        <div className="bg-slate-50 min-h-screen text-slate-800">
+            <main className="p-4 sm:p-6 lg:p-8">
                 <header className="mb-8">
-                    <Link to="/dashboard" className="text-sm text-green-600 hover:text-green-700 flex items-center mb-3 group">
-                        <ArrowLeft className="w-4 h-4 mr-1 transition-transform group-hover:-translate-x-1" />Back to Dashboard
+                    <Link to="/dashboard" className="text-sm text-emerald-600 hover:text-emerald-700 flex items-center mb-4 group font-semibold">
+                        <ArrowLeft className="w-4 h-4 mr-1.5 transition-transform group-hover:-translate-x-1" />
+                        Back to Dashboard
                     </Link>
-                    <h1 className="text-4xl font-bold text-slate-800 tracking-tight">Campaign Comparison</h1>
-                    <p className="text-slate-500 mt-1">Select up to 4 campaigns to compare their performance side-by-side.</p>
+                    <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Campaign Comparison</h1>
+                    <p className="text-slate-500 mt-2 text-lg">Select up to 4 campaigns to compare their performance side-by-side.</p>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    <div className="lg:col-span-3">
-                        <div className="bg-white/60 backdrop-blur-lg border border-slate-200/80 p-6 rounded-2xl shadow-lg h-full">
-                            <h3 className="font-semibold text-slate-800 text-lg">Select Campaigns</h3>
-                            <div className="mt-4 space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                                {allCampaigns.map((campaign, index) => (
-                                    <button key={campaign.id} onClick={() => handleSelectCampaign(campaign.id)}
-                                        className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 group animate-fade-in-up`}
-                                        style={{ animationDelay: `${index * 50}ms`,
-                                                 ...(selectedCampaignIds.includes(campaign.id) 
-                                                     ? { borderColor: campaignColors[selectedCampaignIds.indexOf(campaign.id)], backgroundColor: 'rgba(255,255,255,0.7)'} 
-                                                     : { borderColor: '#e2e8f0', backgroundColor: 'rgba(255,255,255,0.4)' })
-                                        }}>
-                                        <div className="flex items-center justify-between">
-                                            <p className="font-medium text-sm text-slate-700">{campaign.campaignDetails.campaignName}</p>
-                                            {selectedCampaignIds.includes(campaign.id) && <CheckCircle size={18} className="text-green-600" />}
-                                        </div>
-                                        <p className="text-xs text-slate-500 mt-0.5">Created: {new Date(campaign.createdAt).toLocaleDateString()}</p>
-                                    </button>
-                                ))}
-                                {allCampaigns.length === 0 && <p className="text-sm text-slate-500 text-center py-4">No campaigns with analytics data found.</p>}
+                <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200/80">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <aside className="lg:col-span-4 xl:col-span-3">
+                            <div className="sticky top-6">
+                                <h3 className="font-bold text-slate-800 text-xl">Select Campaigns</h3>
+                                <p className="text-sm text-slate-500 mt-1 mb-4">You have selected {selectedCampaignIds.length} of 4 campaigns.</p>
+                                <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                                    {allCampaigns.map((campaign) => {
+                                        const isSelected = selectedCampaignIds.includes(campaign.id);
+                                        const colorIndex = isSelected ? selectedCampaignIds.indexOf(campaign.id) : -1;
+                                        return (
+                                            <button
+                                                key={campaign.id}
+                                                onClick={() => handleSelectCampaign(campaign.id)}
+                                                className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 group ${isSelected ? 'bg-emerald-50 shadow-sm' : 'bg-slate-50 hover:border-emerald-300'}`}
+                                                style={{ borderColor: isSelected ? campaignColors[colorIndex] : '#e2e8f0' }}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center">
+                                                        {isSelected && <div className="w-2.5 h-2.5 rounded-full mr-3" style={{ backgroundColor: campaignColors[colorIndex] }}></div>}
+                                                        <p className="font-semibold text-sm text-slate-800">{campaign.campaignDetails.campaignName}</p>
+                                                    </div>
+                                                    {isSelected && <CheckCircle2 size={20} className="text-emerald-600" />}
+                                                </div>
+                                                <p className={`text-xs text-slate-500 mt-1 ${isSelected ? 'pl-[22px]' : ''}`}>
+                                                    Created: {new Date(campaign.createdAt).toLocaleDateString()}
+                                                </p>
+                                            </button>
+                                        );
+                                    })}
+                                    {allCampaigns.length === 0 && <p className="text-sm text-slate-500 text-center py-4">No campaigns with analytics data found.</p>}
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </aside>
 
-                    <div className="lg:col-span-9">
-                        {selectedCampaigns.length < 2 ? (
-                            <div className="flex items-center justify-center bg-white/60 backdrop-blur-lg border-2 border-dashed border-slate-300 rounded-2xl h-[calc(60vh+98px)]">
-                                <div className="text-center p-4">
-                                    <Trophy size={48} className="mx-auto text-slate-400 mb-4"/>
-                                    <h3 className="font-semibold text-slate-700 text-lg">Ready to find a winner?</h3>
-                                    <p className="text-slate-500 text-sm mt-1">Please select at least two campaigns from the list to compare them.</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="space-y-8">
-                                <div className="bg-white/60 backdrop-blur-lg border border-slate-200/80 p-6 rounded-2xl shadow-lg animate-fade-in">
-                                    <h3 className="font-semibold text-slate-800 mb-4 text-lg">Performance Chart</h3>
-                                    <div className="h-[350px]">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart data={comparisonData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                                <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                                <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.03)' }} />
-                                                <Legend wrapperStyle={{fontSize: "12px", paddingTop: "20px"}}/>
-                                                {selectedCampaigns.map((campaign, index) => (
-                                                    <Bar key={campaign.id} dataKey={campaign.campaignDetails.campaignName} fill={campaignColors[index]} barSize={25} radius={[5, 5, 0, 0]} />
-                                                ))}
-                                            </BarChart>
-                                        </ResponsiveContainer>
+                        <main className="lg:col-span-8 xl:col-span-9">
+                            {selectedCampaigns.length < 2 ? (
+                                <div className="flex items-center justify-center bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl h-full min-h-[500px]">
+                                    <div className="text-center p-4">
+                                        <Trophy size={48} className="mx-auto text-slate-400 mb-4" />
+                                        <h3 className="font-semibold text-slate-800 text-lg">Ready to find a winner?</h3>
+                                        <p className="text-slate-500 text-sm mt-1 max-w-xs">Please select at least two campaigns from the list to see their comparison.</p>
                                     </div>
                                 </div>
-                                
-                                <div className="bg-white/60 backdrop-blur-lg border border-slate-200/80 p-6 rounded-2xl shadow-lg animate-fade-in">
-                                    <h3 className="font-semibold text-slate-800 mb-4 text-lg">Side-by-Side Comparison</h3>
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-sm">
-                                            <thead>
-                                                <tr className="border-b-2 border-slate-300">
-                                                    <th className="text-left font-semibold text-slate-600 p-4">Metric</th>
+                            ) : (
+                                <div className="space-y-8">
+                                    <div className="p-6 rounded-xl border border-slate-200 bg-slate-50/50">
+                                        <h3 className="font-bold text-slate-800 mb-4 text-xl">Performance Chart</h3>
+                                        <div className="h-[350px]">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={comparisonData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                                    <defs>
+                                                        {campaignColors.map((color, i) => (
+                                                            <linearGradient key={i} id={`gradient-${i}`} x1="0" y1="0" x2="0" y2="1">
+                                                                <stop offset="5%" stopColor={color} stopOpacity={0.8} />
+                                                                <stop offset="95%" stopColor={color} stopOpacity={0.4} />
+                                                            </linearGradient>
+                                                        ))}
+                                                    </defs>
+                                                    <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                                    <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.03)' }} />
+                                                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "12px", paddingTop: "20px" }} />
                                                     {selectedCampaigns.map((campaign, index) => (
-                                                        <th key={campaign.id} className="text-right font-semibold p-4" style={{color: campaignColors[index]}}>
-                                                            {campaign.campaignDetails.campaignName}
-                                                        </th>
+                                                        <Bar key={campaign.id} dataKey={campaign.campaignDetails.campaignName} fill={campaignGradients[index]} barSize={25} radius={[6, 6, 0, 0]} />
                                                     ))}
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {kpiConfig.map(kpi => {
-                                                    const bestPerformerId = findBestPerformer(kpi.key);
-                                                    return (
-                                                        <tr key={kpi.key} className="border-b border-slate-200/80">
-                                                            <td className="p-4 font-medium text-slate-600 flex items-center"><kpi.icon size={16} className="mr-2 text-slate-400"/> {kpi.name}</td>
-                                                            {selectedCampaigns.map(campaign => (
-                                                                <td key={campaign.id} className={`text-right p-4 font-mono text-base rounded-md ${bestPerformerId === campaign.id ? 'font-bold' : 'text-slate-800'}`}>
-                                                                    <div className={`p-2 rounded-lg ${bestPerformerId === campaign.id ? 'bg-green-100' : ''}`}>
-                                                                        {bestPerformerId === campaign.id && <Trophy size={14} className="inline-block -mt-1 mr-1.5 text-amber-500" />}
-                                                                        {(campaign.analyticsData.kpi[kpi.key]?.value || 0).toLocaleString()}
-                                                                        {kpi.format === 'percentage' ? '%' : ''}
-                                                                    </div>
-                                                                </td>
-                                                            ))}
-                                                        </tr>
-                                                    )
-                                                })}
-                                            </tbody>
-                                        </table>
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="p-6 rounded-xl border border-slate-200 bg-slate-50/50">
+                                        <h3 className="font-bold text-slate-800 mb-4 text-xl">Side-by-Side Comparison</h3>
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead className="border-b-2 border-slate-200">
+                                                    <tr>
+                                                        <th className="text-left font-semibold text-slate-600 p-4">Metric</th>
+                                                        {selectedCampaigns.map((campaign, index) => (
+                                                            <th key={campaign.id} className="text-center font-semibold p-4" style={{ color: campaignColors[index] }}>
+                                                                {campaign.campaignDetails.campaignName}
+                                                            </th>
+                                                        ))}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {kpiConfig.map((kpi, index) => {
+                                                        const bestPerformerId = findBestPerformer(kpi.key);
+                                                        return (
+                                                            <tr key={kpi.key} className={index % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
+                                                                <td className="p-4 font-semibold text-slate-700 flex items-center"><kpi.icon size={16} className="mr-3 text-slate-400" /> {kpi.name}</td>
+                                                                {selectedCampaigns.map(campaign => (
+                                                                    <td key={campaign.id} className={`text-center p-4 font-mono text-base`}>
+                                                                        <div className={`p-2 rounded-lg transition-colors ${bestPerformerId === campaign.id ? 'bg-emerald-100' : 'bg-transparent'}`}>
+                                                                            <span className={bestPerformerId === campaign.id ? 'font-bold text-emerald-800' : 'text-slate-800'}>
+                                                                                {bestPerformerId === campaign.id && <Trophy size={14} className="inline-block -mt-1 mr-1.5 text-amber-500" />}
+                                                                                {(campaign.analyticsData.kpi[kpi.key]?.value || 0).toLocaleString()}
+                                                                                {kpi.format === 'percentage' ? '%' : ''}
+                                                                            </span>
+                                                                        </div>
+                                                                    </td>
+                                                                ))}
+                                                            </tr>
+                                                        )
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </main>
                     </div>
                 </div>
             </main>
             <style jsx global>{`
-                @keyframes fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
-                @keyframes fade-in-up { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
-                .animate-fade-in { animation: fade-in 0.6s ease-out forwards; }
-                .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
                 .custom-scrollbar::-webkit-scrollbar { width: 5px; } 
-                .custom-scrollbar::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; } 
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; } 
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; } 
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; } 
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
             `}</style>
         </div>
     );
