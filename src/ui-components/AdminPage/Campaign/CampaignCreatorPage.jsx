@@ -10,8 +10,6 @@ import {
 } from "../../../utils/localStorageHelper";
 import ElementBuilderPage, { PagePreviewRenderer } from "./Header";
 
-// In CampaignCreatorPage.js...
-
 const generateInitialAnalyticsData = (campaignId) => {
     const seed = campaignId.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
     const random = (min, max, offset = 0) => Math.floor((Math.sin(seed + offset) * 10000 % 1) * (max - min + 1) + min);
@@ -71,8 +69,8 @@ const mockGenerateId = (prefix = "tpl-id") =>
 const StepperNav = ({ currentStep, steps, setCurrentStep }) => {
   return (
     <nav
-      className="w-full lg:w-72 lg:ml-64 lg:pt-24 p-6 bg-white border-r border-slate-200 
-                   lg:fixed lg:top-0 lg:left-0 lg:h-screen lg:overflow-y-auto"
+      className="w-full lg:w-72 lg:flex-shrink-0 lg:pt-24 p-6 bg-white border-r border-slate-200 
+                   lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto"
     >
       <div className="md:text-left mb-10 flex items-center md:block">
         <LucideIcons.ClipboardCheck
@@ -173,11 +171,9 @@ const InputField = ({
       htmlFor={name}
       className="block text-xs font-medium text-slate-600 mb-1"
     >
-      {" "}
-      {label} {required && <span className="text-red-500">*</span>}{" "}
+      {label} {required && <span className="text-red-500">*</span>}
     </label>
     <div className="relative group">
-      {" "}
       {icon && (
         <div className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center">
           {React.cloneElement(icon, {
@@ -233,18 +229,17 @@ const StyledButton = ({
         disabled ? "opacity-60 cursor-not-allowed saturate-50" : ""
       } ${className}`}
     >
-      {" "}
       {iconLeft &&
         React.cloneElement(iconLeft, {
           className:
             "w-4 h-4 mr-1.5 -ml-1 group-hover:scale-105 transition-transform",
-        })}{" "}
-      {children}{" "}
+        })}
+      {children}
       {iconRight &&
         React.cloneElement(iconRight, {
           className:
             "w-4 h-4 ml-1.5 -mr-1 group-hover:translate-x-0.5 transition-transform",
-        })}{" "}
+        })}
     </button>
   );
 };
@@ -273,7 +268,6 @@ const OptionCard = ({
             } `}
   >
     <div className="flex items-center">
-      {" "}
       {icon && (
         <div
           className={`mr-3 p-2 rounded-lg transition-colors duration-150 ${
@@ -290,7 +284,6 @@ const OptionCard = ({
         </div>
       )}
       <div className="flex-1">
-        {" "}
         <h3
           className={`text-sm font-semibold ${
             selected
@@ -301,7 +294,7 @@ const OptionCard = ({
           }`}
         >
           {title}
-        </h3>{" "}
+        </h3>
         {description && (
           <p
             className={`text-xs text-slate-500 mt-0.5 ${
@@ -310,7 +303,7 @@ const OptionCard = ({
           >
             {description}
           </p>
-        )}{" "}
+        )}
       </div>
       {selected && (
         <div className="w-4 h-4 rounded-full bg-[#2e8b57] flex items-center justify-center ml-2 shrink-0">
@@ -326,15 +319,13 @@ const OptionCard = ({
 
 const SummaryCard = ({ title, icon, children }) => (
   <div className="bg-white p-5 rounded-xl shadow-lg border border-slate-200">
-    {" "}
     <h3 className="text-md font-semibold text-slate-700 mb-3 flex items-center">
-      {" "}
       {React.cloneElement(icon, {
         className: "w-5 h-5 mr-2 text-green-600 stroke-[2]",
-      })}{" "}
-      {title}{" "}
-    </h3>{" "}
-    <div className="space-y-1.5 text-xs text-slate-600"> {children} </div>{" "}
+      })}
+      {title}
+    </h3>
+    <div className="space-y-1.5 text-xs text-slate-600">{children}</div>
   </div>
 );
 
@@ -357,34 +348,31 @@ const SuccessModal = ({
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 52 52"
           >
-            {" "}
             <circle
               className="checkmark__circle"
               cx="26"
               cy="26"
               r="25"
               fill="none"
-            />{" "}
+            />
             <path
               className="checkmark__check"
               fill="none"
               d="M14.1 27.2l7.1 7.2 16.7-16.8"
-            />{" "}
+            />
           </svg>
         </div>
         <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">
           {title || "Campaign Saved!"}
         </h3>
         <p className="text-slate-500 mb-6 sm:mb-8 text-sm sm:text-base">
-          {" "}
           {message ||
-            "Your campaign configuration has been successfully saved."}{" "}
+            "Your campaign configuration has been successfully saved."}
         </p>
         <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-3">
           {onSecondaryAction && secondaryButtonText && (
             <StyledButton onClick={onSecondaryAction} variant="secondary">
-              {" "}
-              {secondaryButtonText}{" "}
+              {secondaryButtonText}
             </StyledButton>
           )}
           <StyledButton
@@ -392,8 +380,7 @@ const SuccessModal = ({
             variant="success"
             iconLeft={<LucideIcons.PlusCircle />}
           >
-            {" "}
-            {buttonText || "Create New Campaign"}{" "}
+            {buttonText || "Create New Campaign"}
           </StyledButton>
         </div>
       </div>
@@ -446,6 +433,75 @@ const SuccessModal = ({
           }
         }
       `}</style>
+    </div>
+  );
+};
+
+const AICommandInput = ({ onCommandSuccess }) => {
+  const [command, setCommand] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const STATIC_COMMANDS = {
+    "create a sleek corporate landing page": "tpl_corporate_sleek",
+    "build a vibrant and creative portfolio": "tpl_creative_vibrant",
+    "design a professional testimonial section": "tpl_corporate_sleek",
+    "generate a modern product launch page": "tpl_product_launch",
+    "make a professional webinar registration page": "tpl_webinar_invite",
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && command && !isLoading) {
+      setError("");
+      const normalizedCommand = command.toLowerCase().trim();
+      const templateId = STATIC_COMMANDS[normalizedCommand];
+
+      if (templateId) {
+        setIsLoading(true);
+        setTimeout(() => {
+          onCommandSuccess(templateId);
+        }, 1500);
+      } else {
+        setError("Command not recognized. Please try one of the suggestions.");
+      }
+    }
+  };
+
+  return (
+    <div className="mt-5 p-4 border border-slate-200 rounded-xl bg-slate-50/70 animate-fadeIn">
+      <h3 className="text-base font-semibold text-slate-700 mb-1">Build with AI</h3>
+      <p className="text-xs text-slate-500 mb-4">
+        Describe the landing page you want to build. Press Enter to generate.
+      </p>
+
+      <div className="relative">
+        <LucideIcons.Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-400" />
+        <input
+          type="text"
+          value={command}
+          onChange={(e) => setCommand(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={isLoading}
+          placeholder="e.g., create a sleek corporate landing page"
+          className="w-full pl-10 pr-12 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/70 focus:border-green-500 transition-all duration-200 placeholder-slate-400 bg-white shadow-md"
+        />
+        {isLoading && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <LucideIcons.Loader className="w-5 h-5 text-slate-400 animate-spin" />
+          </div>
+        )}
+      </div>
+
+      {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+
+      <div className="mt-4 text-xs text-slate-500">
+        <p className="font-medium mb-1.5">Some ideas to try:</p>
+        <ul className="list-disc list-inside space-y-1">
+          {Object.keys(STATIC_COMMANDS).slice(0, 3).map((cmd) => (
+            <li key={cmd}>{cmd}</li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };
@@ -512,286 +568,106 @@ export default function CampaignCreatorPage() {
   const mockTemplates = useMemo(() => {
     const pageId1 = mockGenerateId("page");
     const pageId2 = mockGenerateId("page");
+    const pageId3 = mockGenerateId("page");
+    const pageId4 = mockGenerateId("page");
     return [
       {
         id: "tpl_corporate_sleek",
         name: "Sleek Corporate Testimonial",
         builderData: {
-          pages: {
-            [pageId1]: {
-              id: pageId1,
-              name: "Main Page",
-              layout: [
-                {
-                  id: mockGenerateId("section"),
-                  type: "section",
-                  props: {
-                    backgroundType: "color",
-                    backgroundColor: "#f8fafc",
-                  },
-                  columns: [
-                    {
-                      id: mockGenerateId("col"),
-                      type: "column",
-                      props: { width: "100%" },
-                      elements: [
-                        {
-                          id: mockGenerateId("heading"),
-                          type: "header",
-                          props: {
-                            text: "What Our Clients Say",
-                            sizeClass: "text-3xl",
-                            textAlign: "text-center",
-                            textColor: "#1e293b",
-                          },
-                        },
-                        {
-                          id: mockGenerateId("spacer"),
-                          type: "spacer",
-                          props: { height: "20px" },
-                        },
-                        {
-                          id: mockGenerateId("testimonials"),
-                          type: "cardSlider",
-                          props: {
-                            slides: [
-                              {
-                                id: mockGenerateId("slide"),
-                                imgSrc:
-                                  "https://via.placeholder.com/100x100/cbd5e1/475569?Text=User+A",
-                                heading: "Alex Johnson, CEO of TechCorp",
-                                text: '"Working with this team has been a game changer for our business. Highly recommended!"',
-                                link: "#",
-                              },
-                              {
-                                id: mockGenerateId("slide"),
-                                imgSrc:
-                                  "https://via.placeholder.com/100x100/e2e8f0/334155?Text=User+B",
-                                heading:
-                                  "Maria Garcia, Marketing Director at Innovate Ltd.",
-                                text: '"Their strategic insights and creative execution are top-notch. Results exceeded expectations."',
-                                link: "#",
-                              },
-                              {
-                                id: mockGenerateId("slide"),
-                                imgSrc:
-                                  "https://via.placeholder.com/100x100/94a3b8/ffffff?Text=User+C",
-                                heading: "David Lee, Founder of StartUpX",
-                                text: '"Professional, responsive, and delivered outstanding quality. Will definitely partner again."',
-                                link: "#",
-                              },
-                            ],
-                            slidesPerView: 1,
-                            spaceBetween: 20,
-                            speed: 700,
-                            autoplay: true,
-                            autoplayDelay: 5000,
-                            loop: true,
-                            showNavigation: true,
-                            showPagination: true,
-                            cardBorderRadius: "12px",
-                          },
-                        },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-          },
+          pages: {[pageId1]: {id: pageId1, name: "Main Page", layout: [
+            { id: mockGenerateId("section"), type: "section", props: { backgroundType: "color", backgroundColor: "#f8fafc", paddingTop: "60px", paddingBottom: "60px" },
+              columns: [ { id: mockGenerateId("col"), type: "column", props: { width: "100%" }, elements: [
+                { id: mockGenerateId("heading"), type: "header", props: { text: "What Our Clients Say", sizeClass: "text-4xl", textAlign: "text-center", textColor: "#1e293b", fontWeight: "font-bold" } },
+                { id: mockGenerateId("spacer"), type: "spacer", props: { height: "40px" } },
+                { id: mockGenerateId("testimonials"), type: "cardSlider", props: { slides: [ { id: mockGenerateId("slide"), imgSrc: "https://randomuser.me/api/portraits/men/32.jpg", heading: "Alex Johnson, CEO of TechCorp", text: '"Working with this team has been a game changer for our business. Highly recommended!"', link: "#", }, { id: mockGenerateId("slide"), imgSrc: "https://randomuser.me/api/portraits/women/44.jpg", heading: "Maria Garcia, Marketing Director", text: '"Their strategic insights and creative execution are top-notch. Results exceeded expectations."', link: "#", }, { id: mockGenerateId("slide"), imgSrc: "https://randomuser.me/api/portraits/men/75.jpg", heading: "David Lee, Founder of StartUpX", text: '"Professional, responsive, and delivered outstanding quality. Will definitely partner again."', link: "#", },], slidesPerView: 1, spaceBetween: 20, speed: 700, autoplay: true, autoplayDelay: 5000, loop: true, showNavigation: true, showPagination: true, cardBorderRadius: "12px",},},],},],},],},},
           activePageId: pageId1,
-          globalNavbar: {
-            id: "global-navbar-corp",
-            type: "navbar",
-            path: "globalNavbar",
-            props: {
-              logoType: "text",
-              logoText: "CORP.",
-              links: [
-                { id: mockGenerateId("nav"), text: "Services", url: "#" },
-                { id: mockGenerateId("nav"), text: "About Us", url: "#" },
-                { id: mockGenerateId("nav"), text: "Contact", url: "#" },
-              ],
-              backgroundColor: "#ffffff",
-              textColor: "#1e293b",
-              linkColor: "#0ea5e9",
-              rightContentType: "none",
-            },
-          },
-          globalFooter: {
-            id: "global-footer-corp",
-            type: "footer",
-            path: "globalFooter",
-            props: {
-              copyrightText: `© ${new Date().getFullYear()} CORP. Solutions. All Rights Reserved.`,
-              links: [
-                {
-                  id: mockGenerateId("foot"),
-                  text: "Privacy Policy",
-                  url: "#",
-                },
-                { id: mockGenerateId("foot"), text: "Terms of Use", url: "#" },
-              ],
-              backgroundColor: "#1e293b",
-              textColor: "#94a3b8",
-              linkColor: "#e0f2fe",
-            },
-          },
+          globalNavbar: { id: "global-navbar-corp", type: "navbar", path: "globalNavbar", props: { logoType: "text", logoText: "CORP.", links: [ { id: mockGenerateId("nav"), text: "Services", url: "#" }, { id: mockGenerateId("nav"), text: "About Us", url: "#" }, { id: mockGenerateId("nav"), text: "Contact", url: "#" }, ], backgroundColor: "#ffffff", textColor: "#1e293b", linkColor: "#0ea5e9", rightContentType: "none", }, },
+          globalFooter: { id: "global-footer-corp", type: "footer", path: "globalFooter", props: { copyrightText: `© ${new Date().getFullYear()} CORP. Solutions. All Rights Reserved.`, links: [ { id: mockGenerateId("foot"), text: "Privacy Policy", url: "#" }, { id: mockGenerateId("foot"), text: "Terms of Use", url: "#" }, ], backgroundColor: "#1e293b", textColor: "#94a3b8", linkColor: "#e0f2fe", },},
         },
       },
       {
         id: "tpl_creative_vibrant",
         name: "Vibrant Creative Showcase",
         builderData: {
-          pages: {
-            [pageId2]: {
-              id: pageId2,
-              name: "Showcase Page",
-              layout: [
-                {
-                  id: mockGenerateId("section-intro"),
-                  type: "section",
-                  props: {
-                    backgroundType: "color",
-                    backgroundColor: "#ecfdf5",
-                  },
-                  columns: [
-                    {
-                      id: mockGenerateId("col-intro"),
-                      type: "column",
-                      props: { width: "100%" },
-                      elements: [
-                        {
-                          id: mockGenerateId("head"),
-                          type: "header",
-                          props: {
-                            text: "Hear From Our Awesome Clients!",
-                            sizeClass: "text-4xl",
-                            textAlign: "text-center",
-                            textColor: "#059669",
-                          },
-                        },
-                        {
-                          id: mockGenerateId("sub"),
-                          type: "textBlock",
-                          props: {
-                            text: "We love making our clients happy. Here's what they're saying about their experiences.",
-                            sizeClass: "text-lg",
-                            textAlign: "text-center",
-                            textColor: "#047857",
-                          },
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  id: mockGenerateId("section-slider"),
-                  type: "section",
-                  props: {
-                    backgroundType: "color",
-                    backgroundColor: "#f0fdfa",
-                  },
-                  columns: [
-                    {
-                      id: mockGenerateId("col-slider"),
-                      type: "column",
-                      props: { width: "100%" },
-                      elements: [
-                        {
-                          id: mockGenerateId("testimonials-creative"),
-                          type: "cardSlider",
-                          props: {
-                            slides: [
-                              {
-                                id: mockGenerateId("slide"),
-                                imgSrc:
-                                  "https://randomuser.me/api/portraits/women/44.jpg",
-                                heading: "Sarah Miller, Artist",
-                                text: '"Unleashed my creative potential! The platform is intuitive and inspiring."',
-                                link: "#",
-                              },
-                              {
-                                id: mockGenerateId("slide"),
-                                imgSrc:
-                                  "https://randomuser.me/api/portraits/men/32.jpg",
-                                heading: "James Chen, Designer",
-                                text: '"A truly collaborative process with stunning visual outcomes. Five stars!"',
-                                link: "#",
-                              },
-                              {
-                                id: mockGenerateId("slide"),
-                                imgSrc:
-                                  "https://randomuser.me/api/portraits/women/68.jpg",
-                                heading: "Priya Patel, Photographer",
-                                text: '"They understood my vision perfectly and brought it to life beautifully."',
-                                link: "#",
-                              },
-                              {
-                                id: mockGenerateId("slide"),
-                                imgSrc:
-                                  "https://randomuser.me/api/portraits/men/75.jpg",
-                                heading: "Kenji Tanaka, Illustrator",
-                                text: '"Exceptional tools and support. My go-to for all creative projects."',
-                                link: "#",
-                              },
-                            ],
-                            slidesPerView: 2,
-                            spaceBetween: 24,
-                            speed: 600,
-                            autoplay: false,
-                            loop: false,
-                            showNavigation: true,
-                            showPagination: true,
-                            cardBorderRadius: "16px",
-                          },
-                        },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-          },
+          pages: {[pageId2]: {id: pageId2, name: "Showcase Page", layout: [
+            { id: mockGenerateId("section"), type: "section", props: { backgroundType: "color", backgroundColor: "#ecfdf5", paddingTop: "80px", paddingBottom: "80px" },
+              columns: [{ id: mockGenerateId("col"), type: "column", props: { width: "100%" }, elements: [
+                { id: mockGenerateId("head"), type: "header", props: { text: "Our Creative Portfolio", sizeClass: "text-5xl", textAlign: "text-center", textColor: "#059669", fontWeight: "font-extrabold" } },
+                { id: mockGenerateId("sub"), type: "textBlock", props: { text: "We love making our clients happy. Here's a showcase of our best work.", sizeClass: "text-xl", textAlign: "text-center", textColor: "#047857" } },
+              ],},],},
+            { id: mockGenerateId("section-gallery"), type: "section", props: { backgroundType: "color", backgroundColor: "#f0fdfa", paddingTop: "20px", paddingBottom: "80px" },
+              columns: [{ id: mockGenerateId("col"), type: "column", props: { width: "100%" }, elements: [
+                { id: mockGenerateId("gallery"), type: "cardSlider", props: { slides: [ { id: mockGenerateId("slide"), imgSrc: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=2070&auto=format&fit=crop", heading: "Project Alpha", text: "A bold branding project for a new tech startup.", link: "#", }, { id: mockGenerateId("slide"), imgSrc: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?q=80&w=2070&auto=format&fit=crop", heading: "Project Beta", text: "Web design and development for an e-commerce giant.", link: "#", }, { id: mockGenerateId("slide"), imgSrc: "https://images.unsplash.com/photo-1558980394-0a06c4631733?q=80&w=1974&auto=format&fit=crop", heading: "Project Gamma", text: "An immersive mobile app experience.", link: "#", },], slidesPerView: 2.5, spaceBetween: 24, speed: 600, autoplay: false, loop: false, showNavigation: true, showPagination: false, cardBorderRadius: "16px", },},],},],},],},},
           activePageId: pageId2,
-          globalNavbar: {
-            id: "global-navbar-creative",
-            type: "navbar",
-            path: "globalNavbar",
-            props: {
-              logoType: "text",
-              logoText: "CreativeHub",
-              links: [
-                { id: mockGenerateId("nav"), text: "Portfolio", url: "#" },
-                { id: mockGenerateId("nav"), text: "Blog", url: "#" },
-                { id: mockGenerateId("nav"), text: "Join Us", url: "#" },
-              ],
-              backgroundColor: "#0d9488",
-              textColor: "#ffffff",
-              linkColor: "#ccfbf1",
-              rightContentType: "searchIcon",
-            },
-          },
-          globalFooter: {
-            id: "global-footer-creative",
-            type: "footer",
-            path: "globalFooter",
-            props: {
-              copyrightText: `© ${new Date().getFullYear()} CreativeHub Studios. Be Bold. Be Creative.`,
-              links: [
-                { id: mockGenerateId("foot"), text: "Inspiration", url: "#" },
-                { id: mockGenerateId("foot"), text: "Support", url: "#" },
-                { id: mockGenerateId("foot"), text: "Careers", url: "#" },
-              ],
-              backgroundColor: "#f0fdfa",
-              textColor: "#0f766e",
-              linkColor: "#14b8a6",
-            },
-          },
+          globalNavbar: { id: "global-navbar-creative", type: "navbar", path: "globalNavbar", props: { logoType: "text", logoText: "CreativeHub", links: [ { id: mockGenerateId("nav"), text: "Portfolio", url: "#" }, { id: mockGenerateId("nav"), text: "Blog", url: "#" }, { id: mockGenerateId("nav"), text: "Join Us", url: "#" }, ], backgroundColor: "#0d9488", textColor: "#ffffff", linkColor: "#ccfbf1", rightContentType: "searchIcon", },},
+          globalFooter: { id: "global-footer-creative", type: "footer", path: "globalFooter", props: { copyrightText: `© ${new Date().getFullYear()} CreativeHub Studios. Be Bold. Be Creative.`, links: [ { id: mockGenerateId("foot"), text: "Inspiration", url: "#" }, { id: mockGenerateId("foot"), text: "Support", url: "#" }, { id: mockGenerateId("foot"), text: "Careers", url: "#" }, ], backgroundColor: "#f0fdfa", textColor: "#0f766e", linkColor: "#14b8a6", },},
+        },
+      },
+      {
+        id: "tpl_product_launch",
+        name: "Modern Product Launch",
+        builderData: {
+          pages: {[pageId3]: {id: pageId3, name: "Launch Page", layout: [
+            { id: mockGenerateId("sec-hero"), type: "section", props: { backgroundType: "color", backgroundColor: "#111827", paddingTop: "100px", paddingBottom: "100px" },
+              columns: [{ id: mockGenerateId("col-hero"), type: "column", props: { width: "100%" }, elements: [
+                { id: mockGenerateId("head"), type: "header", props: { text: "Introducing The Future of Innovation", sizeClass: "text-6xl", textAlign: "text-center", textColor: "#ffffff", fontWeight: "font-bold" } },
+                { id: mockGenerateId("sub"), type: "textBlock", props: { text: "Our new product is engineered to perfection, designed for you. Discover a new era of excellence.", sizeClass: "text-xl", textAlign: "text-center", textColor: "#d1d5db" } },
+                { id: mockGenerateId("spacer"), type: "spacer", props: { height: "20px" } },
+                { id: mockGenerateId("btn"), type: "button", props: { buttonText: "Pre-Order Now", link: "#", sizeClass: "text-lg", textAlign: "text-center", backgroundColor: "#22c55e", textColor: "#ffffff", borderRadius: "8px", variant: "solid", fullWidth: false } },
+              ],},],},
+            { id: mockGenerateId("sec-features"), type: "section", props: { paddingTop: "80px", paddingBottom: "80px" },
+              columns: [
+                { id: mockGenerateId("col-f1"), type: "column", props: { width: "33.33%" }, elements: [
+                  { id: mockGenerateId("icon"), type: "icon", props: { iconName: "Feather", size: "48px", color: "#22c55e" } },
+                  { id: mockGenerateId("head"), type: "header", props: { text: "Lightweight Design", sizeClass: "text-2xl", textAlign: "text-center", fontWeight: "font-semibold" } },
+                  { id: mockGenerateId("text"), type: "textBlock", props: { text: "Crafted with ultra-light materials for maximum portability without compromising on quality.", textAlign: "text-center" } },
+                ],},
+                { id: mockGenerateId("col-f2"), type: "column", props: { width: "33.33%" }, elements: [
+                  { id: mockGenerateId("icon"), type: "icon", props: { iconName: "Zap", size: "48px", color: "#22c55e" } },
+                  { id: mockGenerateId("head"), type: "header", props: { text: "Blazing Fast Speed", sizeClass: "text-2xl", textAlign: "text-center", fontWeight: "font-semibold" } },
+                  { id: mockGenerateId("text"), type: "textBlock", props: { text: "Powered by the latest generation processor for an incredibly responsive user experience.", textAlign: "text-center" } },
+                ],},
+                { id: mockGenerateId("col-f3"), type: "column", props: { width: "33.33%" }, elements: [
+                  { id: mockGenerateId("icon"), type: "icon", props: { iconName: "BatteryCharging", size: "48px", color: "#22c55e" } },
+                  { id: mockGenerateId("head"), type: "header", props: { text: "All-Day Battery", sizeClass: "text-2xl", textAlign: "text-center", fontWeight: "font-semibold" } },
+                  { id: mockGenerateId("text"), type: "textBlock", props: { text: "Stay productive and entertained from morning to night with our extended battery life.", textAlign: "text-center" } },
+                ],},
+              ],},],},},
+          activePageId: pageId3,
+        },
+      },
+      {
+        id: "tpl_webinar_invite",
+        name: "Professional Webinar Invite",
+        builderData: {
+          pages: {[pageId4]: {id: pageId4, name: "Webinar Page", layout: [
+            { id: mockGenerateId("sec-main"), type: "section", props: { backgroundType: "color", backgroundColor: "#f9fafb", paddingTop: "60px", paddingBottom: "60px" },
+              columns: [
+                { id: mockGenerateId("col-left"), type: "column", props: { width: "60%" }, elements: [
+                  { id: mockGenerateId("head-cat"), type: "textBlock", props: { text: "EXCLUSIVE WEBINAR", sizeClass: "text-sm", textColor: "#166534", fontWeight: "font-bold" } },
+                  { id: mockGenerateId("head-main"), type: "header", props: { text: "Mastering the Art of Digital Marketing", sizeClass: "text-5xl", fontWeight: "font-extrabold", textColor: "#1f2937" } },
+                  { id: mockGenerateId("date"), type: "textBlock", props: { text: "<strong>Date:</strong> October 26, 2024 at 2:00 PM EST", sizeClass: "text-lg", textColor: "#4b5563" } },
+                  { id: mockGenerateId("btn"), type: "button", props: { buttonText: "Register for Free", link: "#", sizeClass: "text-lg", textAlign: "text-left", backgroundColor: "#2e8b57", textColor: "#ffffff", borderRadius: "8px" } },
+                ],},
+                { id: mockGenerateId("col-right"), type: "column", props: { width: "40%" }, elements: [
+                  { id: mockGenerateId("img-speaker"), type: "image", props: { src: "https://randomuser.me/api/portraits/women/68.jpg", borderRadius: "9999px", boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)" } },
+                  { id: mockGenerateId("head-speaker"), type: "header", props: { text: "Jane Doe", textAlign: "text-center", sizeClass: "text-2xl", fontWeight: "font-bold" } },
+                  { id: mockGenerateId("title-speaker"), type: "textBlock", props: { text: "Chief Marketing Officer, Innovate Inc.", textAlign: "text-center", textColor: "#6b7280" } },
+                ],},
+              ],},
+            { id: mockGenerateId("sec-agenda"), type: "section", props: { paddingTop: "40px", paddingBottom: "60px" },
+              columns: [{ id: mockGenerateId("col-agenda"), type: "column", props: { width: "100%" }, elements: [
+                { id: mockGenerateId("head-agenda"), type: "header", props: { text: "What You Will Learn", sizeClass: "text-4xl", textAlign: "text-center", fontWeight: "font-bold" } },
+                { id: mockGenerateId("spacer"), type: "spacer", props: { height: "20px" } },
+                { id: mockGenerateId("text-agenda"), type: "textBlock", props: { text: "• The latest trends in SEO and content marketing\n• How to build a high-converting sales funnel\n• Social media strategies that actually work\n• Q&A session with our expert panel", sizeClass: "text-lg", textColor: "#374151" } },
+              ],},],},],},},
+          activePageId: pageId4,
         },
       },
     ];
   }, []);
+
   const steps = [
     { id: 1, name: "Campaign Details" },
     { id: 2, name: "Audience Source" },
@@ -942,24 +818,20 @@ export default function CampaignCreatorPage() {
       ? campaignId
       : `camp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
-    // --- START: MODIFICATION TO SAVE ANALYTICS ---
-    // Check if we are creating a NEW campaign. If so, generate analytics.
-    // If we are editing, we assume analytics already exist and preserve them.
     let analyticsData;
     if (isEditing) {
       const existingCampaign = getCampaignById(campaignIdToSave);
-      analyticsData = existingCampaign?.analyticsData; // Keep existing data
+      analyticsData = existingCampaign?.analyticsData;
     } else {
-      analyticsData = generateInitialAnalyticsData(campaignIdToSave); // Generate new data
+      analyticsData = generateInitialAnalyticsData(campaignIdToSave);
     }
-    // --- END: MODIFICATION ---
 
     const campaignToSave = {
       id: campaignIdToSave,
       campaignDetails,
       dataSource,
       templateConfig,
-      analyticsData, // --- ADD ANALYTICS DATA TO THE CAMPAIGN OBJECT ---
+      analyticsData,
     };
 
     addOrUpdateCampaign(campaignToSave);
@@ -980,6 +852,21 @@ export default function CampaignCreatorPage() {
         editingTemplate: templateToEdit.builderData,
         templateData: templateToEdit.builderData,
       }));
+    }
+  };
+
+  const handleAICommandSuccess = (templateId) => {
+    const templateToLoad = mockTemplates.find((t) => t.id === templateId);
+    if (templateToLoad) {
+      setTemplateConfig({
+        type: "edit",
+        selectedTemplateId: templateToLoad.id,
+        editingTemplate: templateToLoad.builderData,
+        templateData: templateToLoad.builderData,
+      });
+      setCurrentStep(3);
+    } else {
+      toast.error("Could not load the selected template.");
     }
   };
 
@@ -1024,7 +911,6 @@ export default function CampaignCreatorPage() {
       case 1:
         content = (
           <>
-            {" "}
             <InputField
               label="Campaign Name"
               name="campaignName"
@@ -1033,9 +919,8 @@ export default function CampaignCreatorPage() {
               placeholder="e.g., Q4 Product Showcase"
               required
               icon={<LucideIcons.Edit3 />}
-            />{" "}
+            />
             <div className="grid md:grid-cols-2 gap-x-5">
-              {" "}
               <InputField
                 label="Start Date & Time"
                 name="startTime"
@@ -1044,7 +929,7 @@ export default function CampaignCreatorPage() {
                 onChange={handleDetailChange}
                 required
                 icon={<LucideIcons.CalendarPlus />}
-              />{" "}
+              />
               <InputField
                 label="End Date & Time"
                 name="endTime"
@@ -1053,46 +938,43 @@ export default function CampaignCreatorPage() {
                 onChange={handleDetailChange}
                 required
                 icon={<LucideIcons.CalendarMinus />}
-              />{" "}
-            </div>{" "}
+              />
+            </div>
           </>
         );
         break;
       case 2:
         content = (
           <>
-            {" "}
             <div className="space-y-3 mb-6">
-              {" "}
               <OptionCard
                 title="Upload File (.xls, .xlsx, .csv)"
                 description="Import contacts directly from a spreadsheet."
                 selected={dataSource.type === "file"}
                 onClick={() => handleDataSourceTypeChange("file")}
                 icon={<LucideIcons.FileUp />}
-              />{" "}
+              />
               <OptionCard
                 title="From My Contacts"
                 description="Select from your saved contact lists."
                 selected={dataSource.type === "fromContacts"}
                 onClick={() => handleDataSourceTypeChange("fromContacts")}
                 icon={<UserCheck />}
-              />{" "}
+              />
               <OptionCard
-                title="Connect API (Future)"
-                description="Sync contacts from your CRM. (Feature in development)"
+                title="Build with AI"
+                description="Describe your page and let AI build it."
                 selected={dataSource.type === "api"}
-                onClick={() => {}}
-                icon={<LucideIcons.Share2 />}
-                disabled={true}
-              />{" "}
-            </div>{" "}
+                onClick={() => handleDataSourceTypeChange("api")}
+                icon={<LucideIcons.Sparkles />}
+                disabled={false}
+              />
+            </div>
             {dataSource.type === "file" && (
               <div className="mt-5 p-4 border border-slate-200 rounded-xl bg-slate-50/70 animate-fadeIn">
-                {" "}
                 <h3 className="text-base font-semibold text-slate-700 mb-3">
                   Audience File Details
-                </h3>{" "}
+                </h3>
                 <InputField
                   label="Choose Spreadsheet File"
                   type="file"
@@ -1100,7 +982,7 @@ export default function CampaignCreatorPage() {
                   onChange={handleDataSourceChange}
                   accept=".xls,.xlsx,.csv"
                   icon={<LucideIcons.UploadCloud />}
-                />{" "}
+                />
                 {dataSource.fileName && (
                   <p className="text-xs text-slate-500 mb-4 -mt-3">
                     Selected:{" "}
@@ -1108,26 +990,25 @@ export default function CampaignCreatorPage() {
                       {dataSource.fileName}
                     </span>
                   </p>
-                )}{" "}
+                )}
                 <p className="text-xs text-slate-600 mb-2 font-medium">
                   Map your spreadsheet columns (required if file used):
-                </p>{" "}
+                </p>
                 <div className="grid sm:grid-cols-2 gap-x-4 gap-y-0">
-                  {" "}
                   <InputField
                     label="First Name Column Header"
                     name="firstName"
                     value={dataSource.fields.firstName}
                     onChange={handleDataSourceChange}
                     placeholder="e.g., FNAME or first_name"
-                  />{" "}
+                  />
                   <InputField
                     label="Last Name Column Header"
                     name="lastName"
                     value={dataSource.fields.lastName}
                     onChange={handleDataSourceChange}
                     placeholder="e.g., LNAME or last_name"
-                  />{" "}
+                  />
                   <InputField
                     label="Email Column Header"
                     name="email"
@@ -1136,34 +1017,31 @@ export default function CampaignCreatorPage() {
                     onChange={handleDataSourceChange}
                     placeholder="e.g., email_address"
                     required={dataSource.type === "file"}
-                  />{" "}
+                  />
                   <InputField
                     label="LinkedIn URL Column Header"
                     name="linkedInUrl"
                     value={dataSource.fields.linkedInUrl}
                     onChange={handleDataSourceChange}
                     placeholder="e.g., linkedin_profile_url"
-                  />{" "}
-                </div>{" "}
+                  />
+                </div>
               </div>
-            )}{" "}
+            )}
             {dataSource.type === "fromContacts" && (
               <div className="mt-5 p-4 border border-slate-200 rounded-xl bg-slate-50/70 animate-fadeIn">
-                {" "}
                 <h3 className="text-base font-semibold text-slate-700 mb-3">
                   Select From Your Contacts
-                </h3>{" "}
+                </h3>
                 {availableContactLists.length > 0 ? (
                   <>
-                    {" "}
                     <div className="mb-4">
-                      {" "}
                       <label
                         htmlFor="contactListSelect"
                         className="block text-xs font-medium text-slate-600 mb-1"
                       >
                         Choose a Contact List:
-                      </label>{" "}
+                      </label>
                       <select
                         id="contactListSelect"
                         name="contactListId"
@@ -1171,22 +1049,19 @@ export default function CampaignCreatorPage() {
                         onChange={handleDataSourceChange}
                         className="block w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/70 focus:border-green-500 sm:text-sm bg-white"
                       >
-                        {" "}
                         <option value="" disabled>
                           -- Select a List --
-                        </option>{" "}
+                        </option>
                         {availableContactLists.map((list) => (
                           <option key={list.id} value={list.id}>
-                            {" "}
-                            {list.name} ({list.contacts.length} contacts){" "}
+                            {list.name} ({list.contacts.length} contacts)
                           </option>
-                        ))}{" "}
-                      </select>{" "}
-                    </div>{" "}
+                        ))}
+                      </select>
+                    </div>
                     {dataSource.contactListId &&
                       contactsInSelectedList.length > 0 && (
                         <>
-                          {" "}
                           <InputField
                             label="Search Contacts in Selected List"
                             name="searchTermInList"
@@ -1197,20 +1072,18 @@ export default function CampaignCreatorPage() {
                             placeholder="Search by name or email..."
                             icon={<LucideIcons.Search size={14} />}
                             className="mb-3"
-                          />{" "}
+                          />
                           <p className="text-xs text-slate-600 mb-2">
                             Select contacts for this campaign (
                             {dataSource.selectedContactIds.length} selected):
-                          </p>{" "}
+                          </p>
                           <div className="max-h-60 overflow-y-auto border border-slate-300 rounded-lg bg-white p-2 space-y-1.5 custom-scrollbar">
-                            {" "}
                             {filteredContactsForSelection.length > 0 ? (
                               filteredContactsForSelection.map((contact) => (
                                 <div
                                   key={contact.id}
                                   className="flex items-center p-2 rounded-md hover:bg-slate-100 transition-colors"
                                 >
-                                  {" "}
                                   <input
                                     type="checkbox"
                                     id={`contact-select-${contact.id}`}
@@ -1220,87 +1093,71 @@ export default function CampaignCreatorPage() {
                                     )}
                                     onChange={handleDataSourceChange}
                                     className="h-4 w-4 text-green-600 border-slate-300 rounded focus:ring-green-500 mr-2.5 cursor-pointer accent-[#2e8b57]"
-                                  />{" "}
+                                  />
                                   <label
                                     htmlFor={`contact-select-${contact.id}`}
                                     className="flex-1 text-xs text-slate-700 cursor-pointer"
                                   >
-                                    {" "}
                                     <span className="font-medium">
                                       {contact.userName || "N/A"}
-                                    </span>{" "}
-                                    -{" "}
+                                    </span>
+                                    {" "}-{" "}
                                     <span className="text-slate-500">
                                       {contact.email}
-                                    </span>{" "}
-                                  </label>{" "}
+                                    </span>
+                                  </label>
                                 </div>
                               ))
                             ) : (
                               <p className="text-xs text-slate-500 text-center py-3">
-                                {" "}
                                 {searchTermInList
                                   ? "No contacts match your search."
-                                  : "No contacts in this list (or clear search)."}{" "}
+                                  : "No contacts in this list (or clear search)."}
                               </p>
-                            )}{" "}
-                          </div>{" "}
+                            )}
+                          </div>
                         </>
-                      )}{" "}
+                      )}
                     {dataSource.contactListId &&
                       contactsInSelectedList.length === 0 && (
                         <p className="text-xs text-slate-500 text-center py-3">
                           This list is empty.
                         </p>
-                      )}{" "}
+                      )}
                   </>
                 ) : (
                   <div className="text-center py-6">
-                    {" "}
                     <LucideIcons.Users
                       size={28}
                       className="mx-auto text-slate-400 mb-2"
-                    />{" "}
+                    />
                     <p className="text-sm text-slate-500">
                       No contact lists available.
-                    </p>{" "}
+                    </p>
                     <p className="text-xs text-slate-400">
-                      {" "}
                       Please create a contact list in the{" "}
                       <Link
                         to="/contacts"
                         className="text-green-600 hover:underline font-medium"
                       >
-                        {" "}
-                        'Contacts'{" "}
-                      </Link>{" "}
-                      section first.{" "}
-                    </p>{" "}
+                        'Contacts'
+                      </Link>
+                      {" "}section first.
+                    </p>
                   </div>
-                )}{" "}
+                )}
               </div>
-            )}{" "}
+            )}
             {dataSource.type === "api" && (
-              <div className="mt-5 p-5 border-2 border-dashed border-amber-400/50 rounded-xl bg-amber-50/30 text-center flex flex-col items-center justify-center min-h-[150px]">
-                {" "}
-                <LucideIcons.Construction className="h-10 w-10 text-amber-500 mx-auto mb-2" />{" "}
-                <p className="text-amber-700 font-semibold text-sm">
-                  API Connection In Progress
-                </p>{" "}
-                <p className="text-xs text-amber-600 mt-0.5">
-                  This feature is under development.
-                </p>{" "}
-              </div>
-            )}{" "}
+              <AICommandInput onCommandSuccess={handleAICommandSuccess} />
+            )}
           </>
         );
         break;
       case 3:
         content = (
           <>
-            {" "}
             <div className="grid md:grid-cols-2 gap-3 mb-5">
-              {" "}
               <OptionCard
                 title="Create New Template"
                 description="Build a unique template from scratch."
@@ -1315,7 +1172,7 @@ export default function CampaignCreatorPage() {
                   }))
                 }
                 icon={<LucideIcons.Brush />}
-              />{" "}
+              />
               <OptionCard
                 title="Select Existing Template"
                 description="Choose and customize a pre-built design."
@@ -1333,64 +1190,58 @@ export default function CampaignCreatorPage() {
                   }))
                 }
                 icon={<LucideIcons.LayoutGrid />}
-              />{" "}
-            </div>{" "}
+              />
+            </div>
             {(templateConfig.type === "select" ||
               templateConfig.type === "edit") &&
               !templateConfig.editingTemplate && (
                 <div className="mt-5 p-4 border border-slate-200 rounded-xl bg-slate-50/70">
-                  {" "}
                   <h3 className="text-base font-semibold text-slate-700 mb-3">
                     Available Templates
-                  </h3>{" "}
+                  </h3>
                   {mockTemplates.length > 0 ? (
                     <ul className="space-y-2.5">
-                      {" "}
                       {mockTemplates.map((template) => (
                         <li
                           key={template.id}
                           className="p-2.5 pr-3 border border-slate-300/80 rounded-lg hover:shadow-sm transition-shadow flex justify-between items-center bg-white hover:bg-slate-50"
                         >
-                          {" "}
                           <span className="text-xs font-medium text-slate-600">
                             {template.name}
-                          </span>{" "}
+                          </span>
                           <StyledButton
                             onClick={() => selectTemplateToEdit(template.id)}
                             variant="secondary"
                             className="py-1 px-2.5 text-xs"
                             iconLeft={<LucideIcons.Edit3 size={12} />}
                           >
-                            {" "}
-                            Edit{" "}
-                          </StyledButton>{" "}
+                            Edit
+                          </StyledButton>
                         </li>
-                      ))}{" "}
+                      ))}
                     </ul>
                   ) : (
                     <p className="text-xs text-slate-500 text-center py-2">
                       No existing templates. Create one!
                     </p>
-                  )}{" "}
+                  )}
                 </div>
-              )}{" "}
+              )}
             {(templateConfig.type === "create" ||
               templateConfig.editingTemplate) && (
               <div className="mt-5">
-                {" "}
                 <h3 className="text-lg font-semibold text-slate-800 mb-0.5">
-                  {" "}
                   {templateConfig.editingTemplate
                     ? `Editing: ${
                         mockTemplates.find(
                           (t) => t.id === templateConfig.selectedTemplateId
                         )?.name
                       }`
-                    : "Create New Template"}{" "}
-                </h3>{" "}
+                    : "Create New Template"}
+                </h3>
                 <p className="text-xs text-slate-500 mb-3">
                   Use "Save All Pages" in builder, then "Next" below.
-                </p>{" "}
+                </p>
                 {ElementBuilderPage ? (
                   <div
                     className="border-2 border-slate-300 rounded-xl overflow-hidden shadow-lg bg-slate-100"
@@ -1399,22 +1250,21 @@ export default function CampaignCreatorPage() {
                       minHeight: "610px",
                     }}
                   >
-                    {" "}
                     <ElementBuilderPage
                       onExternalSave={handleTemplateDataFromBuilder}
                       initialBuilderState={
                         templateConfig.editingTemplate || undefined
                       }
-                    />{" "}
+                    />
                   </div>
                 ) : (
                   <div className="p-4 bg-red-100 border border-red-300 rounded-lg text-red-700">
                     Error: ElementBuilderPage component not loaded. Check
                     console.
                   </div>
-                )}{" "}
+                )}
               </div>
-            )}{" "}
+            )}
           </>
         );
         break;
@@ -1435,52 +1285,45 @@ export default function CampaignCreatorPage() {
             : "N/A";
         content = (
           <>
-            {" "}
             <div className="grid lg:grid-cols-3 gap-5">
-              {" "}
               <div className="lg:col-span-1 space-y-4">
-                {" "}
                 <SummaryCard
                   title="Campaign Settings"
                   icon={<LucideIcons.Settings2 />}
                 >
-                  {" "}
                   <p>
                     <strong>Name:</strong>{" "}
                     {campaignDetails.campaignName || "N/A"}
-                  </p>{" "}
+                  </p>
                   <p>
                     <strong>Start:</strong>{" "}
                     {campaignDetails.startTime
                       ? new Date(campaignDetails.startTime).toLocaleString()
                       : "N/A"}
-                  </p>{" "}
+                  </p>
                   <p>
                     <strong>End:</strong>{" "}
                     {campaignDetails.endTime
                       ? new Date(campaignDetails.endTime).toLocaleString()
                       : "N/A"}
-                  </p>{" "}
-                </SummaryCard>{" "}
+                  </p>
+                </SummaryCard>
                 <SummaryCard title="Audience Data" icon={<AudienceIcon />}>
-                  {" "}
                   <p>
-                    <strong>Source:</strong>{" "}
-                    {dataSource.type === "file" && " File Upload"}{" "}
-                    {dataSource.type === "fromContacts" && " From My Contacts"}{" "}
-                    {dataSource.type === "api" && " API (N/A)"}{" "}
-                  </p>{" "}
+                    <strong>Source:</strong>
+                    {dataSource.type === "file" && " File Upload"}
+                    {dataSource.type === "fromContacts" && " From My Contacts"}
+                    {dataSource.type === "api" && " From AI Prompt"}
+                  </p>
                   {dataSource.type === "file" && dataSource.fileName && (
                     <>
-                      {" "}
                       <p>
                         <strong>File:</strong> {dataSource.fileName || "N/A"}
-                      </p>{" "}
+                      </p>
                       <p className="mt-1 pt-1 border-t border-slate-200">
                         <strong>Column Mappings:</strong>
-                      </p>{" "}
+                      </p>
                       <ul className="list-disc list-inside pl-1.5 space-y-0.5">
-                        {" "}
                         {dataSource.fields.firstName && (
                           <li>
                             First Name:{" "}
@@ -1488,7 +1331,7 @@ export default function CampaignCreatorPage() {
                               {dataSource.fields.firstName}
                             </span>
                           </li>
-                        )}{" "}
+                        )}
                         {dataSource.fields.lastName && (
                           <li>
                             Last Name:{" "}
@@ -1496,13 +1339,13 @@ export default function CampaignCreatorPage() {
                               {dataSource.fields.lastName}
                             </span>
                           </li>
-                        )}{" "}
+                        )}
                         <li>
                           Email:{" "}
                           <span className="font-mono bg-slate-100 px-1 py-0.5 rounded text-green-700 text-[11px]">
                             {dataSource.fields.email || "N/A"}
                           </span>
-                        </li>{" "}
+                        </li>
                         {dataSource.fields.linkedInUrl && (
                           <li>
                             LinkedIn:{" "}
@@ -1510,36 +1353,32 @@ export default function CampaignCreatorPage() {
                               {dataSource.fields.linkedInUrl}
                             </span>
                           </li>
-                        )}{" "}
-                      </ul>{" "}
+                        )}
+                      </ul>
                     </>
-                  )}{" "}
+                  )}
                   {dataSource.type === "fromContacts" && (
                     <>
-                      {" "}
                       <p>
                         <strong>List Name:</strong> {selectedContactListName}
-                      </p>{" "}
+                      </p>
                       <p>
                         <strong>Selected Contacts:</strong>{" "}
                         {dataSource.selectedContactIds.length} contacts
-                      </p>{" "}
+                      </p>
                     </>
-                  )}{" "}
-                </SummaryCard>{" "}
-              </div>{" "}
+                  )}
+                </SummaryCard>
+              </div>
               <div className="lg:col-span-2">
-                {" "}
                 <SummaryCard
                   title="Template Preview"
                   icon={<LucideIcons.MonitorPlay />}
                 >
-                  {" "}
                   <p className="mb-2 text-xs">
                     <strong>Using:</strong> {templateName}
-                  </p>{" "}
+                  </p>
                   <div className="mb-2.5 flex justify-center space-x-1 p-0.5 bg-slate-100 rounded-lg">
-                    {" "}
                     {["desktop", "tablet", "mobile"].map((device) => (
                       <button
                         key={device}
@@ -1553,19 +1392,18 @@ export default function CampaignCreatorPage() {
                             : "text-slate-500 hover:bg-slate-200 hover:text-slate-700"
                         }`}
                       >
-                        {" "}
                         {device === "desktop" && (
                           <LucideIcons.Monitor className="w-3.5 h-3.5" />
-                        )}{" "}
+                        )}
                         {device === "tablet" && (
                           <LucideIcons.Tablet className="w-3.5 h-3.5" />
-                        )}{" "}
+                        )}
                         {device === "mobile" && (
                           <LucideIcons.Smartphone className="w-3.5 h-3.5" />
-                        )}{" "}
+                        )}
                       </button>
-                    ))}{" "}
-                  </div>{" "}
+                    ))}
+                  </div>
                   {currentTemplateData &&
                   currentTemplateData.pages &&
                   currentTemplateData.activePageId &&
@@ -1574,7 +1412,6 @@ export default function CampaignCreatorPage() {
                       className="border-2 border-slate-200 rounded-lg overflow-hidden shadow-lg bg-white"
                       style={{ minHeight: "400px" }}
                     >
-                      {" "}
                       <PagePreviewRenderer
                         pageLayout={
                           currentTemplateData.pages[
@@ -1586,25 +1423,24 @@ export default function CampaignCreatorPage() {
                         activePageId={currentTemplateData.activePageId}
                         previewDevice={previewDevice}
                         onNavigate={() => {}}
-                      />{" "}
+                      />
                     </div>
                   ) : (
                     <div className="p-4 bg-slate-100/70 rounded-lg text-slate-500 text-center min-h-[150px] flex flex-col items-center justify-center border border-slate-200">
-                      {" "}
-                      <LucideIcons.ImageOff className="w-6 h-6 mb-1.5 text-slate-400" />{" "}
+                      <LucideIcons.ImageOff className="w-6 h-6 mb-1.5 text-slate-400" />
                       <p className="font-medium text-xs">
-                        No template preview available.{" "}
+                        No template preview available.
                         {(!ElementBuilderPage || !PagePreviewRenderer) &&
                           "Preview components not loaded."}
-                      </p>{" "}
+                      </p>
                       <p className="text-[11px]">
                         Please complete the template design step.
-                      </p>{" "}
+                      </p>
                     </div>
-                  )}{" "}
-                </SummaryCard>{" "}
-              </div>{" "}
-            </div>{" "}
+                  )}
+                </SummaryCard>
+              </div>
+            </div>
           </>
         );
         break;
@@ -1617,9 +1453,7 @@ export default function CampaignCreatorPage() {
     }
     return (
       <>
-        {" "}
         <div className="flex items-center mb-5 md:mb-6">
-          {" "}
           <div
             className={`p-2.5 bg-green-600/10 rounded-lg mr-3 transition-all duration-300 ${
               currentStepData && currentStep === currentStepData.id
@@ -1627,41 +1461,35 @@ export default function CampaignCreatorPage() {
                 : ""
             }`}
           >
-            {" "}
             {StepIcon && (
               <StepIcon className="w-6 h-6 text-green-600" strokeWidth={2} />
-            )}{" "}
-          </div>{" "}
+            )}
+          </div>
           <div>
-            {" "}
             <h2 className="text-xl md:text-2xl font-bold text-slate-800">
               {stepConfig.title}
-            </h2>{" "}
-            <p className="text-xs text-slate-500">{stepConfig.description}</p>{" "}
-          </div>{" "}
-        </div>{" "}
+            </h2>
+            <p className="text-xs text-slate-500">{stepConfig.description}</p>
+          </div>
+        </div>
         <div className="bg-white p-5 md:p-6 rounded-xl shadow-lg border border-slate-200">
-          {" "}
-          {content}{" "}
+          {content}
           <div className="mt-8 pt-5 border-t border-slate-200/80 flex justify-between items-center">
-            {" "}
             <StyledButton
               onClick={prevStep}
               variant="secondary"
               iconLeft={<LucideIcons.ArrowLeft />}
               disabled={currentStep === 1}
             >
-              {" "}
-              Back{" "}
-            </StyledButton>{" "}
+              Back
+            </StyledButton>
             {currentStep < steps.length ? (
               <StyledButton
                 onClick={nextStep}
                 disabled={!canProceedToNext()}
                 iconRight={<LucideIcons.ArrowRight />}
               >
-                {" "}
-                {canProceedToNext() ? "Next" : "Complete Current Step"}{" "}
+                {canProceedToNext() ? "Next" : "Complete Current Step"}
               </StyledButton>
             ) : (
               <StyledButton
@@ -1669,12 +1497,11 @@ export default function CampaignCreatorPage() {
                 variant="launch"
                 iconLeft={<LucideIcons.Save />}
               >
-                {" "}
-                {isEditing ? "Update Campaign" : "Save Campaign"}{" "}
+                {isEditing ? "Update Campaign" : "Save Campaign"}
               </StyledButton>
-            )}{" "}
-          </div>{" "}
-        </div>{" "}
+            )}
+          </div>
+        </div>
       </>
     );
   };
@@ -1695,9 +1522,8 @@ export default function CampaignCreatorPage() {
             }
           }}
         />
-        <main className="flex-1 p-4 md:p-6 lg:p-8 lg:ml-72 lg:h-screen lg:overflow-y-auto">
-          {" "}
-          {renderStepContent()}{" "}
+        <main className="flex-1 p-4 md:p-6 lg:p-8 lg:h-screen lg:overflow-y-auto">
+          {renderStepContent()}
         </main>
         <SuccessModal
           isOpen={showSuccessModal}
