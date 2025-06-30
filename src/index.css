@@ -1,3 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply font-inter text-dark-text bg-white;
+  }
+}
+
+.dotted-line {
+  background-image: linear-gradient(to right, #dee2e6 50%, transparent 50%);
+  background-size: 16px 2px;
+  background-repeat: repeat-x;
+}
+
+.logo-swiper .swiper-wrapper {
+  transition-timing-function: linear !important;
+}

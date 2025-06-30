@@ -1,9 +1,7 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import LandingPageLayout from "./LandingPageLayout";
-import HomePage from "../pages/LandingPages/Home/Home";
-import FeaturePage from "../pages/LandingPages/Feature/UniqueFeaturesPage";
+import HomePage from "../pages/LandingPages/Home";
 
 import AdminLayout from "./AdminLayout";
 import Dashboard from "../pages/AdminPages/Dashboard/Dashboard";
@@ -37,10 +35,7 @@ const MainRoutes = () => {
     <>
       <ScrollToTop />
       <Routes>
-        <Route element={<LandingPageLayout />}>
           <Route path="/" element={<HomePage />} />
-          <Route path="/feature" element={<FeaturePage />} />
-        </Route>
 
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
@@ -67,9 +62,9 @@ const MainRoutes = () => {
           <Route path="/settings/profile" element={<Profile />} />
           <Route path="/settings/general" element={<Settings />} />
           <Route path="/pricing" element={<Pricing />} />
+        </Route>
           <Route path="/terms-and-conditions" element={<TermsOfServicePage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-        </Route>
 
         <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/"} replace />} />
       </Routes>

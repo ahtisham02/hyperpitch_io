@@ -1,0 +1,35 @@
+/* This outer container will handle the hover state and the fading edges */
+.scroller-container {
+    mask-image: linear-gradient(to bottom, transparent, white 20%, white 80%, transparent);
+}
+
+/* This is the inner div inside each column that will actually be animated */
+.scroller-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem; /* This matches the gap-6 from Tailwind */
+}
+
+/* Pause ALL animations when the main container is hovered */
+.scroller-container:hover .scroller-inner {
+    animation-play-state: paused;
+}
+
+/* Define the keyframe animations */
+@keyframes scroll-up {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(-50%);
+    }
+}
+
+@keyframes scroll-down {
+    from {
+        transform: translateY(-50%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
