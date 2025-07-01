@@ -1,9 +1,8 @@
 import { Box, ChevronLeft, CreditCard, LayoutGrid, LogOut, Megaphone, Menu as MenuIcon, User, Users, BarChart3, TestTubeDiagonal, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { getCampaigns } from '../../../utils/localStorageHelper'; // We need this to get campaigns for the modal
+import { getCampaigns } from '../../../utils/localStorageHelper';
 
-// --- The Modal Component (added directly to Sidebar.js for simplicity) ---
 const CampaignSelectorModal = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
     const [campaigns] = useState(() => getCampaigns().filter(c => c.analyticsData));
@@ -71,16 +70,13 @@ const CampaignSelectorModal = ({ isOpen, onClose }) => {
     );
 };
 
-
-// --- The Main Sidebar Component ---
 export default function Sidebar() {
     const [collapsed, setCollapsed] = useState(false);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false); // State to control the modal
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     
-    // Updated menuItems
     const menuItems = [
         { titleKey: 'Dashboard', href: '/dashboard', Icon: LayoutGrid, action: () => navigate('/dashboard') },
         { titleKey: 'Analytics', href: '/analytics', Icon: BarChart3, action: () => setIsModalOpen(true) },
@@ -109,14 +105,23 @@ export default function Sidebar() {
     const toggleMobileSidebar = () => setMobileSidebarOpen(!mobileSidebarOpen);
 
     const handleLinkClick = (itemAction) => {
-        itemAction(); // Execute the action (navigate or open modal)
+        itemAction();
         if (mobileSidebarOpen) {
             setMobileSidebarOpen(false);
         }
+        setCollapsed(true);
     };
+
+    const handleFooterLinkClick = () => {
+        if (mobileSidebarOpen) {
+            setMobileSidebarOpen(false);
+        }
+        setCollapsed(true);
+    }
 
     const handleLogout = () => {
         if (mobileSidebarOpen) setMobileSidebarOpen(false);
+        setCollapsed(true);
         navigate('/login');
     };
 
@@ -139,7 +144,7 @@ export default function Sidebar() {
                            md:translate-x-0`}
             >
                 <div className={`flex -mt-2.5 items-center pr-1 h-14 mb-4 ${collapsed && !mobileSidebarOpen ? 'justify-center' : 'justify-between'}`}>
-                    <Link to="/" onClick={() => mobileSidebarOpen && setMobileSidebarOpen(false)} className={`flex items-center group ${collapsed && !mobileSidebarOpen ? 'justify-center w-full' : ''}`}>
+                    <Link to="/" onClick={handleFooterLinkClick} className={`flex items-center group ${collapsed && !mobileSidebarOpen ? 'justify-center w-full' : ''}`}>
                         <SiteIcon size={collapsed && !mobileSidebarOpen ? 0 : 24} className={`${collapsed && !mobileSidebarOpen ? '' : 'mr-2'} ${defaultIconColor} group-hover:text-green-700 transition-colors`} />
                         {(!collapsed || mobileSidebarOpen) && (<span className={`text-xl font-semibold ${defaultTextColor} group-hover:text-green-700 transition-colors`}>{siteName}</span>)}
                     </Link>
@@ -179,7 +184,7 @@ export default function Sidebar() {
                                 const isActive = location.pathname === item.href;
                                 return (
                                     <li key={item.titleKey}>
-                                        <Link to={item.href} onClick={() => mobileSidebarOpen && setMobileSidebarOpen(false)} className={`flex items-center space-x-3 p-[9px] group rounded-lg transition-colors duration-150 ${isActive ? `${activeBgColor} ${activeTextColor}` : `${defaultTextColor} ${hoverBgColor} ${hoverTextColor}`}`}>
+                                        <Link to={item.href} onClick={handleFooterLinkClick} className={`flex items-center space-x-3 p-[9px] group rounded-lg transition-colors duration-150 ${isActive ? `${activeBgColor} ${activeTextColor}` : `${defaultTextColor} ${hoverBgColor} ${hoverTextColor}`}`}>
                                             {item.LucideIcon && <item.LucideIcon size={22} className={`h-[22px] w-[22px] transition-colors duration-150 ${isActive ? activeTextColor : `${defaultIconColor} group-hover:text-white`}`} />}
                                             <span className="text-base">{item.titleKey}</span>
                                         </Link>
@@ -200,7 +205,7 @@ export default function Sidebar() {
                         <ul className="space-y-1">
                             {userProfileFooterItems.map((item) => (
                                 <li key={item.titleKey + "-collapsed"}>
-                                    <Link to={item.href} onClick={() => mobileSidebarOpen && setMobileSidebarOpen(false)} title={item.titleKey} className={`flex justify-center items-center py-3 px-2 group rounded-lg transition-colors duration-150 ${location.pathname === item.href ? `${activeBgColor} ${activeTextColor}` : `${defaultTextColor} ${hoverBgColor} ${hoverTextColor}`}`}>
+                                    <Link to={item.href} onClick={handleFooterLinkClick} title={item.titleKey} className={`flex justify-center items-center py-3 px-2 group rounded-lg transition-colors duration-150 ${location.pathname === item.href ? `${activeBgColor} ${activeTextColor}` : `${defaultTextColor} ${hoverBgColor} ${hoverTextColor}`}`}>
                                         {item.LucideIcon && <item.LucideIcon size={24} className={`h-[22px] w-[22px] transition-colors duration-150 ${location.pathname === item.href ? activeTextColor : `${defaultIconColor} group-hover:text-white`}`} />}
                                     </Link>
                                 </li>

@@ -1805,7 +1805,7 @@ function ElementPalette({
     [searchTerm]
   );
   return (
-    <div className="w-96 bg-white p-4 border-r border-slate-200/70 shadow-xl flex-shrink-0 flex flex-col print-hidden">
+    <div className="w-72 bg-white p-4 border-r border-slate-200/70 shadow-xl flex-shrink-0 flex flex-col print-hidden">
       <div className="mb-4 pb-4 border-b border-slate-200/90">
         <div className="flex justify-between items-center mb-2">
           <h3 className="text-base font-semibold text-slate-700">Pages</h3>
@@ -1844,7 +1844,7 @@ function ElementPalette({
         onChange={(e) => setSearchTerm(e.target.value)}
         className="w-full px-4 py-2.5 mb-4 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-shadow shadow-sm placeholder-slate-400"
       />
-      <div className="grid grid-cols-2 gap-3 overflow-y-auto pr-1.5 pb-16 -mr-4 min-h-0 flex-1 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 scrollbar-thumb-rounded-full">
+      <div className="grid grid-cols-2 gap-3 overflow-y-auto pr-1.5 -mr-4 min-h-0 flex-1 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 scrollbar-thumb-rounded-full">
         <div
           onClick={onAddTopLevelSection}
           className="flex flex-col items-center justify-center p-4 text-center rounded-2xl cursor-pointer transition-all group bg-[#2e8b57] hover:bg-green-800 border border-green-700 shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1"
