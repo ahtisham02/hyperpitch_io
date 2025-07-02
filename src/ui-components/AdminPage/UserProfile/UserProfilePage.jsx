@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import * as LucideIcons from 'lucide-react';
-import { CustomDropdown } from '../Common/CustomDropdown'; // Adjust this path
 
 const ValidationItem = ({ isValid, text }) => {
   return (
@@ -15,6 +14,7 @@ export default function UserProfilePage() {
   const [firstName, setFirstName] = useState('Alex');
   const [lastName, setLastName] = useState('Hyper');
   const [nickname, setNickname] = useState('alex_h');
+  const [companyname, setCompanyname] = useState('HyperPitch.io');
   const [selectedDisplayName, setSelectedDisplayName] = useState({ value: 'Alex Hyper', label: 'Alex Hyper' });
   const [email, setEmail] = useState('alex@hyperpitch.io');
   const [website, setWebsite] = useState('https://hyperpitch.io');
@@ -77,11 +77,11 @@ export default function UserProfilePage() {
         alert('Please ensure your new password meets all requirements and passwords match.');
         return;
     }
-    console.log({ firstName, lastName, nickname, selectedDisplayName, email, website, bio, jobTitle, location, pronouns, notifications, profileImage });
+    console.log({ firstName, lastName, nickname,companyname, selectedDisplayName, email, website, bio, jobTitle, location, pronouns, notifications, profileImage });
     alert('Hyperpitch.io Profile Updated!');
   };
 
-  const displayNameOptions = [firstName, lastName, nickname, `${firstName} ${lastName}`, `${lastName} ${firstName}`]
+  const displayNameOptions = [firstName, lastName, nickname,companyname, `${firstName} ${lastName}`, `${lastName} ${firstName}`]
     .filter(name => name && name.trim() !== '')
     .filter((v, i, a) => a.indexOf(v) === i)
     .map(name => ({ value: name, label: name }));
@@ -116,7 +116,7 @@ export default function UserProfilePage() {
             <div><label htmlFor="firstName" className={labelBase}>First Name</label><input type="text" id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputBase} /></div>
             <div><label htmlFor="lastName" className={labelBase}>Last Name</label><input type="text" id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputBase} /></div>
             <div><label htmlFor="nickname" className={labelBase}>Username (Nickname) <span className="text-red-500">*</span></label><input type="text" id="nickname" value={nickname} onChange={(e) => setNickname(e.target.value)} required className={inputBase} /></div>
-            <CustomDropdown label="Display Name As" labelBase={labelBase} options={displayNameOptions} selected={selectedDisplayName} onSelect={setSelectedDisplayName} placeholder="Select display name" />
+            <div><label htmlFor="companyname" className={labelBase}>Company Name<span className="text-red-500">*</span></label><input type="text" id="companyname" value={companyname} onChange={(e) => setCompanyname(e.target.value)} required className={inputBase} /></div>
             <div><label htmlFor="jobTitle" className={labelBase}>Job Title / Role</label><input type="text" id="jobTitle" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} className={inputBase} placeholder="e.g., Marketing Manager" /></div>
             <div><label htmlFor="location" className={labelBase}>Location</label><input type="text" id="location" value={location} onChange={(e) => setLocation(e.target.value)} className={inputBase} placeholder="e.g., San Francisco, CA" /></div>
           </div>

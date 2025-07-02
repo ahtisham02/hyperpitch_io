@@ -68,6 +68,26 @@ function SignupPage() {
             />
             {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
           </div>
+          <div className="grid gap-2">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              Company Name
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              required
+              autoFocus
+              tabIndex={1}
+              autoComplete="name"
+              value={formData.name}
+              onChange={handleChange}
+              disabled={processing}
+              placeholder="Your Company name"
+              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 placeholder-gray-400 shadow-sm focus:border-brand-green focus:outline-none focus:ring-brand-green sm:text-sm"
+            />
+            {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
+          </div>
 
           <div className="grid gap-2">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">

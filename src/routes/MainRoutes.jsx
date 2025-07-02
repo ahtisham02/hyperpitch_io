@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
@@ -14,6 +15,7 @@ import CampaignCreatorPage from '../ui-components/AdminPage/Campaign/CampaignCre
 import CampaignsListPage from '../pages/AdminPages/Campaigns/CampaignsListPage'; 
 import CampaignViewPage from "../pages/AdminPages/Campaigns/CampaignViewPage"; 
 import CampaignComparePage from "../pages/AdminPages/Analytics/CampaignComparePage";
+import DomainManagerPage from "../pages/AdminPages/Domains/DomainManagerPage";
 
 import AuthLayout from "../routes/AuthLayout";
 import LoginPage from "../pages/AuthPages/LoginPage";
@@ -59,6 +61,7 @@ const MainRoutes = () => {
           <Route path="/campaigns/create" element={<CampaignCreatorPage />} />
           <Route path="/campaigns/edit/:campaignId" element={<CampaignCreatorPage />} /> 
           <Route path="/campaigns/view/:campaignId" element={<CampaignViewPage />} />
+          <Route path="/domains" element={<DomainManagerPage />} />
           <Route path="/settings/profile" element={<Profile />} />
           <Route path="/settings/general" element={<Settings />} />
           <Route path="/pricing" element={<Pricing />} />

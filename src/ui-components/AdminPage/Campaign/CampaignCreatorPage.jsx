@@ -117,22 +117,38 @@ const SummaryCard = ({ title, icon, children }) => (
     </div>
 );
 
-const SuccessModal = ({ isOpen, onConfirm, title, message, buttonText, onSecondaryAction, secondaryButtonText }) => {
+const PublishSuccessModal = ({ isOpen, onAddDomain, onClose }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 bg-slate-500/30 backdrop-blur-sm flex items-center justify-center z-[300] p-4 transform transition-opacity duration-150 ease-out animate-fadeInModal">
-            <div className="bg-white p-8 sm:p-10 rounded-xl shadow-2xl w-full max-w-md text-center transform transition-all duration-150 ease-out animate-scaleUpModal border border-slate-200">
+        <div className="fixed inset-0 bg-slate-800/40 backdrop-blur-sm flex items-center justify-center z-[300] p-4 animate-fadeInModal">
+            <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg text-center transform animate-scaleUpModal border border-slate-200">
                 <div className="mx-auto flex items-center justify-center h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-green-100 mb-5 sm:mb-6 ring-4 ring-green-200/70">
                     <svg className="checkmark h-8 w-8 sm:h-10 sm:w-10 text-green-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none" /><path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" /></svg>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">{title || "Campaign Saved!"}</h3>
-                <p className="text-slate-500 mb-6 sm:mb-8 text-sm sm:text-base">{message || "Your campaign configuration has been successfully saved."}</p>
-                <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-3">
-                    {onSecondaryAction && secondaryButtonText && (<StyledButton onClick={onSecondaryAction} variant="secondary">{secondaryButtonText}</StyledButton>)}
-                    <StyledButton onClick={onConfirm} variant="success" iconLeft={<LucideIcons.PlusCircle />}>{buttonText || "Create New Campaign"}</StyledButton>
+
+                <h3 className="text-2xl font-bold text-slate-800 mb-2">Nicely done!</h3>
+                <p className="text-slate-500 mb-8">Your campaign has been successfully published.</p>
+                
+                <div className="border-t border-slate-200 pt-6">
+                    <h4 className="font-semibold text-slate-700 mb-1">What's next?</h4>
+                    <p className="text-lg font-bold text-slate-800 mb-1">Add a custom domain</p>
+                    <p className="text-sm text-slate-500 mb-5 max-w-sm mx-auto">Build your brand recognition and help your audience find you by adding a custom domain to your website.</p>
+                    <div className="flex justify-center space-x-3">
+                        <StyledButton onClick={onAddDomain} variant="primary">Add domain</StyledButton>
+                        <StyledButton onClick={onClose} variant="secondary">Remind me tomorrow</StyledButton>
+                        <StyledButton onClick={onClose} variant="secondary">Don't show again</StyledButton>
+                    </div>
                 </div>
             </div>
-            <style jsx>{` @keyframes fadeInModal { 0% { opacity: 0; } 100% { opacity: 1; } } .animate-fadeInModal { animation: fadeInModal 0.15s ease-out forwards; } @keyframes scaleUpModal { 0% { transform: scale(0.95) translateY(10px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } } .animate-scaleUpModal { animation: scaleUpModal 0.2s cubic-bezier(0.22, 1, 0.36, 1) 0.05s forwards; } .checkmark__circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 3; stroke-miterlimit: 10; stroke: #4ade80; fill: none; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) 0.3s forwards; } .checkmark__check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; stroke-width: 4; stroke: #16a34a; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.7s forwards; } @keyframes stroke { 100% { stroke-dashoffset: 0; } } `}</style>
+            <style jsx>{` 
+                @keyframes fadeInModal { 0% { opacity: 0; } 100% { opacity: 1; } } 
+                .animate-fadeInModal { animation: fadeInModal 0.15s ease-out forwards; } 
+                @keyframes scaleUpModal { 0% { transform: scale(0.95) translateY(10px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } } 
+                .animate-scaleUpModal { animation: scaleUpModal 0.2s cubic-bezier(0.22, 1, 0.36, 1) 0.05s forwards; }
+                .checkmark__circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 3; stroke-miterlimit: 10; stroke: #4ade80; fill: none; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) 0.3s forwards; } 
+                .checkmark__check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; stroke-width: 4; stroke: #16a34a; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.7s forwards; } 
+                @keyframes stroke { 100% { stroke-dashoffset: 0; } }
+            `}</style>
         </div>
     );
 };
@@ -262,7 +278,7 @@ export default function CampaignCreatorPage() {
     const [searchTermInList, setSearchTermInList] = useState("");
     const [templateConfig, setTemplateConfig] = useState(initialTemplateConfig);
     const [previewDevice, setPreviewDevice] = useState("desktop");
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [showPublishModal, setShowPublishModal] = useState(false);
 
     const getEmptyBuilderState = () => {
         const pageId = mockGenerateId("page");
@@ -385,8 +401,13 @@ export default function CampaignCreatorPage() {
         }
         const campaignToSave = { id: campaignIdToSave, campaignDetails, dataSource, templateConfig, analyticsData };
         addOrUpdateCampaign(campaignToSave);
-        setShowSuccessModal(true);
+        setShowPublishModal(true);
     };
+
+    const handleCloseModalAndReset = () => {
+        setShowPublishModal(false);
+        resetCampaignStates();
+    }
 
     const handleTemplateDataFromBuilder = (builderData) => {
         setTemplateConfig((prev) => ({ ...prev, templateData: builderData }));
@@ -592,7 +613,15 @@ export default function CampaignCreatorPage() {
                     <TopStepperNav currentStep={currentStep} steps={steps} setCurrentStep={setCurrentStep} canProceed={canProceedToNext} />
                     {renderStepContent()}
                 </main>
-                <SuccessModal isOpen={showSuccessModal} title={isEditing ? "Campaign Updated!" : "Campaign Saved!"} message={isEditing ? "Your campaign changes have been successfully saved." : "Your new campaign has been saved. You can view it in the campaigns list."} buttonText="View All Campaigns" onConfirm={() => { setShowSuccessModal(false); navigate("/campaigns"); resetCampaignStates(); }} secondaryButtonText="Create Another" onSecondaryAction={() => { setShowSuccessModal(false); resetCampaignStates(); navigate("/campaigns/create"); }} />
+                <PublishSuccessModal
+                    isOpen={showPublishModal}
+                    onAddDomain={() => {
+                        setShowPublishModal(false);
+                        resetCampaignStates();
+                        navigate('/domains');
+                    }}
+                    onClose={handleCloseModalAndReset}
+                />
             </div>
             <style jsx global>{` @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } } .animate-fadeIn { animation: fadeIn 0.2s ease-out forwards; } .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; } .custom-scrollbar::-webkit-scrollbar-track { background: #f7fafc; border-radius: 10px; } .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 10px; } .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a0aec0; } `}</style>
         </>

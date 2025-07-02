@@ -1,4 +1,4 @@
-import { Box, ChevronLeft, CreditCard, LayoutGrid, LogOut, Megaphone, Menu as MenuIcon, User, Users, BarChart3, TestTubeDiagonal, X } from 'lucide-react';
+import { Box, ChevronLeft, CreditCard, LayoutGrid, LogOut, Megaphone, Menu as MenuIcon, User, Users, BarChart3, TestTubeDiagonal, X, Globe } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getCampaigns } from '../../../utils/localStorageHelper';
@@ -83,6 +83,7 @@ export default function Sidebar() {
         { titleKey: 'Compare', href: '/compare', Icon: TestTubeDiagonal, action: () => navigate('/compare') },
         { titleKey: 'Campaigns', href: '/campaigns', Icon: Megaphone, action: () => navigate('/campaigns') },
         { titleKey: 'Contacts', href: '/contacts', Icon: Users, action: () => navigate('/contacts') },
+        { titleKey: 'Domains', href: '/domains', Icon: Globe, action: () => navigate('/domains') },
         { titleKey: 'Pricing', href: '/pricing', Icon: CreditCard, action: () => navigate('/pricing') },
     ];
 
@@ -109,19 +110,19 @@ export default function Sidebar() {
         if (mobileSidebarOpen) {
             setMobileSidebarOpen(false);
         }
-        setCollapsed(true);
+                setCollapsed(true);
     };
 
     const handleFooterLinkClick = () => {
         if (mobileSidebarOpen) {
             setMobileSidebarOpen(false);
         }
-        setCollapsed(true);
+                setCollapsed(true);
     }
 
     const handleLogout = () => {
         if (mobileSidebarOpen) setMobileSidebarOpen(false);
-        setCollapsed(true);
+                setCollapsed(true);
         navigate('/login');
     };
 
