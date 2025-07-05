@@ -7,7 +7,6 @@ import { useDispatch } from "react-redux";
 import axios from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
 import { LoaderCircle, Eye, EyeOff, Check } from 'lucide-react';
-
 import apiRequest from "../../utils/apiRequest";
 import { setUserInfo } from "../../auth/authSlice";
 
@@ -103,14 +102,15 @@ function SignupPage() {
     }),
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        await apiRequest("post", "/auth/signup", {
+        const response = await apiRequest("post", "/auth/signup", {
             name: values.name,
             companyName: values.companyName,
             email: values.email,
             password: values.password
         });
         toast.success("Account created successfully!");
-        navigate("/verify", { state: { email: values.email } });
+        navigate("/login");
+        // navigate("/verify", { state: { email: values.email, token: response.data.token } });
       } catch (error) {
         toast.error(
           error?.response?.data?.message ||
@@ -127,152 +127,58 @@ function SignupPage() {
       <form className="flex flex-col" onSubmit={formik.handleSubmit}>
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-              Full Name
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              required
-              autoFocus
-              tabIndex={1}
-              autoComplete="name"
-              value={formik.values.name}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              disabled={formik.isSubmitting}
-              placeholder="Your full name"
-              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 placeholder-gray-400 shadow-sm focus:border-brand-green focus:outline-none focus:ring-brand-green sm:text-sm"
-            />
-            {formik.touched.name && formik.errors.name ? (
-              <p className="mt-1 text-xs text-red-600">{formik.errors.name}</p>
-            ) : null}
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
+            <input id="name" name="name" type="text" required autoFocus tabIndex={1} autoComplete="name" {...formik.getFieldProps('name')} disabled={formik.isSubmitting} placeholder="Your full name"
+              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 placeholder-gray-400 shadow-sm focus:border-brand-green focus:outline-none focus:ring-brand-green sm:text-sm" />
+            {formik.touched.name && formik.errors.name ? (<p className="mt-1 text-xs text-red-600">{formik.errors.name}</p>) : null}
           </div>
-
           <div className="grid gap-2">
-            <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
-              Company Name (Optional)
-            </label>
-            <input
-              id="companyName"
-              name="companyName"
-              type="text"
-              tabIndex={2}
-              autoComplete="organization"
-              value={formik.values.companyName}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              disabled={formik.isSubmitting}
-              placeholder="Your company name"
-              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 placeholder-gray-400 shadow-sm focus:border-brand-green focus:outline-none focus:ring-brand-green sm:text-sm"
-            />
-             {formik.touched.companyName && formik.errors.companyName ? (
-              <p className="mt-1 text-xs text-red-600">{formik.errors.companyName}</p>
-            ) : null}
+            <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">Company Name (Optional)</label>
+            <input id="companyName" name="companyName" type="text" tabIndex={2} autoComplete="organization" {...formik.getFieldProps('companyName')} disabled={formik.isSubmitting} placeholder="Your company name"
+              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 placeholder-gray-400 shadow-sm focus:border-brand-green focus:outline-none focus:ring-brand-green sm:text-sm" />
+            {formik.touched.companyName && formik.errors.companyName ? (<p className="mt-1 text-xs text-red-600">{formik.errors.companyName}</p>) : null}
           </div>
-
           <div className="grid gap-2">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              tabIndex={3}
-              autoComplete="email"
-              value={formik.values.email}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              disabled={formik.isSubmitting}
-              placeholder="you@example.com"
-              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 placeholder-gray-400 shadow-sm focus:border-brand-green focus:outline-none focus:ring-brand-green sm:text-sm"
-            />
-             {formik.touched.email && formik.errors.email ? (
-              <p className="mt-1 text-xs text-red-600">{formik.errors.email}</p>
-            ) : null}
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
+            <input id="email" name="email" type="email" required tabIndex={3} autoComplete="email" {...formik.getFieldProps('email')} disabled={formik.isSubmitting} placeholder="you@example.com"
+              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 placeholder-gray-400 shadow-sm focus:border-brand-green focus:outline-none focus:ring-brand-green sm:text-sm" />
+            {formik.touched.email && formik.errors.email ? (<p className="mt-1 text-xs text-red-600">{formik.errors.email}</p>) : null}
           </div>
-
           <div className="grid gap-2">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
             <div className="relative">
-                <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    tabIndex={4}
-                    autoComplete="new-password"
-                    value={formik.values.password}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    disabled={formik.isSubmitting}
-                    placeholder="Create a password"
-                    className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 placeholder-gray-400 shadow-sm focus:border-brand-green focus:outline-none focus:ring-brand-green sm:text-sm"
-                />
-                <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
-                >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+              <input id="password" name="password" type={showPassword ? "text" : "password"} required tabIndex={4} autoComplete="new-password" {...formik.getFieldProps('password')} disabled={formik.isSubmitting} placeholder="Create a password"
+                className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 placeholder-gray-400 shadow-sm focus:border-brand-green focus:outline-none focus:ring-brand-green sm:text-sm" />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
             </div>
             <div className="!mt-2 space-y-1">
-                <ValidationItem isValid={formik.values.password.length >= 8} text="At least 8 characters"/>
-                <ValidationItem isValid={/[A-Z]/.test(formik.values.password) && /[a-z]/.test(formik.values.password)} text="Uppercase & lowercase letters"/>
-                <ValidationItem isValid={/[0-9]/.test(formik.values.password)} text="At least one number"/>
+              <ValidationItem isValid={formik.values.password.length >= 8} text="At least 8 characters" />
+              <ValidationItem isValid={/[A-Z]/.test(formik.values.password) && /[a-z]/.test(formik.values.password)} text="Uppercase & lowercase letters" />
+              <ValidationItem isValid={/[0-9]/.test(formik.values.password)} text="At least one number" />
             </div>
           </div>
-
           <div className="grid gap-2">
-            <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-700">
-              Confirm password
-            </label>
-            <input
-              id="password_confirmation"
-              name="password_confirmation"
-              type="password"
-              required
-              tabIndex={5}
-              autoComplete="new-password"
-              value={formik.values.password_confirmation}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              disabled={formik.isSubmitting}
-              placeholder="Confirm your password"
-              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 placeholder-gray-400 shadow-sm focus:border-brand-green focus:outline-none focus:ring-brand-green sm:text-sm"
-            />
-            {formik.touched.password_confirmation && formik.errors.password_confirmation ? (
-              <p className="mt-1 text-xs text-red-600">{formik.errors.password_confirmation}</p>
-            ) : null}
+            <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-700">Confirm password</label>
+            <input id="password_confirmation" name="password_confirmation" type="password" required tabIndex={5} autoComplete="new-password" {...formik.getFieldProps('password_confirmation')} disabled={formik.isSubmitting} placeholder="Confirm your password"
+              className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-3 placeholder-gray-400 shadow-sm focus:border-brand-green focus:outline-none focus:ring-brand-green sm:text-sm" />
+            {formik.touched.password_confirmation && formik.errors.password_confirmation ? (<p className="mt-1 text-xs text-red-600">{formik.errors.password_confirmation}</p>) : null}
           </div>
-
-          <button
-            type="submit"
-            className="mt-2 flex w-full justify-center rounded-lg py-3 font-medium text-white bg-brand-green cursor-pointer hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-brand-green focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
-            tabIndex={6}
-            disabled={formik.isSubmitting || !formik.isValid}
-          >
-            {formik.isSubmitting && <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />}
-            Create account
+          <button type="submit" tabIndex={6} disabled={formik.isSubmitting || !formik.isValid}
+            className="mt-2 flex w-full justify-center rounded-lg py-3 font-medium text-white bg-brand-green cursor-pointer hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-brand-green focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed">
+            {formik.isSubmitting && <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />} Create account
           </button>
         </div>
       </form>
-
       {/* <div className="my-6">
         <div className="relative">
           <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-300" /></div>
           <div className="relative flex justify-center text-sm"><span className="bg-white px-2 text-gray-500">OR</span></div>
         </div>
-      </div>
-
+      </div> */}
       <div>
-        <button
+        {/* <button
           type="button"
           onClick={() => handleGoogleLogin()}
           disabled={isGoogleLoading}
@@ -288,18 +194,11 @@ function SignupPage() {
               <span>Continue with Google</span>
             </>
           )}
-        </button>
-      </div> */}
-
+        </button> */}
+      </div>
       <div className="mt-6 text-center text-sm text-gray-600">
         Already have an account?{' '}
-        <Link
-            to="/login"
-            tabIndex={7}
-            className="font-medium text-brand-green hover:text-green-700 hover:underline"
-        >
-            Log in
-        </Link>
+        <Link to="/login" tabIndex={7} className="font-medium text-brand-green hover:text-green-700 hover:underline">Log in</Link>
       </div>
     </>
   );

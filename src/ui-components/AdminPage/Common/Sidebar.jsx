@@ -1,7 +1,10 @@
 import { Box, ChevronLeft, CreditCard, LayoutGrid, LogOut, Megaphone, Menu as MenuIcon, User, Users, BarChart3, TestTubeDiagonal, X, Globe } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { getCampaigns } from '../../../utils/localStorageHelper';
+import { removeUserInfo } from '../../../auth/authSlice';
+import { toast } from 'react-toastify';
 
 const CampaignSelectorModal = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
@@ -10,7 +13,7 @@ const CampaignSelectorModal = ({ isOpen, onClose }) => {
 
     if (!isOpen) return null;
 
-    const filteredCampaigns = campaigns.filter(c => 
+    const filteredCampaigns = campaigns.filter(c =>
         c.campaignDetails.campaignName.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -65,7 +68,7 @@ const CampaignSelectorModal = ({ isOpen, onClose }) => {
                     )}
                 </div>
             </div>
-             <style jsx global>{`@keyframes fade-in-fast{0%{opacity:0}100%{opacity:1}} .animate-fade-in-fast{animation:fade-in-fast .2s ease-out forwards} @keyframes scale-up{0%{transform:scale(.95);opacity:0}100%{transform:scale(1);opacity:1}} .animate-scale-up{animation:scale-up .25s cubic-bezier(.22,1,.36,1) forwards}`}</style>
+             <style jsx="true" global="true">{`@keyframes fade-in-fast{0%{opacity:0}100%{opacity:1}} .animate-fade-in-fast{animation:fade-in-fast .2s ease-out forwards} @keyframes scale-up{0%{transform:scale(.95);opacity:0}100%{transform:scale(1);opacity:1}} .animate-scale-up{animation:scale-up .25s cubic-bezier(.22,1,.36,1) forwards}`}</style>
         </div>
     );
 };
@@ -76,7 +79,8 @@ export default function Sidebar() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
-    
+    const dispatch = useDispatch();
+
     const menuItems = [
         { titleKey: 'Dashboard', href: '/dashboard', Icon: LayoutGrid, action: () => navigate('/dashboard') },
         { titleKey: 'Analytics', href: '/analytics', Icon: BarChart3, action: () => setIsModalOpen(true) },
@@ -90,16 +94,16 @@ export default function Sidebar() {
     const userProfileFooterItems = [
         { titleKey: 'Profile', href: '/settings/profile', LucideIcon: User },
     ];
-    
-    const siteName = "Hyperpitch.io";
-    const SiteIcon = Box; 
 
-    const activeBgColor = 'bg-[#2e8b57]'; 
+    const siteName = "Hyperpitch.io";
+    const SiteIcon = Box;
+
+    const activeBgColor = 'bg-[#2e8b57]';
     const activeTextColor = 'text-white';
-    const hoverBgColor = 'hover:bg-[#2e8b57]'; 
+    const hoverBgColor = 'hover:bg-[#2e8b57]';
     const hoverTextColor = 'hover:text-white';
     const defaultIconColor = 'text-gray-600';
-    const sidebarBgColor = 'bg-slate-50'; 
+    const sidebarBgColor = 'bg-slate-50';
     const defaultTextColor = 'text-gray-700';
 
     const toggleDesktopCollapse = () => setCollapsed(!collapsed);
@@ -122,7 +126,9 @@ export default function Sidebar() {
 
     const handleLogout = () => {
         if (mobileSidebarOpen) setMobileSidebarOpen(false);
-                setCollapsed(true);
+        setCollapsed(true);
+        dispatch(removeUserInfo());
+        toast.success('Signed out successfully!')
         navigate('/login');
     };
 
@@ -166,7 +172,7 @@ export default function Sidebar() {
                                         title={collapsed && !mobileSidebarOpen ? item.titleKey : undefined}
                                         className={`w-full flex items-center space-x-3 p-[11px] group rounded-lg transition-colors duration-150
                                             ${isActive ? `${activeBgColor} ${activeTextColor}` : `${defaultTextColor} ${hoverBgColor} ${hoverTextColor}`}
-                                            ${collapsed && !mobileSidebarOpen ? "justify-center md:py-3 md:px-2" : ""}` 
+                                            ${collapsed && !mobileSidebarOpen ? "justify-center md:py-3 md:px-2" : ""}`
                                         }
                                     >
                                         {IconComponent && <IconComponent size={22} className={`h-[22px] w-[22px] transition-colors duration-150 ${isActive ? activeTextColor : `${defaultIconColor} group-hover:text-white`}`} strokeWidth={isActive ? 2.25 : 2} />}

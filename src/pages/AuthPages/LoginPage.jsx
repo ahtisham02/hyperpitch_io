@@ -25,10 +25,12 @@ function LoginPage() {
     }
     const { token } = loginResponseData;
 
-    const profileResponse = await apiRequest("get", "/user/profile", null, token);
-    const userData = profileResponse.data;
+    // As requested, the profile API call is commented out.
+    // const profileResponse = await apiRequest("get", "/user/profile", null, token);
+    // const userData = profileResponse.data;
 
-    dispatch(setUserInfo({ token, data: userData }));
+    // Dispatch `setUserInfo` using the data from the login response itself.
+    dispatch(setUserInfo({ token, data: loginResponseData }));
 
     toast.success("Login successful! Redirecting...");
     navigate("/dashboard");

@@ -36,6 +36,11 @@ const getPageMeta = (pathname) => {
         title: "Email Verified",
         description: "Your email has been successfully verified.",
       };
+    case "/otp":
+      return {
+        title: "",
+        description: "",
+      };
     default:
       return { title: "Hyperpitch.io", description: "" };
   }
@@ -45,21 +50,21 @@ function AuthLayout() {
   const location = useLocation();
   const { title, description } = getPageMeta(location.pathname);
 
-  const noTopMarginFooterPages = ["/reset-password", "/verify", "/verify-email"];
+  const noTopMarginFooterPages = [
+    "/reset-password",
+    "/verify",
+    "/verify-email",
+  ];
 
   return (
-    <div
-      className={`relative flex ${
-        location.pathname === "/signup" ? "min-h-screen " : "h-screen "
-      } w-full bg-gray-100`}
-    >
+    <div className="fixed inset-0 flex bg-gray-100 overflow-hidden">
       <img
         src={bgimg}
         alt=""
         className="absolute bottom-0 left-0 z-50 pointer-events-none object-contain max-w-[250px] max-h-[250px] sm:max-w-[300px] sm:max-h-[300px] md:max-w-[350px] md:max-h-[350px]"
       />
 
-      <div className="relative z-10 hidden w-[45%] bg-[#1B2235] lg:flex flex-col p-6 md:p-10 items-center overflow-hidden">
+      <div className="relative z-10 hidden h-full w-[45%] flex-shrink-0 bg-[#1B2235] lg:flex flex-col p-6 md:p-10 items-center overflow-hidden">
         <div className="text-center flex-shrink-0">
           <Aperture
             size={80}
@@ -67,16 +72,17 @@ function AuthLayout() {
             strokeWidth={1.5}
           />
           <h2 className="text-3xl font-medium text-gray-400 mb-4 text-center">
-            Welcome Back to  {' '}
-          <span className="text-3xl font-bold text-gray-200 mb-4 text-center">
-            Hyperpitch.io
-          </span>
+            Welcome Back to{" "}
+            <span className="text-3xl font-bold text-gray-200 mb-4 text-center">
+              {" "}
+              Hyperpitch.io
+            </span>
           </h2>
           <p className="text-lg text-slate-300 text-center mb-8">
             Powering the next generation of applications.
           </p>
         </div>
-        
+
         <div className="w-full max-w-md xl:max-w-lg mt-4 flex-grow flex items-center justify-center">
           <img
             src={illustrationImg}
@@ -85,18 +91,11 @@ function AuthLayout() {
           />
         </div>
       </div>
-      
-      <div className="relative z-10 flex w-full flex-col items-center justify-center py-12 lg:w-1/2">
+
+      <div className={`relative z-10 flex flex-1 flex-col items-center justify-between pt-12 overflow-y-auto ${
+            location.pathname === "/forgot-password" ? "!pt-[120px]" : ""
+          }`}>
         <div className="w-full max-w-md p-6 sm:p-8 space-y-6">
-          <div className="flex flex-col items-start gap-3">
-            <Link
-              to="/"
-              className="flex items-center gap-2 text-gray-800 hover:text-brand-green transition-colors"
-            >
-              <Aperture size={40} className="text-brand-green" />
-              <span className="text-3xl font-bold">Hyperpitch.io</span>
-            </Link>
-          </div>
 
           <div className="text-left">
             <h1 className="text-3xl font-semibold text-gray-900">{title}</h1>
@@ -108,8 +107,8 @@ function AuthLayout() {
           <Outlet />
         </div>
         <div
-          className={`text-center text-xs text-gray-500 px-4 ${
-            noTopMarginFooterPages.includes(location.pathname) ? "mt-0" : "mt-2"
+          className={`flex-shrink-0 text-center text-xs text-gray-500 px-4 ${
+            noTopMarginFooterPages.includes(location.pathname) ? "mt-0 mb-6" : "my-6"
           }`}
         >
           © {new Date().getFullYear()} Hyperpitch.io. All rights reserved. //

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-scroll';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { Menu, X, Rocket } from 'lucide-react';
 
 const Logo = () => (
@@ -13,6 +14,7 @@ const Logo = () => (
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const { userToken } = useSelector((state) => state.auth);
 
   const navLinks = [
     { to: 'examples', label: 'Examples' },
@@ -52,18 +54,29 @@ const Navbar = () => {
         </ul>
 
         <div className="hidden lg:flex items-center space-x-2">
-            <button 
-              onClick={() => navigate('/login')} 
-              className="px-5 py-2 rounded-lg font-semibold text-dark-text bg-gray-100 hover:bg-gray-200 transition-colors"
-            >
-              Login
-            </button>
+          {userToken ? (
             <button 
               onClick={() => navigate('/dashboard')} 
               className="cursor-pointer px-5 py-2 rounded-lg font-semibold text-white bg-gradient-primary shadow-md shadow-brand-green/30 hover:opacity-90 transition-opacity"
             >
-              Start Free Trial
+              Dashboard
             </button>
+          ) : (
+            <>
+              <button 
+                onClick={() => navigate('/login')} 
+                className="px-5 py-2 rounded-lg font-semibold text-dark-text bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                Login
+              </button>
+              <button 
+                onClick={() => navigate('/signup')} 
+                className="cursor-pointer px-5 py-2 rounded-lg font-semibold text-white bg-gradient-primary shadow-md shadow-brand-green/30 hover:opacity-90 transition-opacity"
+              >
+                Start Free Trial
+              </button>
+            </>
+          )}
         </div>
 
         <div className="lg:hidden">
@@ -92,18 +105,29 @@ const Navbar = () => {
             ))}
           </ul>
           <div className="flex flex-col space-y-2 mt-4">
-              <button 
-                onClick={() => handleNavigate('/login')} 
-                className="w-full text-center py-2 rounded-lg font-semibold text-dark-text bg-gray-100"
-              >
-                Login
-              </button>
+            {userToken ? (
               <button 
                 onClick={() => handleNavigate('/dashboard')} 
                 className="w-full text-center py-2 rounded-lg font-semibold text-white bg-gradient-primary"
               >
-                Start Free Trial
+                Dashboard
               </button>
+            ) : (
+              <>
+                <button 
+                  onClick={() => handleNavigate('/login')} 
+                  className="w-full text-center py-2 rounded-lg font-semibold text-dark-text bg-gray-100"
+                >
+                  Login
+                </button>
+                <button 
+                  onClick={() => handleNavigate('/login')} 
+                  className="w-full text-center py-2 rounded-lg font-semibold text-white bg-gradient-primary"
+                >
+                  Start Free Trial
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

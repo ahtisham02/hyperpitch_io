@@ -20,7 +20,7 @@ function ForgotPasswordPage() {
       try {
         await apiRequest("post", "/auth/forgot-password", values);
         toast.info("If an account with that email exists, a reset link has been sent.");
-        navigate("/reset-password", { state: { email: values.email } });
+        navigate("/otp", { state: { email: values.email } });
       } catch (error) {
         const errorMessage = error?.response?.data?.message || "An error occurred. Please try again.";
         toast.error(errorMessage);
