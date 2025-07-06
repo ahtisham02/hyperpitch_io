@@ -27,13 +27,13 @@ const StyledModalButton = ({
   className = "",
 }) => {
   const baseStyle =
-    "px-4 py-2 flex items-center text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2";
+    "px-4 py-2 flex items-center justify-center text-sm font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-sm hover:shadow-lg hover:-translate-y-px";
   const greenButton =
     "bg-[#2e8b57] hover:bg-green-800 text-white focus:ring-green-500";
   const variantStyles = {
     primary: greenButton,
     secondary:
-      "bg-slate-100 hover:bg-slate-200 text-slate-700 focus:ring-slate-400",
+      "bg-slate-200 hover:bg-slate-300 text-slate-800 focus:ring-slate-400",
     danger: "bg-red-600 hover:bg-red-700 text-white focus:ring-red-500",
   };
   return (
@@ -58,7 +58,7 @@ function GeneralModal({ isOpen, onClose, title, children, size = "md" }) {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[200] p-4 print-hidden">
       <div
-        className={`bg-white p-5 sm:p-6 rounded-xl shadow-2xl w-full ${
+        className={`bg-white p-5 sm:p-6 rounded-2xl shadow-2xl w-full ${
           sizeClasses[size] || sizeClasses.md
         }`}
       >
@@ -244,10 +244,6 @@ const textSizeOptions = [
   { label: "Large", value: "text-lg" },
   { label: "XL", value: "text-xl" },
   { label: "2XL", value: "text-2xl" },
-  { label: "3XL", value: "text-3xl" },
-  { label: "4XL", value: "text-4xl" },
-  { label: "5XL", value: "text-5xl" },
-  { label: "6XL", value: "text-6xl" },
 ];
 const fontWeightOptions = [
   { label: "Light", value: "font-light" },
@@ -255,7 +251,6 @@ const fontWeightOptions = [
   { label: "Medium", value: "font-medium" },
   { label: "Semibold", value: "font-semibold" },
   { label: "Bold", value: "font-bold" },
-  { label: "Extrabold", value: "font-extrabold" },
 ];
 const textAlignOptions = [
   {
@@ -275,6 +270,7 @@ const textAlignOptions = [
   },
 ];
 function getItemByPath(obj, pathString) {
+  if (!pathString) return null;
   const path = pathString
     .replace(/\[(\w+)\]/g, ".$1")
     .replace(/^\./, "")
@@ -314,6 +310,10 @@ function deleteItemByPath(obj, pathString) {
   const finalKey = path[path.length - 1];
   if (Array.isArray(current) && !isNaN(parseInt(finalKey))) {
     current.splice(parseInt(finalKey), 1);
+    return true;
+  }
+  if (typeof current === "object" && finalKey in current) {
+    delete current[finalKey];
     return true;
   }
   return false;
@@ -1403,466 +1403,6 @@ function FooterElement({
   );
 }
 
-const ALL_ELEMENT_TYPES = {
-  Heading,
-  TextBlock,
-  ImageElement,
-  ButtonElement,
-  Divider,
-  Spacer,
-  IconElement,
-  GoogleMapsPlaceholder,
-  VideoElement,
-  InnerSectionComponentDisplay,
-  NavbarElement,
-  FooterElement,
-  CardSliderElement,
-};
-const AVAILABLE_ELEMENTS_CONFIG = [
-  {
-    id: "header",
-    name: "Heading",
-    component: "Heading",
-    defaultProps: {
-      text: "Powerful Headline Here",
-      sizeClass: "text-4xl",
-      fontWeight: "font-bold",
-      textAlign: "text-left",
-      textColor: "#1e293b",
-    },
-  },
-  {
-    id: "textBlock",
-    name: "Paragraph",
-    component: "TextBlock",
-    defaultProps: {
-      text: "This is a paragraph. You can edit this text to share information, tell a story, or describe your products and services. Make it engaging and easy to read.",
-      sizeClass: "text-base",
-      fontWeight: "font-normal",
-      textAlign: "text-left",
-      textColor: "#475569",
-    },
-  },
-  {
-    id: "image",
-    name: "Image",
-    component: "ImageElement",
-    defaultProps: {
-      src: img,
-      alt: "Placeholder Image",
-      width: "100%",
-      height: "auto",
-      borderRadius: "12px",
-      boxShadow:
-        "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
-    },
-  },
-  {
-    id: "button",
-    name: "Button",
-    component: "ButtonElement",
-    defaultProps: {
-      buttonText: "Get Started",
-      link: "#",
-      sizeClass: "text-base",
-      textAlign: "text-center",
-      backgroundColor: "#16a34a",
-      textColor: "#ffffff",
-      borderRadius: "9999px",
-      variant: "solid",
-      fullWidth: false,
-    },
-  },
-  { id: "divider", name: "Divider", component: "Divider", defaultProps: {} },
-  {
-    id: "spacer",
-    name: "Spacer",
-    component: "Spacer",
-    defaultProps: { height: "40px" },
-  },
-  {
-    id: "icon",
-    name: "Icon",
-    component: "IconElement",
-    defaultProps: { iconName: "Rocket", size: "48px", color: "#16a34a" },
-  },
-  {
-    id: "googleMaps",
-    name: "Google Maps",
-    component: "GoogleMapsPlaceholder",
-    defaultProps: { address: "New York, NY", zoom: 14 },
-  },
-  {
-    id: "video",
-    name: "Video",
-    component: "VideoElement",
-    defaultProps: {
-      videoType: "mp4",
-      src: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-      width: "100%",
-      height: "300px",
-      controls: true,
-      autoplay: false,
-      loop: false,
-      muted: true,
-    },
-  },
-  {
-    id: "innerSection",
-    name: "Inner Section",
-    component: "InnerSectionComponentDisplay",
-    defaultProps: {},
-    isContainer: true,
-    hasOwnColumns: true,
-  },
-  {
-    id: "cardSlider",
-    name: "Card Slider",
-    component: "CardSliderElement",
-    defaultProps: {
-      slides: [
-        {
-          id: generateId("slide"),
-          imgSrc: img,
-          heading: "Feature One",
-          text: "Highlight a key feature or benefit with a compelling description.",
-          link: "#",
-        },
-        {
-          id: generateId("slide"),
-          imgSrc: img,
-          heading: "Feature Two",
-          text: "Showcase another great aspect of your offering in this card.",
-          link: "#",
-        },
-        {
-          id: generateId("slide"),
-          imgSrc: img,
-          heading: "Feature Three",
-          text: "Use this space to talk about a third important point or feature.",
-          link: "#",
-        },
-      ],
-      slidesPerView: 3,
-      spaceBetween: 24,
-      speed: 500,
-      autoplay: false,
-      autoplayDelay: 3000,
-      loop: false,
-      showNavigation: true,
-      showPagination: true,
-      cardBorderRadius: "12px",
-    },
-  },
-  {
-    id: "navbar",
-    name: "Navbar",
-    component: "NavbarElement",
-    isGlobalOnly: true,
-    defaultProps: {
-      logoType: "text",
-      logoText: "SiteName",
-      links: [
-        {
-          id: generateId("navlink"),
-          text: "Home",
-          url: "/home",
-          target: "_self",
-        },
-        {
-          id: generateId("navlink"),
-          text: "About",
-          url: "/about",
-          target: "_self",
-        },
-        {
-          id: generateId("navlink"),
-          text: "Services",
-          url: "/services",
-          target: "_self",
-        },
-        {
-          id: generateId("navlink"),
-          text: "Contact",
-          url: "/contact",
-          target: "_self",
-        },
-      ],
-      rightContentType: "userIcon",
-      backgroundColor: "#FFFFFF",
-      textColor: "#1e293b",
-      linkColor: "#16a34a",
-    },
-  },
-  {
-    id: "footer",
-    name: "Footer",
-    component: "FooterElement",
-    isGlobalOnly: true,
-    defaultProps: {
-      copyrightText: `© ${new Date().getFullYear()} Your Company. All rights reserved.`,
-      links: [
-        {
-          id: generateId("footerlink"),
-          text: "Privacy Policy",
-          url: "/privacy",
-          target: "_self",
-        },
-        {
-          id: generateId("footerlink"),
-          text: "Terms of Service",
-          url: "/terms",
-          target: "_self",
-        },
-      ],
-      backgroundColor: "#0f172a",
-      textColor: "#94a3b8",
-      linkColor: "#ffffff",
-    },
-  },
-];
-const elementIcons = {
-  header: <LucideIcons.Heading1 />,
-  textBlock: <LucideIcons.Baseline />,
-  image: <LucideIcons.Image />,
-  button: <LucideIcons.MousePointer />,
-  divider: <LucideIcons.Minus />,
-  spacer: <LucideIcons.StretchVertical />,
-  icon: <LucideIcons.Star />,
-  googleMaps: <LucideIcons.MapPin />,
-  video: <LucideIcons.Youtube />,
-  innerSection: <LucideIcons.LayoutPanelLeft />,
-  cardSlider: <LucideIcons.GalleryHorizontalEnd />,
-  navbar: <LucideIcons.Navigation />,
-  footer: <LucideIcons.PanelBottom />,
-  default: <LucideIcons.Puzzle />,
-};
-const PREDEFINED_STRUCTURES = [
-  { name: "1 Column", id: "1col", layout: [{ width: "100%" }] },
-  {
-    name: "2 Columns (50/50)",
-    id: "2col5050",
-    layout: [{ width: "50%" }, { width: "50%" }],
-  },
-  {
-    name: "2 Columns (33/67)",
-    id: "2col3367",
-    layout: [{ width: "33.33%" }, { width: "66.67%" }],
-  },
-  {
-    name: "2 Columns (67/33)",
-    id: "2col6733",
-    layout: [{ width: "66.67%" }, { width: "33.33%" }],
-  },
-  {
-    name: "3 Columns",
-    id: "3col33",
-    layout: [{ width: "33.33%" }, { width: "33.33%" }, { width: "33.33%" }],
-  },
-  {
-    name: "3 Columns (25/50/25)",
-    id: "3col255025",
-    layout: [{ width: "25%" }, { width: "50%" }, { width: "25%" }],
-  },
-  {
-    name: "4 Columns",
-    id: "4col25",
-    layout: [
-      { width: "25%" },
-      { width: "25%" },
-      { width: "25%" },
-      { width: "25%" },
-    ],
-  },
-  {
-    name: "Left Sidebar",
-    id: "leftsidebar",
-    layout: [{ width: "25%" }, { width: "75%" }],
-  },
-];
-
-function StructureSelectorModal({
-  isOpen,
-  onClose,
-  onSelectStructure,
-  context,
-}) {
-  if (!isOpen) return null;
-  return (
-    <GeneralModal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Select a Structure"
-      size="2xl"
-    >
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
-        {PREDEFINED_STRUCTURES.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => {
-              onSelectStructure(s.layout, context);
-              onClose();
-            }}
-            className="p-4 bg-slate-50 rounded-2xl hover:bg-green-50 hover:ring-2 hover:ring-green-400 transition-all flex flex-col items-center justify-start aspect-w-3 aspect-h-4 group focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
-          >
-            <div className="flex w-full h-full min-h-[6rem] mb-3 space-x-2 items-stretch p-1 bg-white ring-1 ring-slate-200 rounded-lg">
-              {s.layout.map((col, idx) => (
-                <div
-                  key={idx}
-                  className="bg-slate-300 group-hover:bg-green-300 rounded-md transition-colors"
-                  style={{ flexBasis: col.width }}
-                ></div>
-              ))}
-            </div>
-            <span className="text-sm text-slate-700 group-hover:text-green-800 text-center font-medium">
-              {s.name}
-            </span>
-          </button>
-        ))}
-      </div>
-    </GeneralModal>
-  );
-}
-function ElementPaletteItem({ config }) {
-  const { attributes, listeners, setNodeRef, isDragging, transform } =
-    useDraggable({
-      id: `palette-${config.id}`,
-      data: { type: "paletteItem", config: config },
-    });
-  const style = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-        zIndex: 9999,
-        opacity: isDragging ? 0.9 : 1,
-      }
-    : {};
-  let IconToShow = React.cloneElement(
-    elementIcons[config.id] || elementIcons.default,
-    { className: "w-8 h-8" }
-  );
-  if (isDragging) {
-    return (
-      <div
-        ref={setNodeRef}
-        style={style}
-        className="flex flex-col items-center justify-center p-4 text-center bg-green-100 rounded-2xl shadow-xl ring-2 ring-green-400 opacity-95"
-      >
-        <div className="w-10 h-10 flex items-center justify-center text-green-600 mb-2">
-          {IconToShow}
-        </div>
-        <span className="text-sm font-semibold text-green-800 leading-tight">
-          {config.name}
-        </span>
-      </div>
-    );
-  }
-  return (
-    <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      style={style}
-      className="flex flex-col items-center justify-center p-4 text-center bg-slate-50 rounded-2xl cursor-grab hover:bg-green-50 hover:shadow-lg hover:ring-2 hover:ring-green-300 transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
-    >
-      <div className="w-10 h-10 flex items-center justify-center text-slate-500 group-hover:text-green-600 mb-2 transition-colors">
-        {IconToShow}
-      </div>
-      <span className="text-sm font-semibold text-slate-600 group-hover:text-green-800 leading-tight">
-        {config.name}
-      </span>
-    </div>
-  );
-}
-function PaletteItemDragOverlay({ config }) {
-  let IconToShow = React.cloneElement(
-    elementIcons[config.id] || elementIcons.default,
-    { className: "w-8 h-8" }
-  );
-  return (
-    <div className="flex flex-col items-center justify-center p-4 text-center bg-green-50 rounded-2xl shadow-2xl ring-2 ring-green-500 opacity-95 cursor-grabbing">
-      <div className="w-10 h-10 flex items-center justify-center text-green-600 mb-2">
-        {IconToShow}
-      </div>
-      <span className="text-sm font-semibold text-green-700 leading-tight">
-        {config.name}
-      </span>
-    </div>
-  );
-}
-function ElementPalette({
-  onAddTopLevelSection,
-  pages,
-  activePageId,
-  onAddPage,
-  onSelectPage,
-}) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const filteredElements = useMemo(
-    () =>
-      AVAILABLE_ELEMENTS_CONFIG.filter((el) =>
-        el.name.toLowerCase().includes(searchTerm.toLowerCase())
-      ),
-    [searchTerm]
-  );
-  return (
-    <div className="w-72 bg-white p-4 border-r border-slate-200/70 shadow-xl flex-shrink-0 flex flex-col print-hidden">
-      <div className="mb-4 pb-4 border-b border-slate-200/90">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-base font-semibold text-slate-700">Pages</h3>
-          <button
-            onClick={onAddPage}
-            title="Add New Page"
-            className="p-1.5 text-green-600 hover:text-green-700 rounded-lg hover:bg-green-100 transition-colors"
-          >
-            <LucideIcons.FilePlus2 className="w-5 h-5" />
-          </button>
-        </div>
-        <ul className="space-y-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 scrollbar-thumb-rounded-full">
-          {Object.values(pages).map((page) => (
-            <li key={page.id}>
-              <button
-                onClick={() => onSelectPage(page.id)}
-                className={`w-full text-left px-3 py-2.5 text-sm rounded-lg transition-all duration-150 flex items-center justify-between ${
-                  activePageId === page.id
-                    ? "bg-[#2e8b57] text-white font-semibold shadow-md"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                }`}
-              >
-                <span>{page.name}</span>
-                {activePageId === page.id && (
-                  <LucideIcons.CheckCircle2 className="w-5 h-5 opacity-90" />
-                )}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <input
-        type="text"
-        placeholder="Search elements..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full px-4 py-2.5 mb-4 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-shadow shadow-sm placeholder-slate-400"
-      />
-      <div className="grid grid-cols-2 gap-3 overflow-y-auto pr-1.5 -mr-4 min-h-0 flex-1 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 scrollbar-thumb-rounded-full">
-        <div
-          onClick={onAddTopLevelSection}
-          className="flex flex-col items-center justify-center p-4 text-center rounded-2xl cursor-pointer transition-all group bg-[#2e8b57] hover:bg-green-800 border border-green-700 shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1"
-        >
-          <div className="w-10 h-10 flex items-center justify-center text-white mb-2">
-            <LucideIcons.PlusSquare className="w-8 h-8" />
-          </div>
-          <span className="text-sm font-semibold text-white leading-tight">
-            Add Section
-          </span>
-        </div>
-        {filteredElements.map((elConf) => (
-          <ElementPaletteItem key={elConf.id} config={elConf} />
-        ))}
-      </div>
-    </div>
-  );
-}
 function DraggableCanvasElement({
   elementData,
   onUpdateProps,
@@ -1877,19 +1417,9 @@ function DraggableCanvasElement({
   const config = AVAILABLE_ELEMENTS_CONFIG.find(
     (c) => c.id === elementData.type
   );
-  if (!config)
-    return isPreviewMode ? null : (
-      <div className="text-red-500 p-2 border border-red-500 rounded-lg">
-        Error: Config not found for type '{elementData.type}'.
-      </div>
-    );
+  if (!config) return null;
   const ComponentToRender = ALL_ELEMENT_TYPES[config.component];
-  if (!ComponentToRender)
-    return isPreviewMode ? null : (
-      <div className="text-red-500 p-2 border border-red-500 rounded-lg">
-        Error: Component '{config.component}' missing.
-      </div>
-    );
+  if (!ComponentToRender) return null;
   const {
     attributes,
     listeners,
@@ -2121,27 +1651,24 @@ function SectionComponent({
   const effectiveBgStyle = { ...sortableStyle };
   if (sectionProps.backgroundType === "color" && sectionProps.backgroundColor) {
     effectiveBgStyle.backgroundColor = sectionProps.backgroundColor;
-  } else if (
-    sectionProps.backgroundType !== "image" &&
-    sectionProps.backgroundType !== "video"
-  ) {
-    if (!isPreviewMode) effectiveBgStyle.backgroundColor = "white";
   }
   const getSectionBaseBgClass = () => {
-    const editModeBase = "shadow-lg hover:shadow-xl rounded-2xl my-3";
     if (isPreviewMode) {
       return sectionProps.backgroundType === "image" ||
         sectionProps.backgroundType === "video"
         ? ""
         : "bg-transparent";
     } else {
+      const editModeBase = "shadow-lg hover:shadow-xl rounded-2xl my-3";
       if (isDragging) {
         return `bg-green-50/80 shadow-2xl ring-2 ring-green-400 rounded-2xl`;
       }
-      const noMediaBackground =
+      return `${
         sectionProps.backgroundType !== "image" &&
-        sectionProps.backgroundType !== "video";
-      return `${noMediaBackground ? "bg-white" : ""} ${editModeBase}`;
+        sectionProps.backgroundType !== "video"
+          ? "bg-white"
+          : ""
+      } ${editModeBase}`;
     }
   };
   const sectionRootClasses = [
@@ -2505,728 +2032,221 @@ function SlideManager({ slides, onUpdateSlides, elementId }) {
     </div>
   );
 }
-function PropertiesPanel({
-  selectedItemData,
-  onUpdateSelectedProps,
-  onClosePanel,
-  pages,
-  onDeleteGlobalElement,
-}) {
-  const elementFileInputRef = useRef(null);
-  const sectionBgImageInputRef = useRef(null);
-  const sectionBgVideoInputRef = useRef(null);
-  const navbarLogoInputRef = useRef(null);
-  if (!selectedItemData) {
-    return (
-      <div className="w-96 bg-white p-6 border-l border-slate-200/80 shadow-xl flex-shrink-0 print-hidden flex flex-col">
-        <h2 className="text-xl font-semibold mb-4 text-slate-800">
-          Properties
-        </h2>
-        <div className="flex-grow flex flex-col items-center justify-center text-center bg-slate-50 rounded-2xl p-4">
-          <LucideIcons.SlidersHorizontal className="w-20 h-20 text-slate-300 mb-4" />
-          <p className="text-slate-500 text-base">
-            Select an element on the canvas to edit its properties.
-          </p>
-        </div>
-      </div>
-    );
-  }
-  const { id, type, path, props, itemType: globalItemType } = selectedItemData;
-  const elementType =
-    globalItemType ||
-    props.elementType ||
-    (type === "element" ? props.type : null);
-  const isGlobalContext = type === "globalElement";
-  const handlePropChange = (propName, value) => {
-    let newPropsToUpdate = { [propName]: value };
-    if (type === "section" && propName === "backgroundType") {
-      if (value === "color") {
-        newPropsToUpdate.backgroundColor = props.backgroundColor || "#FFFFFF";
-        newPropsToUpdate.backgroundImageSrc = "";
-        newPropsToUpdate.backgroundVideoSrc = "";
-      } else if (value === "image") {
-        newPropsToUpdate.backgroundImageSrc = props.backgroundImageSrc || img;
-        newPropsToUpdate.backgroundColor = "";
-        newPropsToUpdate.backgroundVideoSrc = "";
-      } else if (value === "video") {
-        newPropsToUpdate.backgroundVideoSrc =
-          props.backgroundVideoSrc ||
-          "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
-        newPropsToUpdate.backgroundColor = "";
-        newPropsToUpdate.backgroundImageSrc = "";
-      } else {
-        newPropsToUpdate.backgroundColor = "";
-        newPropsToUpdate.backgroundImageSrc = "";
-        newPropsToUpdate.backgroundVideoSrc = "";
-      }
-    }
-    onUpdateSelectedProps(path, newPropsToUpdate);
-  };
-  const handleGenericLogoFileChange = (e, logoSrcPropName) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        handlePropChange(logoSrcPropName, reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-    e.target.value = null;
-  };
-  const handleSectionBgImageFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onUpdateSelectedProps(path, {
-          backgroundImageSrc: reader.result,
-          backgroundType: "image",
-          backgroundColor: "",
-          backgroundVideoSrc: "",
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-    e.target.value = null;
-  };
-  const handleSectionBgVideoFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onUpdateSelectedProps(path, {
-          backgroundVideoSrc: reader.result,
-          backgroundType: "video",
-          backgroundColor: "",
-          backgroundImageSrc: "",
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-    e.target.value = null;
-  };
-  const renderInput = (
-    key,
-    value,
-    labelText,
-    placeholder = "",
-    inputType = "text"
-  ) => {
-    const inputId = `${id}-${key}`;
-    return (
-      <div key={key}>
-        <label
-          htmlFor={inputId}
-          className="block text-xs font-medium text-slate-700 mb-1"
-        >
-          {labelText}
-        </label>
-        <input
-          type={inputType === "number" ? "number" : "text"}
-          id={inputId}
-          value={value}
-          placeholder={placeholder}
-          onChange={(e) =>
-            handlePropChange(
-              key,
-              inputType === "number"
-                ? parseFloat(e.target.value)
-                : e.target.value
-            )
-          }
-          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-shadow shadow-sm"
-        />
-      </div>
-    );
-  };
-  const renderToggle = (key, value, labelText) => {
-    const inputId = `${id}-${key}`;
-    return (
-      <div key={key} className="flex items-center justify-between">
-        <label htmlFor={inputId} className="text-sm font-medium text-slate-700">
-          {labelText}
-        </label>
-        <label
-          htmlFor={inputId}
-          className="relative inline-flex items-center cursor-pointer"
-        >
-          <input
-            type="checkbox"
-            checked={!!value}
-            onChange={(e) => handlePropChange(key, e.target.checked)}
-            id={inputId}
-            className="sr-only peer"
-          />
-          <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2e8b57]"></div>
-        </label>
-      </div>
-    );
-  };
-  const renderColorInput = (key, value, labelText) => (
-    <div key={key}>
-      <label className="block text-xs font-medium text-slate-700 mb-1">
-        {labelText}
-      </label>
-      <input
-        type="color"
-        value={value || "#000000"}
-        onChange={(e) => handlePropChange(key, e.target.value)}
-        className="w-full p-0 h-10 border border-slate-300 rounded-lg shadow-sm cursor-pointer"
-      />
-    </div>
-  );
-  const renderCustomDropdown = (key, value, options, labelText) => (
-    <CustomDropdown
-      label={labelText}
-      options={options}
-      value={value || ""}
-      onChange={(val) => handlePropChange(key, val)}
-      idSuffix={key}
-    />
-  );
-  const renderTextAlignButtons = () => (
-    <div>
-      <label className="block text-xs font-medium text-slate-700 mb-1.5">
-        Text Align
-      </label>
-      <div className="grid grid-cols-3 gap-1.5">
-        {textAlignOptions.map((opt) => (
-          <button
-            key={opt.value}
-            title={opt.label}
-            onClick={() => handlePropChange("textAlign", opt.value)}
-            className={`p-2 flex items-center justify-center rounded-lg border transition-colors ${
-              props.textAlign === opt.value
-                ? "bg-[#2e8b57] text-white border-green-600 shadow-md"
-                : "bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-600"
-            }`}
-          >
-            {React.cloneElement(opt.icon, { className: "w-5 h-5" })}
+
+const ALL_ELEMENT_TYPES = {
+  Heading, TextBlock, ImageElement, ButtonElement, Divider, Spacer, IconElement, GoogleMapsPlaceholder, VideoElement, InnerSectionComponentDisplay, NavbarElement, FooterElement, CardSliderElement,
+};
+const AVAILABLE_ELEMENTS_CONFIG = [
+  { id: "header", name: "Heading", component: "Heading", defaultProps: { text: "Powerful Headline Here", sizeClass: "text-4xl", fontWeight: "font-bold", textColor: "#1e293b", textAlign: "text-left" } },
+  { id: "textBlock", name: "Paragraph", component: "TextBlock", defaultProps: { text: "This is an engaging paragraph. You can edit this text to share more about your brand, services, or products.", sizeClass: "text-base", textColor: "#475569", textAlign: "text-left" } },
+  { id: "image", name: "Image", component: "ImageElement", defaultProps: { src: img, alt: "Placeholder Image", borderRadius: "12px", boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" } },
+  { id: "button", name: "Button", component: "ButtonElement", defaultProps: { buttonText: "Get Started", link: "#", backgroundColor: "#16a34a", textColor: "#ffffff", borderRadius: "9999px", textAlign: 'text-center' } },
+  { id: "divider", name: "Divider", component: "Divider", defaultProps: {} },
+  { id: "spacer", name: "Spacer", component: "Spacer", defaultProps: { height: "40px" } },
+  { id: "icon", name: "Icon", component: "IconElement", defaultProps: { iconName: "Rocket", size: "48px", color: "#16a34a" } },
+  { id: "video", name: "Video", component: "VideoElement", defaultProps: { videoType: "mp4", src: "" } },
+  { id: "innerSection", name: "Inner Section", component: "InnerSectionComponentDisplay", defaultProps: {}, isContainer: true, hasOwnColumns: true },
+  { id: "cardSlider", name: "Card Slider", component: "CardSliderElement", defaultProps: { slides: [{ id: generateId(), imgSrc: img, heading: "Feature One", text: "Description for feature one.", link: "#" }], slidesPerView: 3, spaceBetween: 16 } },
+  { id: "navbar", name: "Navbar", component: "NavbarElement", isGlobalOnly: true, defaultProps: { logoType: "text", logoText: "SiteName", links: [{ id: generateId(), text: "Home", url: "#" }, { id: generateId(), text: "About", url: "#" }], backgroundColor: "#FFFFFF", linkColor: "#16a34a" } },
+  { id: "footer", name: "Footer", component: "FooterElement", isGlobalOnly: true, defaultProps: { copyrightText: `© ${new Date().getFullYear()} Your Company.`, links: [{ id: generateId(), text: "Privacy", url: "#" }], backgroundColor: "#0f172a", textColor: "#94a3b8", linkColor: "#ffffff" } },
+];
+const elementIcons = {
+  header: <LucideIcons.Heading1 />, textBlock: <LucideIcons.Baseline />, image: <LucideIcons.Image />, button: <LucideIcons.MousePointer />, divider: <LucideIcons.Minus />, spacer: <LucideIcons.StretchVertical />, icon: <LucideIcons.Star />, video: <LucideIcons.Youtube />, innerSection: <LucideIcons.LayoutPanelLeft />, cardSlider: <LucideIcons.GalleryHorizontalEnd />, navbar: <LucideIcons.Navigation />, footer: <LucideIcons.PanelBottom />, default: <LucideIcons.Puzzle />,
+};
+const PREDEFINED_STRUCTURES = [
+  { name: "1 Column", id: "1col", layout: [{ width: "100%" }] },
+  { name: "2 Columns", id: "2col5050", layout: [{ width: "50%" }, { width: "50%" }] },
+  { name: "3 Columns", id: "3col33", layout: [{ width: "33.33%" }, { width: "33.33%" }, { width: "33.33%" }] },
+  { name: "4 Columns", id: "4col25", layout: [{ width: "25%" }, { width: "25%" }, { width: "25%" }, { width: "25%" }] },
+  { name: "Left Sidebar", id: "leftsidebar", layout: [{ width: "25%" }, { width: "75%" }] },
+  { name: "Right Sidebar", id: "rightsidebar", layout: [{ width: "75%" }, { width: "25%" }] },
+];
+
+const PREVIEW_DEVICES = [
+  { name: "Mobile", width: 390, icon: LucideIcons.Smartphone },
+  { name: "Tablet", width: 768, icon: LucideIcons.Tablet },
+  { name: "Desktop", width: "100%", icon: LucideIcons.Monitor },
+];
+
+function StructureSelectorModal({ isOpen, onClose, onSelectStructure, context }) {
+  if (!isOpen) return null;
+  return (
+    <GeneralModal isOpen={isOpen} onClose={onClose} title="Select a Structure" size="xl">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-2">
+        {PREDEFINED_STRUCTURES.map((s) => (
+          <button key={s.id} onClick={() => { onSelectStructure(s.layout, context); onClose(); }} className="p-3 bg-slate-50 rounded-xl hover:bg-green-50 hover:ring-2 hover:ring-green-400 transition-all flex flex-col items-center justify-start group focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500">
+            <div className="flex w-full h-20 mb-2 space-x-1.5 items-stretch p-1 bg-white ring-1 ring-slate-200 rounded-md">
+              {s.layout.map((col, idx) => (
+                <div key={idx} className="bg-slate-300 group-hover:bg-green-300 rounded-sm transition-colors" style={{ flexBasis: col.width }}></div>
+              ))}
+            </div>
+            <span className="text-xs text-slate-700 group-hover:text-green-800 text-center font-medium">{s.name}</span>
           </button>
         ))}
       </div>
+    </GeneralModal>
+  );
+}
+
+function ElementPaletteItem({ config }) {
+  const { attributes, listeners, setNodeRef, isDragging, transform } =
+    useDraggable({ id: `palette-${config.id}`, data: { type: "paletteItem", config: config } });
+  const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 9999, opacity: isDragging ? 0.9 : 1 } : {};
+  let IconToShow = React.cloneElement(elementIcons[config.id] || elementIcons.default, { className: "w-6 h-6" });
+  if (isDragging) {
+    return (
+      <div ref={setNodeRef} style={style} className="flex items-center p-3 text-left bg-green-100 rounded-lg shadow-xl ring-2 ring-green-400 opacity-95">
+        <div className="w-8 h-8 flex items-center justify-center text-green-600 mr-2">{IconToShow}</div>
+        <span className="text-sm font-semibold text-green-800">{config.name}</span>
+      </div>
+    );
+  }
+  return (
+    <div ref={setNodeRef} {...listeners} {...attributes} style={style} className="flex items-center p-2 text-left bg-slate-50 rounded-lg cursor-grab hover:bg-green-50 transition-all group focus:outline-none focus-visible:ring-1 focus-visible:ring-green-500">
+      <div className="w-8 h-8 flex items-center justify-center text-slate-500 group-hover:text-green-600 mr-2 transition-colors">{IconToShow}</div>
+      <span className="text-sm font-medium text-slate-700 group-hover:text-green-800">{config.name}</span>
     </div>
   );
-  const renderFileUploadButton = (ref, onChange, text, accept) => (
-    <>
-      <button
-        onClick={() => ref.current?.click()}
-        className="w-full px-3 py-2 bg-[#2e8b57] text-white rounded-lg hover:bg-green-800 text-sm font-medium transition-colors shadow-md"
-      >
-        {text}
-      </button>
-      <input
-        type="file"
-        accept={accept}
-        ref={ref}
-        className="hidden"
-        onChange={onChange}
-      />
-    </>
-  );
-  const panelTitle = isGlobalContext
-    ? `Global ${elementType.charAt(0).toUpperCase() + elementType.slice(1)}`
-    : type === "element"
-    ? AVAILABLE_ELEMENTS_CONFIG.find((el) => el.id === elementType)?.name ||
-      elementType
-    : type;
+}
+
+function PaletteItemDragOverlay({ config }) {
+  let IconToShow = React.cloneElement(elementIcons[config.id] || elementIcons.default, { className: "w-6 h-6" });
   return (
-    <div className="w-96 bg-white p-4 border-l border-slate-200/80 shadow-xl flex-shrink-0 flex flex-col print-hidden">
-      <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-200/90">
-        <h2 className="text-xl font-semibold text-slate-800 capitalize">
-          {panelTitle} Settings
-        </h2>
-        <button
-          onClick={onClosePanel}
-          className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100"
-        >
-          <LucideIcons.X className="w-6 h-6" />
-        </button>
+    <div className="flex items-center p-3 text-left bg-green-100 rounded-lg shadow-2xl ring-2 ring-green-500 opacity-95 cursor-grabbing">
+      <div className="w-8 h-8 flex items-center justify-center text-green-600 mr-2">{IconToShow}</div>
+      <span className="text-sm font-semibold text-green-800">{config.name}</span>
+    </div>
+  );
+}
+
+function AiLoader() {
+    return (
+        <div className="flex space-x-2 justify-center items-center">
+            <span className="sr-only">Loading...</span>
+            <div className="h-2 w-2 bg-green-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+            <div className="h-2 w-2 bg-green-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+            <div className="h-2 w-2 bg-green-500 rounded-full animate-bounce"></div>
+        </div>
+    );
+}
+
+function AiModeView({ onBack, onAiSubmit, isAiLoading, aiChatHistory }) {
+    const handleKeyDown = (e) => {
+        if(e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            onAiSubmit(e.target.value);
+            e.target.value = '';
+        }
+    }
+    return (
+        <div className="p-3 flex flex-col h-full">
+            <button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-600 hover:text-green-700 mb-4 p-1 rounded-md">
+                <LucideIcons.ArrowLeft className="w-4 h-4" /> Back to Elements
+            </button>
+            <div className="relative">
+                <textarea 
+                    onKeyDown={handleKeyDown}
+                    placeholder="e.g., create a sleek corporate landing page..." 
+                    className="w-full p-2 pr-8 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-green-400 focus:border-green-400"
+                    rows="3"
+                />
+                <LucideIcons.CornerDownLeft className="absolute right-2 top-2 w-5 h-5 text-slate-400" />
+            </div>
+             {isAiLoading && <div className="py-4"><AiLoader /></div>}
+            <div className="mt-4 flex-1 overflow-y-auto space-y-3">
+              {aiChatHistory.map(entry => (
+                <div key={entry.id} className="text-sm">
+                  <p className="font-semibold text-slate-700">{entry.prompt}</p>
+                  {entry.status === 'success' && <p className="text-xs text-green-600 flex items-center gap-1"><LucideIcons.Check className="w-3 h-3"/>✓ Success</p>}
+                  {entry.status === 'error' && <p className="text-xs text-red-600">✗ Error</p>}
+                </div>
+              ))}
+            </div>
+        </div>
+    );
+}
+
+function LeftSidebar({ onAddTopLevelSection, pages, activePageId, onAddPage, onSelectPage, onRenamePage, onDeletePage, onAiSubmit, isAiLoading, aiChatHistory, onSwitchToAiMode }) {
+  const [activeTab, setActiveTab] = useState("insert");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isAiMode, setIsAiMode] = useState(false);
+
+  const filteredElements = useMemo(() => AVAILABLE_ELEMENTS_CONFIG.filter(el => !el.isGlobalOnly && el.name.toLowerCase().includes(searchTerm.toLowerCase())), [searchTerm]);
+  const globalElements = useMemo(() => AVAILABLE_ELEMENTS_CONFIG.filter(el => el.isGlobalOnly && el.name.toLowerCase().includes(searchTerm.toLowerCase())), [searchTerm]);
+
+  const TabButton = ({ tabName, icon, label }) => (
+    <div className="flex-1 relative">
+      <button onClick={() => setActiveTab(tabName)} className={`w-full p-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${activeTab === tabName ? "text-green-700" : "text-slate-500 hover:text-slate-700"}`}>
+        {icon} {label}
+      </button>
+      {activeTab === tabName && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-500 rounded-full"></div>}
+    </div>
+  );
+
+  const handleAiClick = () => {
+    onSwitchToAiMode();
+    setIsAiMode(true);
+  }
+
+  return (
+    <div className="w-72 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col print-hidden">
+      <div className="flex border-b border-slate-200">
+        <TabButton tabName="insert" icon={<LucideIcons.PlusSquare className="w-4 h-4" />} label="Insert" />
+        <TabButton tabName="pages" icon={<LucideIcons.FileText className="w-4 h-4" />} label="Pages" />
       </div>
-      <div className="overflow-y-auto flex-grow scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 scrollbar-thumb-rounded-full text-sm space-y-5 pr-2 -mr-4">
-        {type === "section" && (
-          <>
-            <details open className="prop-section">
-              <summary className="prop-summary">Background</summary>
-              <div className="prop-content">
-                {renderCustomDropdown(
-                  "backgroundType",
-                  props.backgroundType,
-                  [
-                    { label: "None", value: "none" },
-                    { label: "Color", value: "color" },
-                    { label: "Image", value: "image" },
-                    { label: "Video", value: "video" },
-                  ],
-                  "Type"
-                )}
-                {props.backgroundType === "color" &&
-                  renderColorInput(
-                    "backgroundColor",
-                    props.backgroundColor,
-                    "Color"
-                  )}
-                {props.backgroundType === "image" && (
-                  <div className="space-y-2">
-                    {renderFileUploadButton(
-                      sectionBgImageInputRef,
-                      handleSectionBgImageFileChange,
-                      "Upload Background Image",
-                      "image/*"
-                    )}
-                    {renderInput(
-                      "backgroundImageSrc",
-                      props.backgroundImageSrc || "",
-                      "Image URL"
-                    )}
-                  </div>
-                )}
-                {props.backgroundType === "video" && (
-                  <div className="space-y-2">
-                    {renderFileUploadButton(
-                      sectionBgVideoInputRef,
-                      handleSectionBgVideoFileChange,
-                      "Upload Background Video",
-                      "video/*"
-                    )}
-                    {renderInput(
-                      "backgroundVideoSrc",
-                      props.backgroundVideoSrc || "",
-                      "Video URL"
-                    )}
-                    <div className="flex items-center justify-between">
-                      {renderToggle(
-                        "backgroundVideoAutoplay",
-                        props.backgroundVideoAutoplay,
-                        "Autoplay"
-                      )}
+      <div className="flex-1 overflow-y-auto">
+        {activeTab === 'insert' && isAiMode && <AiModeView onBack={() => setIsAiMode(false)} onAiSubmit={onAiSubmit} isAiLoading={isAiLoading} aiChatHistory={aiChatHistory}/>}
+        {activeTab === 'insert' && !isAiMode && (
+           <div className="p-3 space-y-4">
+               <div className="relative">
+                   <LucideIcons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                   <input 
+                       type="text"
+                       placeholder="Search..."
+                       value={searchTerm}
+                       onChange={e => setSearchTerm(e.target.value)}
+                       className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500"
+                   />
+               </div>
+               <button onClick={handleAiClick} className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-green-100 text-green-700 font-semibold rounded-lg hover:bg-green-200 transition-colors">
+                   <LucideIcons.Sparkles className="w-4 h-4"/> Build with AI
+               </button>
+               <div>
+                  <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">Layout</h3>
+                  <button onClick={onAddTopLevelSection} className="w-full flex items-center p-2 text-left bg-slate-50 rounded-lg cursor-grab hover:bg-green-50 transition-all group focus:outline-none focus-visible:ring-1 focus-visible:ring-green-500">
+                    <div className="w-8 h-8 flex items-center justify-center text-slate-500 group-hover:text-green-600 mr-2 transition-colors"><LucideIcons.PlusSquare className="w-6 h-6" /></div>
+                    <span className="text-sm font-medium text-slate-700 group-hover:text-green-800">Add Section</span>
+                  </button>
+               </div>
+               {filteredElements.length > 0 && <div>
+                  <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">Elements</h3>
+                  <div className="space-y-1.5">{filteredElements.map((elConf) => (<ElementPaletteItem key={elConf.id} config={elConf} />))}</div>
+               </div>}
+               {globalElements.length > 0 && <div>
+                  <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">Global</h3>
+                  <div className="space-y-1.5">{globalElements.map((elConf) => (<ElementPaletteItem key={elConf.id} config={elConf} />))}</div>
+               </div>}
+            </div>
+        )}
+        {activeTab === 'pages' && (
+          <div className="p-3">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-sm font-semibold text-slate-700">Pages</h3>
+              <button onClick={onAddPage} title="Add New Page" className="p-1.5 text-green-600 hover:text-green-700 rounded-lg hover:bg-green-100 transition-colors"><LucideIcons.Plus className="w-4 h-4" /></button>
+            </div>
+            <ul className="space-y-1">
+              {Object.values(pages).map((page) => (
+                <li key={page.id} className="group">
+                  <button onClick={() => onSelectPage(page.id)} className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-150 flex items-center justify-between ${activePageId === page.id ? "bg-[#2e8b57] text-white font-semibold shadow-sm" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"}`}>
+                    <span className="truncate">{page.name}</span>
+                    <div className={`flex items-center transition-opacity ${activePageId === page.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                        <button onClick={(e) => { e.stopPropagation(); onRenamePage(page.id, page.name); }} className="p-1.5 hover:bg-white/20 rounded-md"><LucideIcons.Edit3 className="w-4 h-4" /></button>
+                        <button onClick={(e) => { e.stopPropagation(); onDeletePage(page.id, page.name); }} className="p-1.5 hover:bg-white/20 rounded-md"><LucideIcons.Trash2 className="w-4 h-4" /></button>
                     </div>
-                    <div className="flex items-center justify-between">
-                      {renderToggle(
-                        "backgroundVideoLoop",
-                        props.backgroundVideoLoop,
-                        "Loop"
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      {renderToggle(
-                        "backgroundVideoMuted",
-                        props.backgroundVideoMuted,
-                        "Muted"
-                      )}
-                    </div>
-                  </div>
-                )}
-                {(props.backgroundType === "image" ||
-                  props.backgroundType === "video") &&
-                  (props.backgroundImageSrc || props.backgroundVideoSrc) && (
-                    <div className="space-y-3 pt-4 border-t border-slate-200/70 mt-4">
-                      {renderColorInput(
-                        "backgroundOverlayColor",
-                        props.backgroundOverlayColor,
-                        "Overlay Color"
-                      )}
-                      <div>
-                        <label className="block text-xs font-medium text-slate-700 mb-1">
-                          Overlay Opacity (
-                          {(
-                            (props.backgroundOverlayOpacity || 0) * 100
-                          ).toFixed(0)}
-                          %)
-                        </label>
-                        <input
-                          type="range"
-                          min="0"
-                          max="1"
-                          step="0.01"
-                          value={props.backgroundOverlayOpacity || 0}
-                          onChange={(e) =>
-                            handlePropChange(
-                              "backgroundOverlayOpacity",
-                              parseFloat(e.target.value)
-                            )
-                          }
-                          className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600"
-                        />
-                      </div>
-                    </div>
-                  )}
-              </div>
-            </details>
-            <details open className="prop-section">
-              <summary className="prop-summary">Spacing</summary>
-              <div className="prop-content grid grid-cols-2 gap-3">
-                {renderInput(
-                  "paddingTop",
-                  props.paddingTop,
-                  "Padding Top",
-                  "e.g. 48px"
-                )}
-                {renderInput(
-                  "paddingBottom",
-                  props.paddingBottom,
-                  "Padding Bottom",
-                  "e.g. 48px"
-                )}
-                {renderInput(
-                  "paddingLeft",
-                  props.paddingLeft,
-                  "Padding Left",
-                  "e.g. 24px"
-                )}
-                {renderInput(
-                  "paddingRight",
-                  props.paddingRight,
-                  "Padding Right",
-                  "e.g. 24px"
-                )}
-              </div>
-            </details>
-          </>
-        )}
-        {elementType === "cardSlider" && (
-          <details open className="prop-section">
-            <summary className="prop-summary">Slider Settings</summary>
-            <div className="prop-content">
-              <div className="grid grid-cols-2 gap-3 mb-3">
-                {renderInput(
-                  "slidesPerView",
-                  props.slidesPerView,
-                  "Slides Per View",
-                  "e.g. 3",
-                  "number"
-                )}
-                {renderInput(
-                  "spaceBetween",
-                  props.spaceBetween,
-                  "Spacing (px)",
-                  "e.g. 16",
-                  "number"
-                )}
-              </div>
-              <div className="grid grid-cols-2 gap-3 mb-3">
-                {renderInput(
-                  "speed",
-                  props.speed,
-                  "Speed (ms)",
-                  "e.g. 500",
-                  "number"
-                )}
-                {renderInput(
-                  "cardBorderRadius",
-                  props.cardBorderRadius,
-                  "Card Radius",
-                  "e.g. 8px"
-                )}
-              </div>
-              <div className="space-y-2 mb-3">
-                {renderToggle("autoplay", props.autoplay, "Autoplay")}
-                {props.autoplay &&
-                  renderInput(
-                    "autoplayDelay",
-                    props.autoplayDelay,
-                    "Autoplay Delay (ms)",
-                    "e.g. 3000",
-                    "number"
-                  )}
-                {renderToggle("loop", props.loop, "Loop")}
-                {renderToggle(
-                  "showNavigation",
-                  props.showNavigation,
-                  "Show Navigation Arrows"
-                )}
-                {renderToggle(
-                  "showPagination",
-                  props.showPagination,
-                  "Show Pagination Dots"
-                )}
-              </div>
-              <SlideManager
-                slides={props.slides}
-                onUpdateSlides={(updatedSlides) =>
-                  handlePropChange("slides", updatedSlides)
-                }
-                elementId={id}
-              />
-            </div>
-          </details>
-        )}
-        {elementType === "button" && (
-          <details open className="prop-section">
-            <summary className="prop-summary">Button Style</summary>
-            <div className="prop-content">
-              {renderCustomDropdown(
-                "variant",
-                props.variant,
-                [
-                  { label: "Solid", value: "solid" },
-                  { label: "Outline", value: "outline" },
-                ],
-                "Variant"
-              )}
-              {renderColorInput(
-                "backgroundColor",
-                props.backgroundColor,
-                "Main Color"
-              )}
-              {props.variant === "solid" &&
-                renderColorInput("textColor", props.textColor, "Text Color")}
-              {renderInput(
-                "borderRadius",
-                props.borderRadius || "8px",
-                "Border Radius",
-                "e.g., 8px"
-              )}
-              {renderToggle("fullWidth", props.fullWidth, "Full Width")}
-            </div>
-          </details>
-        )}
-        {(elementType === "header" ||
-          elementType === "textBlock" ||
-          elementType === "button") && (
-          <details open className="prop-section">
-            <summary className="prop-summary">Typography</summary>
-            <div className="prop-content">
-              {renderCustomDropdown(
-                "sizeClass",
-                props.sizeClass,
-                [{ label: "Default", value: "" }, ...textSizeOptions],
-                "Text Size"
-              )}
-              {elementType !== "button" &&
-                renderCustomDropdown(
-                  "fontWeight",
-                  props.fontWeight,
-                  [{ label: "Default", value: "" }, ...fontWeightOptions],
-                  "Font Weight"
-                )}
-              {renderTextAlignButtons()}
-              {elementType !== "button" &&
-                renderColorInput("textColor", props.textColor, "Text Color")}
-            </div>
-          </details>
-        )}
-        {elementType === "image" && (
-          <details open className="prop-section">
-            <summary className="prop-summary">Image Settings</summary>
-            <div className="prop-content">
-              {renderFileUploadButton(
-                elementFileInputRef,
-                (e) => handleGenericLogoFileChange(e, "src"),
-                "Upload Image",
-                "image/*"
-              )}
-              {renderInput("src", props.src || "", "Image URL")}
-              {renderInput("alt", props.alt || "", "Alt Text (for SEO)")}
-              <div className="grid grid-cols-2 gap-3">
-                {renderInput("width", props.width || "", "Width", "e.g. 100%")}
-                {renderInput(
-                  "height",
-                  props.height || "",
-                  "Height",
-                  "e.g. auto"
-                )}
-              </div>
-              {renderInput(
-                "borderRadius",
-                props.borderRadius,
-                "Border Radius",
-                "e.g. 12px"
-              )}
-              {renderCustomDropdown(
-                "boxShadow",
-                props.boxShadow,
-                [
-                  { label: "None", value: "none" },
-                  { label: "Small", value: "0 1px 2px 0 rgb(0 0 0 / 0.05)" },
-                  {
-                    label: "Medium",
-                    value:
-                      "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
-                  },
-                  {
-                    label: "Large",
-                    value:
-                      "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
-                  },
-                  {
-                    label: "Extra Large",
-                    value:
-                      "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
-                  },
-                ],
-                "Shadow"
-              )}
-            </div>
-          </details>
-        )}
-        {elementType === "video" && (
-          <details open className="prop-section">
-            <summary className="prop-summary">Video Settings</summary>
-            <div className="prop-content">
-              {renderCustomDropdown(
-                "videoType",
-                props.videoType,
-                [
-                  { label: "MP4 URL", value: "mp4" },
-                  { label: "YouTube ID", value: "youtube" },
-                  { label: "Vimeo ID", value: "vimeo" },
-                ],
-                "Source Type"
-              )}
-              {renderInput(
-                "src",
-                props.src || "",
-                props.videoType === "mp4" ? "Video URL" : "Video ID"
-              )}
-              <div className="grid grid-cols-2 gap-3">
-                {renderInput("width", props.width || "100%", "Width")}
-                {renderInput("height", props.height || "300px", "Height")}
-              </div>
-              <div className="space-y-2 pt-2">
-                {renderToggle("controls", props.controls, "Controls")}
-                {renderToggle("autoplay", props.autoplay, "Autoplay")}
-                {renderToggle("loop", props.loop, "Loop")}
-                {renderToggle("muted", props.muted, "Muted")}
-              </div>
-            </div>
-          </details>
-        )}
-        {elementType === "icon" && (
-          <details open className="prop-section">
-            <summary className="prop-summary">Icon Settings</summary>
-            <div className="prop-content">
-              {renderInput(
-                "iconName",
-                props.iconName || "",
-                "Lucide Icon Name",
-                "e.g. Star"
-              )}
-              {renderInput("size", props.size || "28px", "Size", "e.g. 28px")}
-              {renderColorInput("color", props.color, "Icon Color")}
-            </div>
-          </details>
-        )}
-        {elementType === "navbar" && (
-          <details open className="prop-section">
-            <summary className="prop-summary">Navbar Settings</summary>
-            <div className="prop-content">
-              {renderCustomDropdown(
-                "logoType",
-                props.logoType,
-                [
-                  { label: "Text", value: "text" },
-                  { label: "Image", value: "image" },
-                ],
-                "Logo Type"
-              )}
-              {props.logoType === "text" &&
-                renderInput("logoText", props.logoText, "Logo Text")}
-              {props.logoType === "image" && (
-                <>
-                  {renderFileUploadButton(
-                    navbarLogoInputRef,
-                    (e) => handleGenericLogoFileChange(e, "logoSrc"),
-                    "Upload Logo",
-                    "image/*"
-                  )}
-                  {renderInput("logoSrc", props.logoSrc, "Logo Image URL")}
-                </>
-              )}
-              {renderColorInput(
-                "backgroundColor",
-                props.backgroundColor,
-                "Background Color"
-              )}
-              {renderColorInput(
-                "textColor",
-                props.textColor,
-                "Main Text/Logo Color"
-              )}
-              {renderColorInput("linkColor", props.linkColor, "Link Color")}
-              {renderCustomDropdown(
-                "rightContentType",
-                props.rightContentType,
-                [
-                  { label: "None", value: "none" },
-                  { label: "User Icon", value: "userIcon" },
-                  { label: "Search Icon", value: "searchIcon" },
-                ],
-                "Right Content"
-              )}
-            </div>
-          </details>
-        )}
-        {elementType === "navbar" && (
-          <details className="prop-section">
-            <summary className="prop-summary">Navigation Links</summary>
-            <div className="prop-content">
-              <LinkManager
-                links={props.links}
-                onUpdateLinks={(updatedLinks) =>
-                  handlePropChange("links", updatedLinks)
-                }
-                elementId={id}
-                pages={pages}
-                linkTypeLabel="Nav Link"
-              />
-            </div>
-          </details>
-        )}
-        {elementType === "footer" && (
-          <details open className="prop-section">
-            <summary className="prop-summary">Footer Settings</summary>
-            <div className="prop-content">
-              {renderInput(
-                "copyrightText",
-                props.copyrightText,
-                "Copyright Text"
-              )}
-              {renderColorInput(
-                "backgroundColor",
-                props.backgroundColor,
-                "Background Color"
-              )}
-              {renderColorInput("textColor", props.textColor, "Text Color")}
-              {renderColorInput("linkColor", props.linkColor, "Link Color")}
-            </div>
-          </details>
-        )}
-        {elementType === "footer" && (
-          <details className="prop-section">
-            <summary className="prop-summary">Footer Links</summary>
-            <div className="prop-content">
-              <LinkManager
-                links={props.links}
-                onUpdateLinks={(updatedLinks) =>
-                  handlePropChange("links", updatedLinks)
-                }
-                elementId={id + "-pageLinks"}
-                pages={pages}
-                linkTypeLabel="Footer Link"
-              />
-            </div>
-          </details>
-        )}
-        <details className="prop-section">
-          <summary className="prop-summary">Advanced: Raw JSON</summary>
-          <pre className="bg-slate-100 p-3 rounded-xl overflow-x-auto mt-2 text-xs leading-relaxed shadow-inner">
-            {JSON.stringify(props, null, 2)}
-          </pre>
-        </details>
-        {isGlobalContext && onDeleteGlobalElement && (
-          <div className="mt-6 pt-4 border-t border-slate-200">
-            <StyledModalButton
-              onClick={() => onDeleteGlobalElement(elementType)}
-              variant="danger"
-              className="w-full flex items-center justify-center space-x-2"
-            >
-              <LucideIcons.Trash2 className="w-4 h-4" />
-              <span>
-                Remove Global{" "}
-                {elementType.charAt(0).toUpperCase() + elementType.slice(1)}
-              </span>
-            </StyledModalButton>
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>
@@ -3234,317 +2254,557 @@ function PropertiesPanel({
   );
 }
 
-function CanvasArea({
-  pageLayout,
-  onUpdateProps,
-  onDelete,
-  onSelect,
-  selectedItemId,
-  onOpenStructureModal,
-  isPreviewMode,
-  onNavigate,
-}) {
-  const { setNodeRef: setPageDroppableRef, isOver: isPageOver } = useDroppable({
+function DebouncedTextInput({ label, type, initialValue, onCommit, ...props }) {
+    const [value, setValue] = useState(initialValue);
+
+    useEffect(() => {
+        setValue(initialValue);
+    }, [initialValue]);
+
+    const handleBlur = () => {
+        if(value !== initialValue) {
+            onCommit(value);
+        }
+    };
+    
+    const InputComponent = type === 'textarea' ? 'textarea' : 'input';
+
+    return (
+        <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1.5">{label}</label>
+            <InputComponent
+                type={type}
+                value={value || ''}
+                onChange={e => setValue(e.target.value)}
+                onBlur={handleBlur}
+                className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500 focus:border-green-500"
+                {...props}
+            />
+        </div>
+    );
+}
+
+function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePageId, onRenamePage, onAddGlobalElement }) {
+  const PropertyGroup = ({ title, children, defaultOpen = true }) => {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+    return (
+        <div className="border-b border-slate-200/90 pb-4">
+            <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center py-1">
+                <h3 className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{title}</h3>
+                <LucideIcons.ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {isOpen && <div className="space-y-3 pt-3">{children}</div>}
+        </div>
+    );
+  };
+
+  const ColorInput = ({ label, value, onChange }) => (
+    <div className="flex justify-between items-center">
+        <label className="text-sm font-medium text-slate-700">{label}</label>
+        <div className="relative w-9 h-7 rounded-md overflow-hidden border border-slate-300 shadow-sm">
+            <div className="absolute inset-0" style={{backgroundColor: value || '#000000'}}></div>
+            <input type="color" value={value || '#000000'} onChange={e => onChange(e.target.value)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+        </div>
+    </div>
+  );
+  const SliderInput = ({ label, value, onChange, min = 0, max = 200, step = 1, unit = "px" }) => {
+    const displayValue = parseInt(value, 10) || 0;
+    return (
+      <div>
+        <div className="flex justify-between items-center mb-1">
+          <label className="text-xs font-medium text-slate-700">{label}</label>
+          <span className="text-xs text-slate-500">{`${displayValue}${unit}`}</span>
+        </div>
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={displayValue}
+          onChange={(e) => onChange(`${e.target.value}${unit}`)}
+          className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+        />
+      </div>
+    );
+  };
+  const ToggleSwitch = ({ label, checked, onChange }) => (
+    <div className="flex justify-between items-center">
+        <label className="text-sm font-medium text-slate-700">{label}</label>
+        <button onClick={() => onChange(!checked)} className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${checked ? 'bg-green-600' : 'bg-slate-300'}`}>
+            <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+        </button>
+    </div>
+  );
+  const AlignmentButtons = ({ value, onChange }) => (
+    <div>
+        <label className="block text-xs font-medium text-slate-700 mb-1.5">Alignment</label>
+        <div className="flex items-center gap-1">
+            {textAlignOptions.map(opt => (
+                <button key={opt.value} onClick={() => onChange(opt.value)} title={opt.label}
+                    className={`flex-1 p-2 rounded-lg transition-colors ${value === opt.value ? 'bg-green-600 text-white' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}`}
+                >
+                    {opt.icon}
+                </button>
+            ))}
+        </div>
+    </div>
+  );
+
+  if (!selectedItemData) {
+    const currentPage = pages[activePageId];
+    return (
+      <div className="w-72 bg-white border-l border-slate-200 flex-shrink-0 print-hidden flex flex-col">
+        <div className="p-4 border-b border-slate-200">
+          <h2 className="text-lg font-semibold text-slate-800">Page Settings</h2>
+        </div>
+        <div className="p-4 space-y-4">
+            <DebouncedTextInput
+              label="Page Name"
+              initialValue={currentPage?.name || ""}
+              onCommit={onRenamePage}
+              key={activePageId}
+            />
+          <PropertyGroup title="Global Elements">
+              <button onClick={() => onAddGlobalElement('navbar')} className="w-full text-sm text-center p-2 bg-slate-100 hover:bg-green-100 rounded-lg">Add Navbar</button>
+              <button onClick={() => onAddGlobalElement('footer')} className="w-full text-sm text-center p-2 bg-slate-100 hover:bg-green-100 rounded-lg">Add Footer</button>
+          </PropertyGroup>
+        </div>
+      </div>
+    );
+  }
+
+  const { id, path, props, itemType } = selectedItemData;
+  const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === (itemType || props.elementType));
+  const onUpdate = (newProps) => onUpdateSelectedProps(path, newProps);
+  
+  const renderProperties = () => {
+    const elementType = itemType || props.elementType;
+    switch(elementType) {
+        case 'header':
+        case 'textBlock':
+            return <>
+                <PropertyGroup title="Content">
+                    <DebouncedTextInput label="Text" type="textarea" rows={5} initialValue={props.text} onCommit={val => onUpdate({ text: val })} key={id}/>
+                </PropertyGroup>
+                <PropertyGroup title="Typography">
+                    <CustomDropdown label="Size" options={textSizeOptions} value={props.sizeClass} onChange={val => onUpdate({ sizeClass: val })} />
+                    <CustomDropdown label="Weight" options={fontWeightOptions} value={props.fontWeight} onChange={val => onUpdate({ fontWeight: val })} />
+                    <ColorInput label="Color" value={props.textColor} onChange={val => onUpdate({ textColor: val })} />
+                    <AlignmentButtons value={props.textAlign} onChange={val => onUpdate({ textAlign: val })} />
+                </PropertyGroup>
+            </>
+        case 'button':
+            return <>
+                <PropertyGroup title="Content">
+                    <DebouncedTextInput label="Button Text" initialValue={props.buttonText} onCommit={val => onUpdate({ buttonText: val })} key={`${id}-text`} />
+                    <DebouncedTextInput label="Link URL" initialValue={props.link} onCommit={val => onUpdate({ link: val })} key={`${id}-link`} />
+                </PropertyGroup>
+                <PropertyGroup title="Styling">
+                    <ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} />
+                    <ColorInput label="Text Color" value={props.textColor} onChange={val => onUpdate({ textColor: val })} />
+                    <SliderInput label="Border Radius" value={props.borderRadius} onChange={val => onUpdate({ borderRadius: val })} max={50} />
+                    <CustomDropdown label="Variant" options={[{label: 'Solid', value: 'solid'}, {label: 'Outline', value: 'outline'}]} value={props.variant} onChange={val => onUpdate({ variant: val })} />
+                </PropertyGroup>
+                <PropertyGroup title="Layout">
+                    <AlignmentButtons value={props.textAlign} onChange={val => onUpdate({ textAlign: val })} />
+                    <ToggleSwitch label="Full Width" checked={props.fullWidth} onChange={val => onUpdate({ fullWidth: val })} />
+                </PropertyGroup>
+            </>
+        case 'image':
+            return <>
+                <PropertyGroup title="Content">
+                    <DebouncedTextInput label="Image Source (URL)" initialValue={props.src} onCommit={val => onUpdate({ src: val })} key={`${id}-src`} />
+                    <DebouncedTextInput label="Alt Text" initialValue={props.alt} onCommit={val => onUpdate({ alt: val })} key={`${id}-alt`} />
+                </PropertyGroup>
+                 <PropertyGroup title="Styling">
+                    <SliderInput label="Border Radius" value={props.borderRadius} onChange={val => onUpdate({ borderRadius: val })} max={50} />
+                </PropertyGroup>
+            </>
+        case 'spacer':
+            return <>
+                <PropertyGroup title="Layout">
+                    <SliderInput label="Height" value={props.height} onChange={val => onUpdate({ height: val })} max={300} />
+                </PropertyGroup>
+            </>
+        case 'section':
+             return <>
+                <PropertyGroup title="Spacing">
+                    <SliderInput label="Padding Top" value={props.paddingTop} onChange={val => onUpdate({ paddingTop: val })} />
+                    <SliderInput label="Padding Bottom" value={props.paddingBottom} onChange={val => onUpdate({ paddingBottom: val })} />
+                    <SliderInput label="Padding Left" value={props.paddingLeft} onChange={val => onUpdate({ paddingLeft: val })} />
+                    <SliderInput label="Padding Right" value={props.paddingRight} onChange={val => onUpdate({ paddingRight: val })} />
+                </PropertyGroup>
+                <PropertyGroup title="Background">
+                    <ColorInput label="Color" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} />
+                </PropertyGroup>
+             </>
+        case 'navbar':
+            return <>
+                <PropertyGroup title="Logo">
+                    <DebouncedTextInput label="Logo Text" initialValue={props.logoText} onCommit={val => onUpdate({ logoText: val })} key={`${id}-logo`}/>
+                </PropertyGroup>
+                <PropertyGroup title="Styling">
+                    <ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} />
+                    <ColorInput label="Text" value={props.textColor} onChange={val => onUpdate({ textColor: val })} />
+                    <ColorInput label="Link" value={props.linkColor} onChange={val => onUpdate({ linkColor: val })} />
+                </PropertyGroup>
+                <PropertyGroup title="Links">
+                    <LinkManager links={props.links} onUpdateLinks={links => onUpdate({links})} elementId={id} pages={pages} />
+                </PropertyGroup>
+            </>
+        case 'footer':
+            return <>
+                <PropertyGroup title="Content">
+                    <DebouncedTextInput label="Copyright Text" initialValue={props.copyrightText} onCommit={val => onUpdate({ copyrightText: val })} key={`${id}-copyright`}/>
+                </PropertyGroup>
+                <PropertyGroup title="Styling">
+                    <ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} />
+                    <ColorInput label="Text" value={props.textColor} onChange={val => onUpdate({ textColor: val })} />
+                    <ColorInput label="Link" value={props.linkColor} onChange={val => onUpdate({ linkColor: val })} />
+                </PropertyGroup>
+                <PropertyGroup title="Links">
+                    <LinkManager links={props.links} onUpdateLinks={links => onUpdate({links})} elementId={id} pages={pages} linkTypeLabel="Footer Link"/>
+                </PropertyGroup>
+            </>
+        case 'cardSlider':
+            return <>
+                 <PropertyGroup title="Slides">
+                    <SlideManager slides={props.slides} onUpdateSlides={slides => onUpdate({slides})} elementId={id} />
+                </PropertyGroup>
+                <PropertyGroup title="Settings">
+                    <SliderInput label="Slides Per View" value={props.slidesPerView} onChange={val => onUpdate({ slidesPerView: parseInt(val) })} min={1} max={6} unit=""/>
+                    <SliderInput label="Space Between" value={props.spaceBetween} onChange={val => onUpdate({ spaceBetween: parseInt(val) })} max={100} unit="px"/>
+                </PropertyGroup>
+                <PropertyGroup title="Behavior">
+                    <ToggleSwitch label="Autoplay" checked={props.autoplay} onChange={val => onUpdate({ autoplay: val })} />
+                    <ToggleSwitch label="Loop" checked={props.loop} onChange={val => onUpdate({ loop: val })} />
+                    <ToggleSwitch label="Navigation Arrows" checked={props.showNavigation} onChange={val => onUpdate({ showNavigation: val })} />
+                    <ToggleSwitch label="Pagination Dots" checked={props.showPagination} onChange={val => onUpdate({ showPagination: val })} />
+                </PropertyGroup>
+            </>
+        default:
+            return <p className="text-sm text-slate-500 text-center py-8">No properties to edit for this element.</p>
+    }
+  }
+
+  return (
+      <div className="w-72 bg-white border-l border-slate-200 flex-shrink-0 flex flex-col print-hidden">
+          <div className="flex justify-between items-center p-4 border-b border-slate-200">
+              <h2 className="text-lg font-semibold text-slate-800 capitalize">{config?.name || 'Properties'}</h2>
+          </div>
+          <div className="overflow-y-auto flex-grow text-sm p-4 space-y-4">
+            {renderProperties()}
+          </div>
+      </div>
+  );
+}
+
+function AiCanvasLoader() {
+  return (
+    <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-green-900/80 to-slate-900 flex flex-col items-center justify-center z-[1000] overflow-hidden">
+      <style>{`
+        @keyframes rotate-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes rotate-fast { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+        @keyframes pulse-grow {
+          0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 20px 10px rgba(45, 212, 191, 0.4); }
+          50% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 30px 15px rgba(45, 212, 191, 0.6); }
+        }
+      `}</style>
+      <div className="relative w-48 h-48 flex items-center justify-center">
+        <div className="absolute w-20 h-20 bg-green-400 rounded-full flex items-center justify-center" style={{ animation: 'pulse-grow 2.5s ease-in-out infinite' }}>
+          <LucideIcons.BrainCircuit className="w-12 h-12 text-green-900/70" />
+        </div>
+        <div className="absolute w-full h-full" style={{ animation: 'rotate-slow 10s linear infinite' }}>
+          <div className="absolute top-0 left-1/2 -ml-2 w-4 h-4 bg-teal-300 rounded-full shadow-lg"></div>
+        </div>
+        <div className="absolute w-40 h-40" style={{ animation: 'rotate-fast 8s linear infinite' }}>
+          <div className="absolute bottom-0 left-1/2 -ml-3 w-6 h-6 border-2 border-green-300 rounded-full"></div>
+        </div>
+        <div className="absolute w-32 h-32" style={{ animation: 'rotate-slow 12s linear infinite' }}>
+          <div className="absolute top-1/2 -mt-2 right-0 w-3 h-3 bg-white/80 rounded-full shadow-lg"></div>
+        </div>
+      </div>
+      <p className="text-white text-lg font-semibold mt-8 tracking-wider animate-pulse">Building with AI...</p>
+      <p className="text-green-300/70 text-sm mt-2">Crafting something amazing for you!</p>
+    </div>
+  );
+}
+
+function CanvasArea({ pageLayout, onUpdateProps, onDelete, onSelect, selectedItemId, onOpenStructureModal, isPreviewMode, onNavigate, zoom }) {
+  const { setNodeRef: setPageDroppableRef, isOver } = useDroppable({
     id: "page-sections-droppable",
     data: { type: "page", accepts: ["paletteItem", "section"] },
     disabled: isPreviewMode,
   });
-  const sectionIds = useMemo(
-    () => pageLayout.map((sec) => sec.id),
-    [pageLayout]
-  );
+  const sectionIds = useMemo(() => pageLayout.map((sec) => sec.id), [pageLayout]);
   return (
-    <div
-      className={`flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-400/70 scrollbar-track-slate-200/50 scrollbar-thumb-rounded-full ${
-        isPreviewMode ? "p-0 bg-white" : "p-4 md:p-8 bg-slate-200"
-      }`}
-    >
-      <div className={`${isPreviewMode ? "" : "max-w-7xl mx-auto"}`}>
-        <SortableContext
-          items={sectionIds}
-          strategy={verticalListSortingStrategy}
-          disabled={isPreviewMode}
-        >
-          <div
-            ref={setPageDroppableRef}
-            className={`min-h-full rounded-xl ${
-              isPreviewMode
-                ? ""
-                : `p-3 sm:p-4 transition-all duration-200 ease-in-out canvas-render-area ${
-                    isPageOver
-                      ? "bg-green-100/80 ring-2 ring-green-400 ring-dashed"
-                      : ""
-                  } ${
-                    pageLayout.length === 0 && !isPageOver
-                      ? "border-2 border-dashed border-slate-300/80"
-                      : "border-transparent"
-                  }`
-            }`}
-          >
-            {pageLayout.map((sec, idx) => (
-              <SectionComponent
-                key={sec.id}
-                sectionData={sec}
-                sectionIndex={idx}
-                onUpdateProps={onUpdateProps}
-                onDelete={onDelete}
-                onSelect={onSelect}
-                selectedItemId={selectedItemId}
-                onOpenStructureModal={onOpenStructureModal}
-                isPreviewMode={isPreviewMode}
-                onNavigate={onNavigate}
-              />
-            ))}
-            {!isPreviewMode && pageLayout.length === 0 && !isPageOver && (
-              <div className="flex flex-col items-center justify-center h-full text-center py-24 select-none pointer-events-none">
-                <LucideIcons.LayoutTemplate
-                  className="h-24 w-24 text-slate-300/90 mb-5"
-                  strokeWidth={1}
-                />
-                <p className="text-slate-500 text-xl font-medium mt-2">
-                  Your canvas is empty
-                </p>
-                <p className="text-slate-400/90 text-base">
-                  Drag elements from the left panel or click "Add Section".
-                </p>
-              </div>
-            )}
-          </div>
-        </SortableContext>
-      </div>
-    </div>
-  );
-}
-export function PagePreviewRenderer({
-  pageLayout,
-  globalNavbar,
-  globalFooter,
-  onNavigate,
-  previewDevice,
-  activePageId,
-}) {
-  const deviceWidths = { mobile: "390px", tablet: "768px", desktop: "100%" };
-  return (
-    <div
-      className={`flex-1 overflow-hidden bg-slate-200 flex justify-center items-start pt-6 md:pt-10`}
-    >
-      <div
-        style={{
-          width: deviceWidths[previewDevice],
-          transition: "width 0.4s cubic-bezier(0.25, 1, 0.5, 1)",
-        }}
-        className={`h-[calc(100%-3rem)] md:h-[calc(100%-5rem)] bg-white shadow-2xl rounded-t-2xl overflow-y-auto scrollbar-thin scrollbar-thumb-slate-400 scrollbar-track-slate-100`}
-      >
-        <div className="max-w-full mx-auto">
-          {globalNavbar && (
-            <NavbarElement
-              {...globalNavbar.props}
-              isPreviewMode={true}
-              onNavigate={onNavigate}
-              previewDevice={previewDevice}
-            />
-          )}
-          {pageLayout &&
-            pageLayout.map((sec, idx) => (
-              <SectionComponent
-                key={`${activePageId}-${sec.id}-${idx}`}
-                sectionData={sec}
-                sectionIndex={idx}
-                onUpdateProps={() => {}}
-                onDelete={() => {}}
-                onSelect={() => {}}
-                selectedItemId={null}
-                onOpenStructureModal={() => {}}
-                isPreviewMode={true}
-                onNavigate={onNavigate}
-              />
-            ))}
-          {globalFooter && (
-            <FooterElement
-              {...globalFooter.props}
-              isPreviewMode={true}
-              onNavigate={onNavigate}
-            />
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-function PageActions({
-  onSave,
-  onTogglePreview,
-  isPreviewMode,
-  pages,
-  activePageId,
-  onRenamePage,
-  onDeletePage,
-  previewDevice,
-  onSetPreviewDevice,
-  modalStates,
-  setModalStates,
-}) {
-  const [showDeviceOptions, setShowDeviceOptions] = useState(false);
-  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
-  useEffect(() => {
-    const handleResize = () => setIsSmallScreen(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-  const handleRename = () => {
-    setModalStates((prev) => ({
-      ...prev,
-      renamePage: {
-        isOpen: true,
-        pageId: activePageId,
-        currentName: pages[activePageId]?.name || "",
-      },
-    }));
-  };
-  const handleDelete = () => {
-    if (Object.keys(pages).length <= 1) {
-      setModalStates((prev) => ({
-        ...prev,
-        alert: {
-          isOpen: true,
-          title: "Action Not Allowed",
-          message: "You cannot delete the only page in your project.",
-        },
-      }));
-      return;
-    }
-    setModalStates((prev) => ({
-      ...prev,
-      deletePage: {
-        isOpen: true,
-        pageId: activePageId,
-        pageName: pages[activePageId]?.name || "this page",
-      },
-    }));
-  };
-  const deviceButtons = (
-    <>
-      <button
-        onClick={() => {
-          onSetPreviewDevice("mobile");
-          if (isSmallScreen) setShowDeviceOptions(false);
-        }}
-        title="Mobile View (390px)"
-        className={`p-2 rounded-lg ${
-          previewDevice === "mobile"
-            ? "bg-[#2e8b57] text-white shadow-inner"
-            : "text-slate-500 hover:bg-slate-100"
-        }`}
-      >
-        <LucideIcons.Smartphone className="w-5 h-5" />
-      </button>
-      <button
-        onClick={() => {
-          onSetPreviewDevice("tablet");
-          if (isSmallScreen) setShowDeviceOptions(false);
-        }}
-        title="Tablet View (768px)"
-        className={`p-2 rounded-lg ${
-          previewDevice === "tablet"
-            ? "bg-[#2e8b57] text-white shadow-inner"
-            : "text-slate-500 hover:bg-slate-100"
-        }`}
-      >
-        <LucideIcons.Tablet className="w-5 h-5" />
-      </button>
-      <button
-        onClick={() => {
-          onSetPreviewDevice("desktop");
-          if (isSmallScreen) setShowDeviceOptions(false);
-        }}
-        title="Desktop View (100%)"
-        className={`p-2 rounded-lg ${
-          previewDevice === "desktop"
-            ? "bg-[#2e8b57] text-white shadow-inner"
-            : "text-slate-500 hover:bg-slate-100"
-        }`}
-      >
-        <LucideIcons.Monitor className="w-5 h-5" />
-      </button>
-    </>
-  );
-  return (
-    <div
-      className={`bg-white p-2.5 border-b border-slate-200/90 shadow-sm print-hidden`}
-    >
-      <div className="max-w-full mx-auto px-2 sm:px-4 flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          {!isPreviewMode && Object.keys(pages).length > 0 && (
-            <>
-              <span className="text-sm text-slate-500 mr-1 hidden sm:inline">
-                Editing:
-              </span>
-              <span className="text-sm font-semibold text-green-700">
-                {pages[activePageId]?.name || "..."}
-              </span>
-              <button
-                onClick={handleRename}
-                title="Rename Current Page"
-                className="p-2 text-slate-600 hover:text-green-600 rounded-lg hover:bg-green-50 transition-colors"
-              >
-                <LucideIcons.Edit3 className="w-4 h-4" />
-              </button>
-              {Object.keys(pages).length > 1 && (
-                <button
-                  onClick={handleDelete}
-                  title="Delete Current Page"
-                  className="p-2 text-red-500 hover:text-red-700 rounded-lg hover:bg-red-100 transition-colors"
-                >
-                  <LucideIcons.Trash className="w-4 h-4" />
-                </button>
-              )}
-            </>
-          )}
-          {isPreviewMode && (
-            <div className="relative">
-              {isSmallScreen ? (
-                <button
-                  onClick={() => setShowDeviceOptions((prev) => !prev)}
-                  className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg"
-                >
-                  <LucideIcons.LayoutPanelTop className="w-5 h-5" />
-                </button>
-              ) : (
-                <div className="flex items-center space-x-1.5 p-1 bg-slate-100/70 rounded-xl">
-                  {deviceButtons}
-                </div>
-              )}
-              {isSmallScreen && showDeviceOptions && (
-                <div className="absolute top-full left-0 mt-2 bg-white p-1 rounded-lg shadow-lg border border-slate-200 flex space-x-1 z-10">
-                  {deviceButtons}
+    <div className="flex-1 overflow-auto bg-slate-200 p-8 relative">
+      <div style={{ transform: `scale(${zoom})`, transformOrigin: "top center", width: "100%", transition: "transform 0.2s" }}>
+        <div className="max-w-7xl mx-auto">
+          <SortableContext items={sectionIds} strategy={verticalListSortingStrategy} disabled={isPreviewMode}>
+            <div ref={setPageDroppableRef} className={`min-h-[80vh] rounded-xl transition-all ${isOver ? "bg-green-100/80 ring-2 ring-green-400 ring-dashed" : ""} ${pageLayout.length === 0 && !isOver ? "border-2 border-dashed border-slate-300/80" : "border-transparent"}`}>
+              {pageLayout.map((sec, idx) => (
+                <SectionComponent key={sec.id} sectionData={sec} sectionIndex={idx} onUpdateProps={onUpdateProps} onDelete={onDelete} onSelect={onSelect} selectedItemId={selectedItemId} onOpenStructureModal={onOpenStructureModal} isPreviewMode={isPreviewMode} onNavigate={onNavigate} />
+              ))}
+              {!isPreviewMode && pageLayout.length === 0 && !isOver && (
+                <div className="flex flex-col items-center justify-center h-full text-center py-24 select-none pointer-events-none">
+                  <LucideIcons.LayoutTemplate className="h-24 w-24 text-slate-300/90 mb-5" strokeWidth={1} />
+                  <p className="text-slate-500 text-xl font-medium mt-2">Your canvas is empty</p>
+                  <p className="text-slate-400/90 text-base">Drag elements or add a new section.</p>
                 </div>
               )}
             </div>
-          )}
-        </div>
-        <div className="flex items-center space-x-2.5">
-          <StyledModalButton onClick={onTogglePreview} variant="primary">
-            {isPreviewMode ? (
-              <>
-                <LucideIcons.ArrowLeft className="w-4 h-4 mr-1.5" /> Back to
-                Editor
-              </>
-            ) : (
-              <>
-                Preview <LucideIcons.Eye className="w-4 h-4 ml-1.5" />
-              </>
-            )}
-          </StyledModalButton>
-          {!isPreviewMode && (
-            <StyledModalButton onClick={onSave} variant="primary">
-              <LucideIcons.Save className="w-4 h-4 mr-1.5" /> Save Project
-            </StyledModalButton>
-          )}
+          </SortableContext>
         </div>
       </div>
     </div>
   );
 }
+
+export function PagePreviewRenderer({ pageLayout, globalNavbar, globalFooter, onNavigate, activePageId }) {
+  const [device, setDevice] = useState(PREVIEW_DEVICES[2]);
+  
+  return (
+    <div className="flex-1 overflow-hidden bg-slate-200 flex flex-col items-center p-4 gap-4">
+      <div className="bg-white rounded-full p-1.5 flex items-center justify-center gap-2 text-sm font-medium text-slate-600 shadow-md">
+        {PREVIEW_DEVICES.map(d => (
+            <button key={d.name} onClick={() => setDevice(d)} className={`px-4 py-2 rounded-full flex items-center gap-2 transition-colors ${device.name === d.name ? 'bg-[#2e8b57] text-white' : 'hover:bg-slate-100'}`}>
+                <d.icon className="w-5 h-5" /> {d.name}
+            </button>
+        ))}
+      </div>
+      <div className="flex-1 w-full flex items-center justify-center overflow-hidden">
+        <div style={{ maxWidth: device.width, width: '100%', height: '100%' }} className="bg-white shadow-2xl mx-auto transition-all duration-300 rounded-2xl">
+            <div className="w-full h-full overflow-y-auto scrollbar-thin scrollbar-thumb-slate-400 scrollbar-track-slate-100">
+                {globalNavbar && (<NavbarElement {...globalNavbar.props} isPreviewMode={true} onNavigate={onNavigate} previewDevice={device.name.toLowerCase()} />)}
+                {pageLayout && pageLayout.map((sec, idx) => (
+                    <SectionComponent key={`${activePageId}-${sec.id}-${idx}`} sectionData={sec} sectionIndex={idx} onUpdateProps={() => {}} onDelete={() => {}} onSelect={() => {}} selectedItemId={null} onOpenStructureModal={() => {}} isPreviewMode={true} onNavigate={onNavigate} />
+                ))}
+                {globalFooter && (<FooterElement {...globalFooter.props} isPreviewMode={true} onNavigate={onNavigate} />)}
+            </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TopBar({ onSave, onTogglePreview, isPreviewMode }) {
+  return (
+    <div className="bg-white h-[60px] p-2.5 border-b border-slate-200/90 shadow-sm print-hidden flex justify-between items-center px-4 z-50">
+      <a href="#" className="flex items-center gap-2 text-green-700 font-bold text-lg">
+        <LucideIcons.Feather className="w-6 h-6" />
+        MyBuilder
+      </a>
+      <div className="flex items-center space-x-2.5">
+        <StyledModalButton onClick={onTogglePreview} variant="secondary">
+          {isPreviewMode ? <LucideIcons.Edit3 className="w-4 h-4 mr-1.5" /> : <LucideIcons.Play className="w-4 h-4 mr-1.5" />}
+          {isPreviewMode ? "Editor" : "Preview"}
+        </StyledModalButton>
+        {!isPreviewMode && (
+          <StyledModalButton onClick={onSave} variant="primary" className="rounded-full">
+            <LucideIcons.Save className="w-4 h-4 mr-1.5" /> Save
+          </StyledModalButton>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CanvasToolbar({ selectedItem, zoom, onZoomChange, elementData, onSelect }) {
+  const getBreadcrumb = () => {
+    if (!selectedItem || !elementData) return [{name: "Page", path: null, id: null, type: 'page'}];
+    const path = selectedItem.path;
+    if(selectedItem.type === 'globalElement') {
+         return [
+             {name: "Page", path: null, id: null, type: 'page'},
+             {name: selectedItem.itemType === 'navbar' ? 'Navbar' : 'Footer', path: path, id: selectedItem.id, type: selectedItem.type}
+         ];
+    }
+    let breadcrumb = [{name: "Page", path: null, id: null, type: 'page'}];
+    try {
+        const segments = path.split('.').filter(Boolean);
+        let currentPath = '';
+        let currentObj = { sections: elementData };
+        segments.forEach(segment => {
+            const key = segment.replace(/\[\d+\]/, '');
+            const match = segment.match(/\[(\d+)\]/);
+            const index = match ? parseInt(match[1]) : null;
+            
+            if (index !== null) {
+                currentPath += (currentPath ? '.' : '') + `${key}[${index}]`;
+                currentObj = currentObj[key][index];
+            } else {
+                 currentPath += (currentPath ? '.' : '') + key;
+                 currentObj = currentObj[key];
+            }
+            
+            let name = "Unknown";
+            let type = "unknown";
+            if (key === 'sections') {
+                name = 'Section';
+                type = 'section';
+            } else if (key === 'columns') {
+                name = `Column ${index + 1}`;
+                type = 'column';
+            } else if (key === 'elements') {
+                 const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === currentObj.type);
+                 name = config ? config.name : currentObj.type;
+                 type = 'element'
+            }
+             breadcrumb.push({name, path: currentPath, id: currentObj.id, type});
+        });
+    } catch (e) { return [{name: "Page", path: null, id: null, type: 'page'}]; }
+    return breadcrumb;
+  }
+  return (
+    <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/70 backdrop-blur-sm h-12 p-2 rounded-full shadow-lg border border-slate-200/80 flex items-center justify-between text-sm z-40">
+        <div className="flex items-center gap-2 px-2">
+            <button className="p-2 bg-green-200/50 text-green-700 rounded-full"><LucideIcons.MousePointer2 className="w-5 h-5"/></button>
+        </div>
+        <div className="h-6 w-px bg-slate-300 mx-2"></div>
+        <div className="flex items-center gap-1 text-slate-500 px-2">
+            {getBreadcrumb().map((crumb, index) => (
+                <React.Fragment key={index}>
+                    <button onClick={() => onSelect(crumb.id, crumb.type, crumb.path)} className={`px-2 py-1 rounded-md transition-colors ${index === getBreadcrumb().length - 1 ? 'text-slate-800 font-semibold' : 'hover:bg-slate-200/50'}`}>{crumb.name}</button>
+                    {index < getBreadcrumb().length - 1 && <LucideIcons.ChevronRight className="w-4 h-4 flex-shrink-0" />}
+                </React.Fragment>
+            ))}
+        </div>
+        <div className="h-6 w-px bg-slate-300 mx-2"></div>
+        <div className="flex items-center gap-2 px-2">
+            <button onClick={() => onZoomChange(Math.max(0.1, zoom - 0.1))} className="p-1.5 hover:bg-slate-200 rounded-md text-slate-600"><LucideIcons.Minus className="w-4 h-4" /></button>
+            <span className="w-12 text-center font-medium text-slate-700">{Math.round(zoom * 100)}%</span>
+            <button onClick={() => onZoomChange(zoom + 0.1)} className="p-1.5 hover:bg-slate-200 rounded-md text-slate-600"><LucideIcons.Plus className="w-4 h-4" /></button>
+        </div>
+    </div>
+  );
+}
+
+function htmlToBuilderJson(htmlString) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlString, 'text/html');
+  const sections = [];
+  
+  const classToPropMap = {
+    'text-left': { textAlign: 'text-left' },
+    'text-center': { textAlign: 'text-center' },
+    'text-right': { textAlign: 'text-right' },
+    'font-bold': { fontWeight: 'font-bold' },
+    'font-extrabold': { fontWeight: 'font-bold' },
+    'font-semibold': { fontWeight: 'font-semibold' },
+    'font-medium': { fontWeight: 'font-medium' },
+    'font-normal': { fontWeight: 'font-normal' },
+    'font-light': { fontWeight: 'font-light' },
+    'text-xs': { sizeClass: 'text-xs' },
+    'text-sm': { sizeClass: 'text-sm' },
+    'text-base': { sizeClass: 'text-base' },
+    'text-lg': { sizeClass: 'text-lg' },
+    'text-xl': { sizeClass: 'text-xl' },
+    'text-2xl': { sizeClass: 'text-2xl' },
+    'text-3xl': { sizeClass: 'text-3xl' },
+    'text-4xl': { sizeClass: 'text-4xl' },
+    'text-5xl': { sizeClass: 'text-5xl' },
+  };
+
+  function parseNode(node) {
+    if (node.nodeType !== Node.ELEMENT_NODE) return null;
+    let element = null;
+
+    if (node.tagName.match(/^H[1-6]$/)) {
+      element = { type: 'header', props: { text: node.innerHTML.trim() } };
+    } else if (node.tagName === 'P') {
+      element = { type: 'textBlock', props: { text: node.innerHTML.trim() } };
+    } else if (node.tagName === 'BUTTON' || (node.tagName === 'A' && node.classList.contains('button'))) {
+      element = { type: 'button', props: { buttonText: node.innerHTML.trim() } };
+    } else if (node.tagName === 'IMG') {
+        element = { type: 'image', props: { src: node.src, alt: node.alt }};
+    } else if (node.tagName === 'HR') {
+        element = { type: 'divider', props: {} };
+    }
+
+    if (element) {
+      element.id = generateId(element.type);
+      const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === element.type);
+      if (config) {
+        element.props = { ...config.defaultProps, ...element.props };
+      }
+      
+      node.classList.forEach(cls => {
+        if(classToPropMap[cls]) {
+          Object.assign(element.props, classToPropMap[cls]);
+        }
+      });
+      
+      return element;
+    }
+    return null;
+  }
+
+  function parseContainer(containerEl) {
+    const elements = [];
+    containerEl.childNodes.forEach(childNode => {
+      if (childNode.nodeType !== Node.ELEMENT_NODE || ['SCRIPT', 'STYLE', 'HEADER', 'FOOTER'].includes(childNode.tagName) || (childNode.id && childNode.id.includes('modal'))) {
+        return;
+      }
+      
+      const parsedEl = parseNode(childNode);
+      if (parsedEl) {
+        elements.push(parsedEl);
+      } else if (childNode.children.length > 0) {
+        elements.push(...parseContainer(childNode));
+      }
+    });
+    return elements;
+  }
+  
+  const body = doc.querySelector('body');
+  const main = doc.querySelector('main');
+  const contentRoot = main || body;
+
+  if (contentRoot) {
+    contentRoot.querySelectorAll(':scope > section').forEach(sectionEl => {
+        const newSection = {
+            id: generateId('section'),
+            type: 'section',
+            props: {},
+            columns: [],
+        };
+
+        const layoutContainers = sectionEl.querySelectorAll('.grid, .flex');
+        
+        if (layoutContainers.length > 0 && Array.from(layoutContainers[0].children).every(child => child.tagName === 'DIV' || child.tagName === 'ARTICLE')) {
+            const container = layoutContainers[0];
+            const cols = Array.from(container.children);
+            const colWidth = 100 / (cols.length || 1);
+            
+            cols.forEach(colEl => {
+                const newCol = {
+                    id: generateId('col'),
+                    type: 'column',
+                    props: { width: `${colWidth}%`},
+                    elements: parseContainer(colEl),
+                };
+                newSection.columns.push(newCol);
+            });
+        } else {
+            const newColumn = {
+                id: generateId('col'),
+                type: 'column',
+                props: { width: '100%' },
+                elements: parseContainer(sectionEl),
+            };
+            newSection.columns.push(newColumn);
+        }
+        
+        if (newSection.columns.some(col => col.elements.length > 0)) {
+            sections.push(newSection);
+        }
+    });
+  }
+
+  return sections;
+}
+
 
 export default function ElementBuilderPage({
   onExternalSave,
@@ -3574,104 +2834,43 @@ export default function ElementBuilderPage({
   const [globalFooter, setGlobalFooter] = useState(
     initialBuilderState?.globalFooter || null
   );
-  useEffect(() => {
-    if (!pages[activePageId]) {
-      const availablePageIds = Object.keys(pages);
-      if (availablePageIds.length > 0) {
-        setActivePageId(availablePageIds[0]);
-      } else {
-        const newFallbackPageId = generateId("page-fallback");
-        setPages({
-          [newFallbackPageId]: {
-            id: newFallbackPageId,
-            name: "Fallback Page",
-            layout: [],
-          },
-        });
-        setActivePageId(newFallbackPageId);
-      }
-    }
-  }, [pages, activePageId]);
   const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
-  const [structureModalContext, setStructureModalContext] = useState({
-    path: null,
-    elementType: null,
-  });
+  const [structureModalContext, setStructureModalContext] = useState({ path: null, elementType: null });
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeDragItem, setActiveDragItem] = useState(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [previewDevice, setPreviewDevice] = useState("desktop");
+  const [zoom, setZoom] = useState(1);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const aiSessionId = useRef(null);
+  const [aiChatHistory, setAiChatHistory] = useState([]);
   const [modalStates, setModalStates] = useState({
     addPage: { isOpen: false },
     renamePage: { isOpen: false, pageId: null, currentName: "" },
     deletePage: { isOpen: false, pageId: null, pageName: "" },
     alert: { isOpen: false, title: "", message: "" },
-    dragEndAlert: { isOpen: false, title: "", message: "" },
     saveConfirm: { isOpen: false, title: "", message: "" },
   });
-  const closeModal = (modalName) =>
-    setModalStates((prev) => ({
-      ...prev,
-      [modalName]: { ...prev[modalName], isOpen: false },
-    }));
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor)
-  );
-  const currentPageLayout = useMemo(() => {
-    const pageData = pages[activePageId];
-    const layout = pageData?.layout || [];
-    if (!Array.isArray(layout)) {
-      return [];
+
+  useEffect(() => {
+    if (!pages[activePageId] && Object.keys(pages).length > 0) {
+      setActivePageId(Object.keys(pages)[0]);
     }
-    return layout;
   }, [pages, activePageId]);
-  const updatePageLayout = (newLayoutOrCallback) => {
-    setPages((prevPages) => {
-      const currentActivePage = prevPages[activePageId];
-      if (!currentActivePage) {
-        return prevPages;
-      }
-      const newLayout =
-        typeof newLayoutOrCallback === "function"
-          ? newLayoutOrCallback(currentActivePage.layout || [])
-          : newLayoutOrCallback;
-      if (!Array.isArray(newLayout)) {
-        return prevPages;
-      }
-      return {
-        ...prevPages,
-        [activePageId]: { ...currentActivePage, layout: newLayout },
-      };
-    });
+
+  const closeModal = (modalName) => setModalStates((prev) => ({ ...prev, [modalName]: { ...prev[modalName], isOpen: false } }));
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor));
+  const currentPageLayout = useMemo(() => pages[activePageId]?.layout || [], [pages, activePageId]);
+
+  const updatePageLayout = (callback) => {
+    setPages((p) => ({ ...p, [activePageId]: { ...p[activePageId], layout: callback(p[activePageId].layout || []) } }));
   };
-  const handleAddPage = () => {
-    setModalStates((prev) => ({ ...prev, addPage: { isOpen: true } }));
-  };
+
+  const handleAddPage = () => setModalStates((prev) => ({ ...prev, addPage: { isOpen: true } }));
   const submitAddPage = (newPageName) => {
-    if (newPageName && newPageName.trim() !== "") {
-      let newPageId = newPageName
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-]/g, "");
-      if (!newPageId) newPageId = generateId("page");
-      if (pages[newPageId]) {
-        newPageId = generateId("page");
-        setModalStates((prev) => ({
-          ...prev,
-          alert: {
-            isOpen: true,
-            title: "Page ID Conflict",
-            message: `Page with ID derived from "${newPageName}" already exists. A new unique ID "${newPageId}" was generated.`,
-          },
-        }));
-      }
-      setPages((prev) => ({
-        ...prev,
-        [newPageId]: { id: newPageId, name: newPageName.trim(), layout: [] },
-      }));
-      setActivePageId(newPageId);
+    if (newPageName?.trim()) {
+      const newId = generateId(newPageName.trim().toLowerCase().replace(/\s+/g, "-"));
+      setPages((p) => ({ ...p, [newId]: { id: newId, name: newPageName.trim(), layout: [] } }));
+      setActivePageId(newId);
       setSelectedItem(null);
     }
   };
@@ -3681,60 +2880,41 @@ export default function ElementBuilderPage({
       setActivePageId(pageId);
     }
   };
+  const handleRenamePage = (pageId, currentName) => {
+    setModalStates(prev => ({ ...prev, renamePage: { isOpen: true, pageId, currentName } }));
+  };
   const submitRenamePage = (newName) => {
-    if (
-      newName &&
-      newName.trim() !== "" &&
-      newName.trim() !== modalStates.renamePage.currentName
-    ) {
-      setPages((prev) => ({
-        ...prev,
-        [modalStates.renamePage.pageId]: {
-          ...prev[modalStates.renamePage.pageId],
-          name: newName.trim(),
-        },
-      }));
+    const { pageId } = modalStates.renamePage;
+    if (newName?.trim() && pageId) {
+      setPages(p => ({ ...p, [pageId]: { ...p[pageId], name: newName.trim() } }));
     }
+  };
+   const handleRenameActivePage = (newName) => {
+    if (activePageId) {
+        setPages(p => ({ ...p, [activePageId]: { ...p[activePageId], name: newName } }));
+    }
+  }
+  const handleDeletePage = (pageId, pageName) => {
+    if (Object.keys(pages).length <= 1) {
+        setModalStates(p => ({...p, alert: {isOpen: true, title: "Action Not Allowed", message: "Cannot delete the last page."}}));
+        return;
+    }
+    setModalStates(prev => ({ ...prev, deletePage: { isOpen: true, pageId, pageName } }));
   };
   const confirmDeletePage = () => {
-    const pageIdToDelete = modalStates.deletePage.pageId;
-    if (Object.keys(pages).length <= 1) {
-      setModalStates((prev) => ({
-        ...prev,
-        alert: {
-          isOpen: true,
-          title: "Error",
-          message: "Cannot delete the last page.",
-        },
-      }));
-      return;
-    }
-    setPages((prev) => {
-      const newPages = { ...prev };
-      delete newPages[pageIdToDelete];
-      const remainingPageIds = Object.keys(newPages);
-      let nextActivePageId =
-        activePageId === pageIdToDelete
-          ? remainingPageIds.length > 0
-            ? remainingPageIds[0]
-            : null
-          : activePageId;
-      if (!nextActivePageId && remainingPageIds.length > 0) {
-        nextActivePageId = remainingPageIds[0];
-      } else if (remainingPageIds.length === 0) {
-        const newHomePageId = generateId("page-home");
-        newPages[newHomePageId] = {
-          id: newHomePageId,
-          name: "Home",
-          layout: [],
-        };
-        nextActivePageId = newHomePageId;
-      }
-      setActivePageId(nextActivePageId);
-      return newPages;
-    });
+    const { pageId } = modalStates.deletePage;
     setSelectedItem(null);
+    setPages(p => {
+        const newPages = {...p};
+        delete newPages[pageId];
+        const remainingIds = Object.keys(newPages);
+        if (activePageId === pageId) {
+            setActivePageId(remainingIds[0] || null);
+        }
+        return newPages;
+    });
   };
+
   const handleNavigate = (pageSlugOrId) => {
     const targetPageId = pageSlugOrId.startsWith("/")
       ? pageSlugOrId.substring(1)
@@ -3747,172 +2927,94 @@ export default function ElementBuilderPage({
       }
     }
   };
-  const handleOpenStructureModal = (contextPath, forElementType = null) => {
-    setStructureModalContext({
-      path: contextPath,
-      elementType: forElementType,
-    });
+
+  const handleOpenStructureModal = (path, type) => {
+    setStructureModalContext({ path, elementType: type });
     setIsStructureModalOpen(true);
   };
+  
   const handleSetStructure = (columnLayouts, context) => {
-    const newColumns = columnLayouts.map((layout) => ({
-      id: generateId("col"),
-      type: "column",
-      props: { width: layout.width },
-      elements: [],
-    }));
-    updatePageLayout((prevLayout) => {
-      const newLayout = JSON.parse(JSON.stringify(prevLayout || []));
-      if (context.path === null && context.elementType === "section") {
-        const newSection = {
-          id: generateId("section"),
-          type: "section",
-          props: {
-            backgroundType: "none",
-            backgroundColor: "#FFFFFF",
-            backgroundImageSrc: "",
-            backgroundVideoSrc: "",
-            backgroundVideoAutoplay: true,
-            backgroundVideoLoop: true,
-            backgroundVideoMuted: true,
-            backgroundOverlayColor: "rgba(0,0,0,0.3)",
-            backgroundOverlayOpacity: 0.0,
-            paddingTop: "48px",
-            paddingBottom: "48px",
-            paddingLeft: "24px",
-            paddingRight: "24px",
-          },
-          columns: newColumns,
-        };
-        newLayout.push(newSection);
-      } else if (context.path && context.elementType === "innerSection") {
-        const itemToUpdate = getItemByPath(
-          { sections: newLayout },
-          context.path
-        );
-        if (itemToUpdate && itemToUpdate.type === "innerSection") {
-          itemToUpdate.columns = newColumns;
-        }
+    const newColumns = columnLayouts.map(layout => ({ id: generateId("col"), type: "column", props: { width: layout.width }, elements: [] }));
+    updatePageLayout(layout => {
+      const newLayout = JSON.parse(JSON.stringify(layout));
+      if (context.path === null) {
+        newLayout.push({ id: generateId("section"), type: "section", props: { paddingTop: "48px", paddingBottom: "48px" }, columns: newColumns });
+      } else {
+        const item = getItemByPath({ sections: newLayout }, context.path);
+        if (item) item.columns = newColumns;
       }
       return newLayout;
     });
   };
+
   const handleSelect = (id, type, path) => {
-    if (isPreviewMode) return;
-    const itemData = getItemByPath({ sections: currentPageLayout }, path);
-    if (itemData) {
-      let propsToSet = itemData.props;
-      if (type === "element")
-        propsToSet = { ...itemData.props, elementType: itemData.type };
-      setSelectedItem({ id, type, path, props: propsToSet });
-    } else {
-      setSelectedItem(null);
-    }
-  };
-  const handleSelectGlobalElement = (elementType) => {
-    if (isPreviewMode) return;
-    if (elementType === "navbar" && globalNavbar) {
-      setSelectedItem({
-        id: globalNavbar.id,
-        type: "globalElement",
-        itemType: "navbar",
-        path: "globalNavbar",
-        props: globalNavbar.props,
-      });
-    } else if (elementType === "footer" && globalFooter) {
-      setSelectedItem({
-        id: globalFooter.id,
-        type: "globalElement",
-        itemType: "footer",
-        path: "globalFooter",
-        props: globalFooter.props,
-      });
-    } else {
-      setSelectedItem(null);
-    }
-  };
-  const handleUpdateProps = (itemPath, newProps) => {
-    if (itemPath === "globalNavbar" && globalNavbar) {
-      const updatedGlobalNavbar = {
-        ...globalNavbar,
-        props: { ...globalNavbar.props, ...newProps },
-      };
-      setGlobalNavbar(updatedGlobalNavbar);
-      if (selectedItem?.path === "globalNavbar")
-        setSelectedItem((prev) => ({
-          ...prev,
-          props: updatedGlobalNavbar.props,
-        }));
-    } else if (itemPath === "globalFooter" && globalFooter) {
-      const updatedGlobalFooter = {
-        ...globalFooter,
-        props: { ...globalFooter.props, ...newProps },
-      };
-      setGlobalFooter(updatedGlobalFooter);
-      if (selectedItem?.path === "globalFooter")
-        setSelectedItem((prev) => ({
-          ...prev,
-          props: updatedGlobalFooter.props,
-        }));
-    } else {
-      updatePageLayout((prevLayout) => {
-        const newLayout = JSON.parse(JSON.stringify(prevLayout || []));
-        const itemToUpdate = getItemByPath({ sections: newLayout }, itemPath);
-        if (itemToUpdate) {
-          if (itemToUpdate.props && typeof itemToUpdate.props === "object") {
-            itemToUpdate.props = { ...itemToUpdate.props, ...newProps };
-          } else {
-            if (typeof itemToUpdate === "object" && !itemToUpdate.props)
-              itemToUpdate.props = {};
-            itemToUpdate.props = { ...itemToUpdate.props, ...newProps };
-          }
-          if (selectedItem && selectedItem.path === itemPath) {
-            const updatedItemFromLayout = getItemByPath(
-              { sections: newLayout },
-              itemPath
-            );
-            if (updatedItemFromLayout) {
-              let propsToSetForSelection = updatedItemFromLayout.props;
-              if (selectedItem.type === "element")
-                propsToSetForSelection = {
-                  ...updatedItemFromLayout.props,
-                  elementType: updatedItemFromLayout.type,
-                };
-              else if (selectedItem.type === "section")
-                propsToSetForSelection = updatedItemFromLayout.props;
-              setSelectedItem((prev) => ({
-                ...prev,
-                props: propsToSetForSelection,
-              }));
-            }
-          }
-          return newLayout;
+    if (!id && !path && type === 'page') { setSelectedItem(null); return; }
+    if (type === 'globalElement') {
+        const globalItem = path === 'globalNavbar' ? globalNavbar : globalFooter;
+        if (globalItem) {
+            setSelectedItem({ id: globalItem.id, type: 'globalElement', itemType: globalItem.type, path, props: globalItem.props });
         }
-        return prevLayout;
-      });
+        return;
+    }
+    if (path) {
+        const itemData = getItemByPath({ sections: currentPageLayout }, path);
+        if(itemData){
+            let props = { ...(itemData.props || {}) };
+            if(type === 'element'){
+                props.elementType = itemData.type;
+            }
+            setSelectedItem({ id: itemData.id, type, path, props });
+        }
     }
   };
-  const handleDelete = (itemPath) => {
-    if (isPreviewMode) return;
-    updatePageLayout((prevLayout) => {
-      const newLayout = JSON.parse(JSON.stringify(prevLayout || []));
-      if (deleteItemByPath({ sections: newLayout }, itemPath)) {
-        if (selectedItem && selectedItem.path === itemPath)
-          setSelectedItem(null);
-        return newLayout;
+  
+  const handleUpdateProps = (path, newProps) => {
+      if(path === 'globalNavbar'){
+          setGlobalNavbar(p => ({...p, props: {...p.props, ...newProps}}));
+          return;
       }
-      return prevLayout;
-    });
+      if(path === 'globalFooter'){
+          setGlobalFooter(p => ({...p, props: {...p.props, ...newProps}}));
+          return;
+      }
+
+      updatePageLayout(layout => {
+        const newLayout = JSON.parse(JSON.stringify(layout));
+        const item = getItemByPath({ sections: newLayout }, path);
+        if (item) {
+            item.props = { ...(item.props || {}), ...newProps };
+        }
+        return newLayout;
+      });
   };
+
+  const handleDelete = (path) => updatePageLayout(layout => {
+    const newLayout = JSON.parse(JSON.stringify(layout));
+    if (deleteItemByPath({ sections: newLayout }, path)) {
+      if (selectedItem?.path.startsWith(path)) setSelectedItem(null);
+      return newLayout;
+    }
+    return layout;
+  });
+
+  const handleAddGlobalElement = (type) => {
+      const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === type && c.isGlobalOnly);
+      if(!config) return;
+      
+      const newGlobalElement = { id: `global-${config.id}`, type: config.id, props: config.defaultProps };
+      if (type === 'navbar') setGlobalNavbar(newGlobalElement);
+      if (type === 'footer') setGlobalFooter(newGlobalElement);
+  };
+
   const handleDeleteGlobalElement = (elementType) => {
-    if (elementType === "navbar") {
-      setGlobalNavbar(null);
-      if (selectedItem?.path === "globalNavbar") setSelectedItem(null);
-    } else if (elementType === "footer") {
-      setGlobalFooter(null);
-      if (selectedItem?.path === "globalFooter") setSelectedItem(null);
+    const updater =
+      elementType === "navbar" ? setGlobalNavbar : setGlobalFooter;
+    updater(null);
+    if (selectedItem?.itemType === elementType) {
+      setSelectedItem(null);
     }
   };
+
   const findColumn = (layout, columnId) => {
     for (const section of layout) {
       if (section.columns) {
@@ -3931,350 +3033,182 @@ export default function ElementBuilderPage({
     }
     return null;
   };
-  const handleDragStart = (event) => {
-    if (isPreviewMode) return;
-    setActiveDragItem(event.active);
-  };
-  const handleDragEnd = (event) => {
-    if (isPreviewMode) return;
-    const { active, over } = event;
+  
+  const handleDragStart = (e) => setActiveDragItem(e.active);
+  const handleDragEnd = (e) => {
     setActiveDragItem(null);
-    if (!over) return;
-    if (active.id === over.id && active.data.current?.type !== "paletteItem")
-      return;
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+
     const activeType = active.data.current?.type;
-    const activeId = active.id;
+    const overType = over.data.current?.type;
     const overId = over.id;
-    const overDataType = over.data.current?.type;
-    const overColumnId =
-      overDataType === "column"
-        ? over.data.current?.columnId
-        : overDataType === "canvasElement"
-        ? over.data.current?.parentColumnId
-        : null;
-    if (activeType === "paletteItem") {
-      const currentConfig = active.data.current.config;
-      if (currentConfig.isGlobalOnly) {
-        const defaultProps =
-          AVAILABLE_ELEMENTS_CONFIG.find((el) => el.id === currentConfig.id)
-            ?.defaultProps || {};
-        if (currentConfig.id === "navbar") {
-          setGlobalNavbar({
-            id: "global-navbar",
-            type: "navbar",
-            props: { ...defaultProps },
-            path: "globalNavbar",
-          });
-          handleSelectGlobalElement("navbar");
-        } else if (currentConfig.id === "footer") {
-          setGlobalFooter({
-            id: "global-footer",
-            type: "footer",
-            props: { ...defaultProps },
-            path: "globalFooter",
-          });
-          handleSelectGlobalElement("footer");
+
+    if (activeType === 'paletteItem') {
+        const config = active.data.current.config;
+        if(config.isGlobalOnly){
+            handleAddGlobalElement(config.id);
+            return;
         }
-        return;
-      }
+
+        updatePageLayout(layout => {
+            const newLayout = JSON.parse(JSON.stringify(layout || []));
+            const newElement = { id: generateId(config.id), type: config.id, props: { ...config.defaultProps }, ...(config.hasOwnColumns && { columns: [] }) };
+            const overData = over.data.current;
+            const targetColId = overData.type === 'column' ? overData.columnId : overData.type === 'canvasElement' ? overData.parentColumnId : null;
+            if(targetColId){
+                const col = findColumn(newLayout, targetColId);
+                if(col){
+                    if(!col.elements) col.elements = [];
+                    const overElIndex = col.elements.findIndex(el => el.id === overId);
+                    col.elements.splice(overElIndex !== -1 ? overElIndex + 1 : col.elements.length, 0, newElement);
+                }
+            } else {
+                 const newSection = {
+                    id: generateId("section"),
+                    type: "section",
+                    props: { paddingTop: "48px", paddingBottom: "48px", paddingLeft: "24px", paddingRight: "24px" },
+                    columns: [{ id: generateId("col"), type: "column", props: { width: "100%" }, elements: [newElement] }]
+                };
+                const overSectionIndex = newLayout.findIndex(s => s.id === overId);
+                newLayout.splice(overSectionIndex !== -1 ? overSectionIndex + 1 : newLayout.length, 0, newSection);
+            }
+            return newLayout;
+        });
+
+    } else if (activeType === 'canvasElement') {
+        updatePageLayout(layout => {
+            let newLayout = JSON.parse(JSON.stringify(layout));
+            const sourceCol = findColumn(newLayout, active.data.current.parentColumnId);
+            const overColId = overType === 'column' ? overId.replace('col-','') : (overType === 'canvasElement' ? over.data.current.parentColumnId : null);
+            if(!overColId) return layout;
+            const destCol = findColumn(newLayout, overColId);
+
+            if(sourceCol && destCol){
+                const elIndex = sourceCol.elements.findIndex(e => e.id === active.id);
+                if(elIndex === -1) return layout;
+                const [movedEl] = sourceCol.elements.splice(elIndex, 1);
+                
+                if(!destCol.elements) destCol.elements = [];
+                const overElIndex = destCol.elements.findIndex(e => e.id === overId);
+                destCol.elements.splice(overElIndex !== -1 ? overElIndex + 1 : destCol.elements.length, 0, movedEl);
+
+                if (selectedItem) {
+                    const found = findItemAndPathRecursive(newLayout, selectedItem.id, 'sections');
+                    if (found) handleSelect(selectedItem.id, selectedItem.type, found.path);
+                    else setSelectedItem(null);
+                }
+            }
+            return newLayout;
+        });
+    } else if (activeType === 'section') {
+        updatePageLayout(layout => {
+            const activeIndex = layout.findIndex(s => s.id === active.id);
+            const overIndex = layout.findIndex(s => s.id === over.id);
+            if(activeIndex !== -1 && overIndex !== -1){
+                return arrayMove(layout, activeIndex, overIndex);
+            }
+            return layout;
+        });
     }
-    updatePageLayout((prevLayout) => {
-      let newLayout = JSON.parse(JSON.stringify(prevLayout || []));
-      if (activeType === "paletteItem") {
-        const currentConfig = active.data.current.config;
-        const newElementInstance = {
-          id: generateId(currentConfig.id),
-          type: currentConfig.id,
-          props: { ...currentConfig.defaultProps },
-        };
-        if (currentConfig.hasOwnColumns) newElementInstance.columns = [];
-        if (
-          overDataType === "column" ||
-          (overDataType === "canvasElement" && overColumnId)
-        ) {
-          const targetColId =
-            overDataType === "column"
-              ? over.id.replace("col-", "")
-              : overColumnId;
-          const targetColumn = findColumn(newLayout, targetColId);
-          if (targetColumn) {
-            if (!targetColumn.elements) targetColumn.elements = [];
-            let insertAtIndex = targetColumn.elements.length;
-            if (overDataType === "canvasElement") {
-              const overElementIndex = targetColumn.elements.findIndex(
-                (el) => el.id === over.id
-              );
-              if (overElementIndex !== -1) insertAtIndex = overElementIndex;
-            }
-            targetColumn.elements.splice(insertAtIndex, 0, newElementInstance);
-          } else {
-            return prevLayout;
-          }
-        } else if (overDataType === "page" || overDataType === "section") {
-          if (newElementInstance.type === "innerSection") {
-            setModalStates((prev) => ({
-              ...prev,
-              dragEndAlert: {
-                isOpen: true,
-                title: "Placement Info",
-                message:
-                  "Inner Sections are best placed inside an existing section's column. Consider adding a section first or using 'Set Inner Structure'. This will create a new section for it.",
-              },
-            }));
-          }
-          const newSection = {
-            id: generateId("section"),
-            type: "section",
-            props: {
-              backgroundType: "none",
-              backgroundColor: "#FFFFFF",
-              backgroundImageSrc: "",
-              backgroundVideoSrc: "",
-              backgroundVideoAutoplay: true,
-              backgroundVideoLoop: true,
-              backgroundVideoMuted: true,
-              backgroundOverlayColor: "rgba(0,0,0,0.3)",
-              backgroundOverlayOpacity: 0.0,
-              paddingTop: "48px",
-              paddingBottom: "48px",
-              paddingLeft: "24px",
-              paddingRight: "24px",
-            },
-            columns: [
-              {
-                id: generateId("col"),
-                type: "column",
-                props: { width: "100%" },
-                elements: [newElementInstance],
-              },
-            ],
-          };
-          let sectionInsertIndex = newLayout.length;
-          if (overDataType === "section") {
-            const targetSectionIndex = newLayout.findIndex(
-              (s) => s.id === over.id
-            );
-            if (targetSectionIndex !== -1) {
-              sectionInsertIndex = targetSectionIndex + 1;
-            }
-          }
-          newLayout.splice(sectionInsertIndex, 0, newSection);
-        } else {
-          return prevLayout;
-        }
-      } else if (activeType === "section") {
-        const activeSectionIndex = newLayout.findIndex(
-          (s) => s.id === activeId
-        );
-        if (activeSectionIndex === -1) {
-          return prevLayout;
-        }
-        let overSectionIndex = -1;
-        if (overDataType === "section" && overId !== activeId) {
-          overSectionIndex = newLayout.findIndex((s) => s.id === overId);
-        } else if (
-          overDataType === "page" &&
-          overId === "page-sections-droppable"
-        ) {
-          const potentialOverSection = newLayout.find((s) => s.id === overId);
-          if (potentialOverSection) {
-            overSectionIndex = newLayout.findIndex((s) => s.id === overId);
-          } else {
-            overSectionIndex = newLayout.length;
-          }
-        } else if (
-          overDataType === "column" ||
-          overDataType === "canvasElement"
-        ) {
-          let parentSectionId = null;
-          if (overDataType === "column") {
-            const colPath = over.data.current?.path;
-            if (colPath)
-              parentSectionId = colPath.match(/sections\[(\d+)\]/)?.[1];
-            if (parentSectionId && newLayout[parseInt(parentSectionId)])
-              parentSectionId = newLayout[parseInt(parentSectionId)]?.id;
-            else parentSectionId = null;
-          } else {
-            const elPath = over.data.current?.elementData?.path;
-            if (elPath)
-              parentSectionId = elPath.match(/sections\[(\d+)\]/)?.[1];
-            if (parentSectionId && newLayout[parseInt(parentSectionId)])
-              parentSectionId = newLayout[parseInt(parentSectionId)]?.id;
-            else parentSectionId = null;
-          }
-          if (parentSectionId) {
-            overSectionIndex = newLayout.findIndex(
-              (s) => s.id === parentSectionId
-            );
-          }
-          if (overSectionIndex === -1) {
-            overSectionIndex = newLayout.length;
-          }
-        }
-        if (
-          overSectionIndex !== -1 &&
-          activeSectionIndex !== overSectionIndex
-        ) {
-          newLayout = arrayMove(
-            newLayout,
-            activeSectionIndex,
-            overSectionIndex
-          );
-        } else if (
-          overSectionIndex === -1 &&
-          overId === "page-sections-droppable" &&
-          activeSectionIndex !== -1
-        ) {
-          const movedSection = newLayout.splice(activeSectionIndex, 1)[0];
-          newLayout.push(movedSection);
-        } else {
-          return prevLayout;
-        }
-      } else if (activeType === "canvasElement") {
-        const sourceColumnId = active.data.current.parentColumnId;
-        const sourceColumn = findColumn(newLayout, sourceColumnId);
-        let targetColumn;
-        let targetElementInsertIndex = 0;
-        if (overDataType === "column") {
-          targetColumn = findColumn(newLayout, over.id.replace("col-", ""));
-          if (targetColumn)
-            targetElementInsertIndex = targetColumn.elements?.length || 0;
-        } else if (overDataType === "canvasElement") {
-          targetColumn = findColumn(
-            newLayout,
-            over.data.current.parentColumnId
-          );
-          if (targetColumn) {
-            const overElIdx = targetColumn.elements.findIndex(
-              (el) => el.id === over.id
-            );
-            if (overElIdx !== -1) targetElementInsertIndex = overElIdx;
-            else targetElementInsertIndex = targetColumn.elements?.length || 0;
-          }
-        } else {
-          return prevLayout;
-        }
-        if (sourceColumn && targetColumn) {
-          const activeElementIndex = sourceColumn.elements.findIndex(
-            (el) => el.id === activeId
-          );
-          if (activeElementIndex !== -1) {
-            const [movedElement] = sourceColumn.elements.splice(
-              activeElementIndex,
-              1
-            );
-            if (!targetColumn.elements) targetColumn.elements = [];
-            if (
-              sourceColumn.id === targetColumn.id &&
-              targetElementInsertIndex > activeElementIndex
-            ) {
-              targetElementInsertIndex--;
-            }
-            targetColumn.elements.splice(
-              targetElementInsertIndex,
-              0,
-              movedElement
-            );
-          } else {
-            return prevLayout;
-          }
-        } else {
-          return prevLayout;
-        }
-      } else {
-        return prevLayout;
-      }
-      if (selectedItem && selectedItem.type !== "globalElement") {
-        const found = findItemAndPathRecursive(
-          newLayout,
-          selectedItem.id,
-          "sections"
-        );
-        if (found) {
-          const { item: newItemData, path: newPath } = found;
-          let propsToSet = newItemData.props;
-          if (selectedItem.type === "element")
-            propsToSet = {
-              ...newItemData.props,
-              elementType: newItemData.type,
-            };
-          else if (selectedItem.type === "section")
-            propsToSet = newItemData.props;
-          setSelectedItem({
-            id: selectedItem.id,
-            type: selectedItem.type,
-            path: newPath,
-            props: propsToSet,
-          });
-        } else {
-          setSelectedItem(null);
-        }
-      }
-      return newLayout;
-    });
   };
+
   const togglePreviewMode = () => {
-    if (isPreviewMode) {
-      setIsPreviewMode(false);
-    } else {
-      setSelectedItem(null);
-      setIsPreviewMode(true);
-    }
+    setSelectedItem(null);
+    setIsPreviewMode((prev) => !prev);
   };
-  useEffect(() => {
-    if (isPreviewMode) {
-      setSelectedItem(null);
-    }
-  }, [isPreviewMode, activePageId]);
-  useEffect(() => {
-    const pageExists = !!pages[activePageId];
-    if (!pageExists && Object.keys(pages).length > 0) {
-      setActivePageId(Object.keys(pages)[0]);
-    }
-  }, [activePageId, pages]);
+
   const handleSave = () => {
-    const saveData = {
-      pages: pages,
-      activePageId: activePageId,
-      globalNavbar: globalNavbar,
-      globalFooter: globalFooter,
-    };
-    if (onExternalSave) {
-      onExternalSave(saveData);
-    }
-    setModalStates((prev) => ({
-      ...prev,
-      saveConfirm: {
-        isOpen: true,
-        title: "Save Successful",
-        message: "Your project data has been successfully saved.",
-      },
-    }));
+    if (onExternalSave) onExternalSave({ pages, activePageId, globalNavbar, globalFooter });
+    setModalStates(p => ({ ...p, saveConfirm: { isOpen: true, title: "Save Successful", message: "Your project has been saved." } }));
   };
+
+  const startAiSession = async () => {
+     if(aiSessionId.current) return;
+     try {
+        const sessionResponse = await fetch('http://104.219.251.122:8000/start-session', {
+            method: 'POST',
+            headers: { 'accept': 'application/json' },
+        });
+        if (!sessionResponse.ok) throw new Error(`Session API error: ${sessionResponse.statusText}`);
+        
+        const sessionData = await sessionResponse.json();
+        if (sessionData.session_id) {
+            aiSessionId.current = sessionData.session_id;
+        } else {
+            throw new Error("Received an empty session ID from the API.");
+        }
+    } catch (error) {
+        console.error("Failed to start AI session:", error);
+        setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: "Could not connect to the AI service."}}));
+    }
+  }
+
+  const handleAiSubmit = async (prompt) => {
+    if (!aiSessionId.current) {
+      setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: "AI session not started. Please try again."}}));
+      startAiSession();
+      return;
+    }
+
+    setIsAiLoading(true);
+    const historyId = generateId('history');
+    setAiChatHistory(prev => [...prev, { id: historyId, prompt, status: 'loading' }]);
+
+    try {
+        const pageResponse = await fetch('http://104.219.251.122:8000/generate-page', {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                session_id: aiSessionId.current,
+                prompt: prompt,
+                as_file: false
+            }),
+        });
+
+        if (!pageResponse.ok) throw new Error(`Generation API error: ${pageResponse.statusText}`);
+        
+        const apiResult = await pageResponse.json();
+        
+        if (apiResult.html) {
+            const newLayout = htmlToBuilderJson(apiResult.html);
+            updatePageLayout(() => newLayout);
+            setAiChatHistory(prev => prev.map(entry => entry.id === historyId ? {...entry, status: 'success'} : entry));
+        } else {
+             throw new Error("Invalid response structure from AI. 'html' key not found.");
+        }
+
+    } catch (error) {
+         console.error("Failed to generate page with AI:", error);
+         setAiChatHistory(prev => prev.map(entry => entry.id === historyId ? {...entry, status: 'error'} : entry));
+         setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: "Failed to generate the page content."}}));
+    } finally {
+        setIsAiLoading(false);
+    }
+  };
+
   if (isPreviewMode) {
     return (
       <div className="flex flex-col h-screen bg-white antialiased">
-        <PageActions
+        <TopBar
+          onSave={handleSave}
           onTogglePreview={togglePreviewMode}
-          isPreviewMode={isPreviewMode}
-          pages={pages}
-          activePageId={activePageId}
-          previewDevice={previewDevice}
-          onSetPreviewDevice={setPreviewDevice}
-          modalStates={modalStates}
-          setModalStates={setModalStates}
+          isPreviewMode={true}
         />
         <PagePreviewRenderer
           pageLayout={currentPageLayout}
           globalNavbar={globalNavbar}
           globalFooter={globalFooter}
           onNavigate={handleNavigate}
-          previewDevice={previewDevice}
           activePageId={activePageId}
         />
       </div>
     );
   }
+
   return (
     <DndContext
       sensors={sensors}
@@ -4283,174 +3217,44 @@ export default function ElementBuilderPage({
       onDragEnd={handleDragEnd}
       disabled={isPreviewMode}
     >
-      <div className="flex flex-col h-screen bg-slate-100 antialiased">
-        <PageActions
+      <div className="h-screen bg-slate-100 antialiased flex flex-col">
+        <TopBar
           onSave={handleSave}
           onTogglePreview={togglePreviewMode}
-          isPreviewMode={isPreviewMode}
-          pages={pages}
-          activePageId={activePageId}
-          onSelectPage={handleSelectPage}
-          onRenamePage={() => {}}
-          onDeletePage={() => {}}
-          previewDevice={previewDevice}
-          onSetPreviewDevice={setPreviewDevice}
-          modalStates={modalStates}
-          setModalStates={setModalStates}
+          isPreviewMode={false}
         />
         <div className="flex flex-row flex-1 overflow-hidden">
-          {!isPreviewMode &&
-            (selectedItem ? (
-              <PropertiesPanel
-                selectedItemData={selectedItem}
-                onUpdateSelectedProps={handleUpdateProps}
-                onClosePanel={() => setSelectedItem(null)}
-                pages={pages}
-                onDeleteGlobalElement={handleDeleteGlobalElement}
-              />
-            ) : (
-              <ElementPalette
-                onAddTopLevelSection={() =>
-                  handleOpenStructureModal(null, "section")
-                }
-                pages={pages}
-                activePageId={activePageId}
-                onAddPage={handleAddPage}
-                onSelectPage={handleSelectPage}
-              />
-            ))}
-          <div className="flex-1 flex flex-col overflow-hidden relative">
-            {globalNavbar && !isPreviewMode && (
-              <header className="bg-slate-100 p-2 border-b border-slate-200/70 shadow-sm z-40">
-                <div className="absolute top-0 left-2 text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-b-md font-bold">
-                  Global
-                </div>
-                <NavbarElement
-                  {...globalNavbar.props}
-                  path={globalNavbar.path}
-                  isSelected={selectedItem?.id === globalNavbar.id}
-                  onSelect={() => handleSelectGlobalElement("navbar")}
-                  onUpdate={(newProps) =>
-                    handleUpdateProps("globalNavbar", newProps)
-                  }
-                  onDelete={() => handleDeleteGlobalElement("navbar")}
-                  isPreviewMode={false}
-                  onNavigate={handleNavigate}
-                />
+          <LeftSidebar onAddTopLevelSection={() => handleOpenStructureModal(null, "section")} pages={pages} activePageId={activePageId} onAddPage={handleAddPage} onSelectPage={handleSelectPage} onRenamePage={handleRenamePage} onDeletePage={handleDeletePage} onAiSubmit={handleAiSubmit} isAiLoading={isAiLoading} aiChatHistory={aiChatHistory} onSwitchToAiMode={startAiSession}/>
+          <main className="flex-1 flex flex-col overflow-hidden relative">
+            <CanvasToolbar selectedItem={selectedItem} zoom={zoom} onZoomChange={setZoom} elementData={currentPageLayout} onSelect={handleSelect} />
+            {globalNavbar && (
+              <header className="bg-slate-100 p-2 border-b border-slate-200 shadow-sm z-10 flex-shrink-0 relative">
+                <NavbarElement {...globalNavbar.props} path="globalNavbar" isSelected={selectedItem?.id === globalNavbar.id} onSelect={() => handleSelect(globalNavbar.id, 'globalElement', 'globalNavbar')} onUpdate={(p) => handleUpdateProps("globalNavbar", p)} onDelete={() => handleDeleteGlobalElement("navbar")} />
               </header>
             )}
-            <main className="flex-1 overflow-y-auto">
-              <CanvasArea
-                pageLayout={currentPageLayout}
-                onUpdateProps={handleUpdateProps}
-                onDelete={handleDelete}
-                onSelect={handleSelect}
-                selectedItemId={selectedItem ? selectedItem.id : null}
-                onOpenStructureModal={handleOpenStructureModal}
-                isPreviewMode={isPreviewMode}
-                onNavigate={handleNavigate}
-              />
-            </main>
-            {globalFooter && !isPreviewMode && (
-              <footer className="bg-slate-100 p-2 border-t border-slate-200/70 shadow-sm z-40">
-                <div className="absolute bottom-full left-2 text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-t-md font-bold">
-                  Global
-                </div>
-                <FooterElement
-                  {...globalFooter.props}
-                  path={globalFooter.path}
-                  isSelected={selectedItem?.id === globalFooter.id}
-                  onSelect={() => handleSelectGlobalElement("footer")}
-                  onUpdate={(newProps) =>
-                    handleUpdateProps("globalFooter", newProps)
-                  }
-                  onDelete={() => handleDeleteGlobalElement("footer")}
-                  isPreviewMode={false}
-                  onNavigate={handleNavigate}
-                />
+            {isAiLoading && <AiCanvasLoader />}
+            <CanvasArea pageLayout={currentPageLayout} onUpdateProps={handleUpdateProps} onDelete={handleDelete} onSelect={handleSelect} selectedItemId={selectedItem?.id || null} onOpenStructureModal={handleOpenStructureModal} zoom={zoom} />
+            {globalFooter && (
+              <footer className="bg-slate-100 p-2 border-t border-slate-200 shadow-sm z-10 flex-shrink-0 relative">
+                <FooterElement {...globalFooter.props} path="globalFooter" isSelected={selectedItem?.id === globalFooter.id} onSelect={() => handleSelect(globalFooter.id, 'globalElement', 'globalFooter')} onUpdate={(p) => handleUpdateProps("globalFooter", p)} onDelete={() => handleDeleteGlobalElement("footer")} />
               </footer>
             )}
-          </div>
+          </main>
+          <RightSidebar selectedItemData={selectedItem} onUpdateSelectedProps={handleUpdateProps} pages={pages} activePageId={activePageId} onRenamePage={handleRenameActivePage} onAddGlobalElement={handleAddGlobalElement} />
         </div>
       </div>
       <DragOverlay dropAnimation={null} zIndex={9999}>
-        {activeDragItem ? (
-          activeDragItem.data.current?.type === "paletteItem" ? (
-            <PaletteItemDragOverlay
-              config={activeDragItem.data.current.config}
-            />
-          ) : activeDragItem.data.current?.type === "canvasElement" ? (
-            <div className="p-3 bg-green-100 border-2 border-green-400 rounded-xl shadow-xl opacity-90 text-sm font-semibold text-green-700">
-              Moving:{" "}
-              {AVAILABLE_ELEMENTS_CONFIG.find(
-                (c) => c.id === activeDragItem.data.current?.elementType
-              )?.name || "Element"}
-            </div>
-          ) : activeDragItem.data.current?.type === "section" ? (
-            <div className="p-4 bg-emerald-100 border-2 border-emerald-400 rounded-xl shadow-xl opacity-90 text-base font-semibold text-emerald-700">
-              Moving Section
-            </div>
-          ) : null
+        {activeDragItem &&
+        activeDragItem.data.current?.type === "paletteItem" ? (
+          <PaletteItemDragOverlay config={activeDragItem.data.current.config} />
         ) : null}
       </DragOverlay>
-      <StructureSelectorModal
-        isOpen={isStructureModalOpen}
-        onClose={() => setIsStructureModalOpen(false)}
-        onSelectStructure={handleSetStructure}
-        context={structureModalContext}
-      />
-      <InputModal
-        isOpen={modalStates.addPage.isOpen}
-        onClose={() => closeModal("addPage")}
-        onSubmit={submitAddPage}
-        title="Add New Page"
-        inputLabel="Page Name"
-        placeholder="e.g., About Us"
-        initialValue={`Page ${Object.keys(pages).length + 1}`}
-      />
-      <InputModal
-        isOpen={modalStates.renamePage.isOpen}
-        onClose={() => closeModal("renamePage")}
-        onSubmit={submitRenamePage}
-        title="Rename Page"
-        inputLabel="New Page Name"
-        initialValue={modalStates.renamePage.currentName}
-      />
-      <ConfirmationModal
-        isOpen={modalStates.deletePage.isOpen}
-        onClose={() => closeModal("deletePage")}
-        onConfirm={confirmDeletePage}
-        title="Delete Page"
-        message={`Are you sure you want to delete the page "${modalStates.deletePage.pageName}"? This action cannot be undone.`}
-        confirmButtonVariant="danger"
-      />
-      <ConfirmationModal
-        isOpen={modalStates.alert.isOpen}
-        onClose={() => closeModal("alert")}
-        onConfirm={() => {}}
-        title={modalStates.alert.title}
-        message={modalStates.alert.message}
-        confirmText="OK"
-        confirmButtonVariant="primary"
-      />
-      <ConfirmationModal
-        isOpen={modalStates.dragEndAlert.isOpen}
-        onClose={() => closeModal("dragEndAlert")}
-        onConfirm={() => {}}
-        title={modalStates.dragEndAlert.title}
-        message={modalStates.dragEndAlert.message}
-        confirmText="OK"
-        confirmButtonVariant="primary"
-      />
-      <ConfirmationModal
-        isOpen={modalStates.saveConfirm.isOpen}
-        onClose={() => closeModal("saveConfirm")}
-        onConfirm={() => {}}
-        title={modalStates.saveConfirm.title}
-        message={modalStates.saveConfirm.message}
-        confirmText="Understood"
-        confirmButtonVariant="primary"
-      />
+      <StructureSelectorModal isOpen={isStructureModalOpen} onClose={() => setIsStructureModalOpen(false)} onSelectStructure={handleSetStructure} context={structureModalContext} />
+      <InputModal isOpen={modalStates.addPage.isOpen} onClose={() => closeModal("addPage")} onSubmit={submitAddPage} title="Add New Page" inputLabel="Page Name" initialValue={`Page ${Object.keys(pages).length + 1}`} />
+      <InputModal isOpen={modalStates.renamePage.isOpen} onClose={() => closeModal("renamePage")} onSubmit={submitRenamePage} title="Rename Page" inputLabel="New Page Name" initialValue={modalStates.renamePage.currentName} />
+      <ConfirmationModal isOpen={modalStates.deletePage.isOpen} onClose={() => closeModal("deletePage")} onConfirm={confirmDeletePage} title="Delete Page" message={`Are you sure you want to delete "${modalStates.deletePage.pageName}"?`} confirmButtonVariant="danger" />
+      <ConfirmationModal isOpen={modalStates.saveConfirm.isOpen} onClose={() => closeModal("saveConfirm")} onConfirm={() => {}} title={modalStates.saveConfirm.title} message={modalStates.saveConfirm.message} confirmText="OK" />
+      <ConfirmationModal isOpen={modalStates.alert.isOpen} onClose={() => closeModal("alert")} onConfirm={() => {}} title={modalStates.alert.title} message={modalStates.alert.message} confirmText="OK" />
     </DndContext>
   );
 }
