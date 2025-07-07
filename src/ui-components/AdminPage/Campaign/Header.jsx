@@ -572,7 +572,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd} disabled={isPreviewMode || activeTool !== 'select'}>
-      <div className="h-screen bg-slate-100 antialiased flex flex-col">
+      <div className="h-[90vh] bg-slate-100 antialiased flex flex-col">
         <TopBar onSave={handleSave} onTogglePreview={togglePreviewMode} isPreviewMode={false} onToggleLeftPanel={() => setIsLeftPanelOpen(true)} />
         <div className="flex-1 flex flex-row relative overflow-hidden">
           <main 

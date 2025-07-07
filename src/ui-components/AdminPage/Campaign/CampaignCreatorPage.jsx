@@ -2152,7 +2152,7 @@ export default function CampaignCreatorPage() {
                     className="border-2 border-slate-300 rounded-xl overflow-hidden shadow-lg bg-slate-100"
                     style={{
                       height: "calc(100vh - 420px)",
-                      minHeight: "610px",
+                      minHeight: "545px",
                     }}
                   >
                     <ElementBuilderPage
