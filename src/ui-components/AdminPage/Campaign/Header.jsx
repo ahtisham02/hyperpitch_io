@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useEffect } from "react";
+import React, { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { DndContext, DragOverlay, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter, useDraggable, useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -23,10 +23,10 @@ function GeneralModal({ isOpen, onClose, title, children, size = "md" }) {
   if (!isOpen) return null;
   const sizeClasses = { sm: "max-w-sm", md: "max-w-md", lg: "max-w-lg", xl: "max-w-xl", "2xl": "max-w-2xl" };
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-[200] p-4 print-hidden animate-fadeIn">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[5000] p-4 print-hidden animate-fadeIn">
       <div className={`bg-white p-5 sm:p-6 rounded-2xl shadow-2xl w-full ${sizeClasses[size] || sizeClasses.md} transition-all duration-300 ease-in-out animate-scaleIn`}>
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-slate-800">{title}</h3>
+          <h3 className="text-xl font-bold text-slate-800">{title}</h3>
           {onClose && (
             <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100">
               <LucideIcons.X className="w-6 h-6" />
@@ -78,7 +78,7 @@ function CustomDropdown({ options, value, onChange, placeholder = "Select an opt
   const handleSelect = (optionValue) => { onChange(optionValue); setIsOpen(false); };
   return (
     <div className="relative w-full" ref={dropdownRef}>
-      {label && (<label className="block text-xs font-medium text-slate-700 mb-1">{label}</label>)}
+      {label && (<label className="block text-xs font-medium text-slate-600 mb-1">{label}</label>)}
       <button type="button" onClick={() => !disabled && setIsOpen(!isOpen)} disabled={disabled} className={`w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-shadow shadow-sm bg-white text-left flex justify-between items-center ${disabled ? "bg-slate-100 cursor-not-allowed" : "cursor-pointer"}`}>
         <span className={selectedOption ? "text-slate-800" : "text-slate-500"}>{selectedOption ? selectedOption.label : placeholder}</span>
         <LucideIcons.ChevronDown className={`w-5 h-5 text-slate-500 transition-transform ${isOpen ? "transform rotate-180" : ""}`} />
@@ -95,6 +95,23 @@ function CustomDropdown({ options, value, onChange, placeholder = "Select an opt
 }
 
 function generateId(prefix = "id") { return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`; }
+
+function isObject(item) { return (item && typeof item === 'object' && !Array.isArray(item)); }
+function mergeDeep(target, ...sources) {
+  if (!sources.length) return target;
+  const source = sources.shift();
+  if (isObject(target) && isObject(source)) {
+    for (const key in source) {
+      if (isObject(source[key])) {
+        if (!target[key]) Object.assign(target, { [key]: {} });
+        mergeDeep(target[key], source[key]);
+      } else {
+        Object.assign(target, { [key]: source[key] });
+      }
+    }
+  }
+  return mergeDeep(target, ...sources);
+}
 
 function getItemByPath(obj, pathString) {
   if (!pathString) return null;
@@ -180,10 +197,10 @@ const PREVIEW_DEVICES = [
     { name: "Desktop", width: "100%", icon: LucideIcons.Monitor },
 ];
 
-function Heading({ text = "Default Heading Title", onUpdate, isSelected, sizeClass, fontWeight, textAlign, textColor, isPreviewMode, isEditable }) {
+function Heading({ text = "Default Heading Title", onUpdate, isSelected, sizeClass, fontWeight, textAlign, textColor, isPreviewMode, isEditable, style }) {
   const handleBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ text: e.currentTarget.innerText }); };
   return (
-    <div className={`p-2 ${!isPreviewMode ? `rounded-lg ${isSelected ? "" : "hover:ring-1 hover:ring-green-400/70"}`: ""}`}>
+    <div className={`p-2 ${!isPreviewMode ? `rounded-lg ${isSelected ? "" : "hover:ring-1 hover:ring-green-400/70"}`: ""}`} style={style}>
       <h1
         style={{ color: textColor || undefined }}
         className={`${sizeClass || "text-2xl"} ${fontWeight || "font-bold"} ${textAlign || "text-left"} ${!textColor ? "text-slate-800" : ""} ${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-green-400 focus:bg-white/80 p-1 -m-1 rounded-lg" : ""} transition-all`}
@@ -192,10 +209,10 @@ function Heading({ text = "Default Heading Title", onUpdate, isSelected, sizeCla
   );
 }
 
-function TextBlock({ text = "Lorem ipsum dolor sit amet...", onUpdate, isSelected, sizeClass, fontWeight, textAlign, textColor, isPreviewMode, isEditable }) {
+function TextBlock({ text = "Lorem ipsum dolor sit amet...", onUpdate, isSelected, sizeClass, fontWeight, textAlign, textColor, isPreviewMode, isEditable, style }) {
     const handleBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ text: e.currentTarget.innerText }); };
     return (
-        <div className={`p-2 ${!isPreviewMode ? `rounded-lg ${isSelected ? "" : "hover:ring-1 hover:ring-green-400/70"}` : ""}`}>
+        <div className={`p-2 ${!isPreviewMode ? `rounded-lg ${isSelected ? "" : "hover:ring-1 hover:ring-green-400/70"}` : ""}`} style={style}>
             <p
                 style={{ color: textColor || undefined }}
                 className={`${sizeClass || "text-base"} ${fontWeight || "font-normal"} ${textAlign || "text-left"} ${!textColor ? "text-slate-700" : ""} leading-relaxed ${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-green-400 focus:bg-white/80 p-1 -m-1 rounded-lg whitespace-pre-wrap" : "whitespace-pre-wrap"} transition-all`}
@@ -207,16 +224,16 @@ function TextBlock({ text = "Lorem ipsum dolor sit amet...", onUpdate, isSelecte
     );
 }
 
-function ImageElement({ src = img, alt = "Placeholder", width = "100%", height = "auto", borderRadius = "8px", boxShadow = "none", isSelected, isPreviewMode, }) {
+function ImageElement({ src = img, alt = "Placeholder", width = "100%", height = "auto", borderRadius = "8px", boxShadow = "none", isSelected, isPreviewMode, style }) {
     const getStyleValue = (v) => v === "auto" || (typeof v === "string" && v.endsWith("%")) ? v : `${parseInt(v, 10) || "auto"}px`;
     return (
-        <div className={`p-1 ${!isPreviewMode ? `rounded-lg ${isSelected ? "" : "hover:ring-1 hover:ring-green-400/70"}` : ""}`}>
+        <div className={`p-1 ${!isPreviewMode ? `rounded-lg ${isSelected ? "" : "hover:ring-1 hover:ring-green-400/70"}` : ""}`} style={style}>
             <img src={src} alt={alt} className={`max-w-full h-auto block mx-auto transition-all`} style={{ width: getStyleValue(width), height: getStyleValue(height), minHeight: "50px", objectFit: "cover", borderRadius: borderRadius, boxShadow: boxShadow }} />
         </div>
     );
 }
 
-function ButtonElement({ buttonText = "Click Me", link = "#", onUpdate, isSelected, sizeClass, textAlign, backgroundColor = "#16a34a", textColor = "#ffffff", borderRadius = "8px", variant = "solid", fullWidth = false, isPreviewMode, onNavigate, isEditable }) {
+function ButtonElement({ buttonText = "Click Me", link = "#", onUpdate, isSelected, sizeClass, textAlign, backgroundColor = "#16a34a", textColor = "#ffffff", borderRadius = "8px", variant = "solid", fullWidth = false, isPreviewMode, onNavigate, isEditable, style }) {
     const handleTextBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ buttonText: e.currentTarget.innerText }); };
     const solidStyle = { backgroundColor: backgroundColor, color: textColor, borderRadius: borderRadius, border: "2px solid transparent" };
     const outlineStyle = { backgroundColor: "transparent", color: backgroundColor, borderRadius: borderRadius, border: `2px solid ${backgroundColor}` };
@@ -227,7 +244,7 @@ function ButtonElement({ buttonText = "Click Me", link = "#", onUpdate, isSelect
         else if (link === "#") { e.preventDefault(); }
     };
     return (
-        <div className={`py-3 px-2 ${textAlign || "text-center"} ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/10" : ""}`}>
+        <div className={`py-3 px-2 ${textAlign || "text-center"} ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/10" : ""}`} style={style}>
             <a href={link} onClick={handleClick} target={ isPreviewMode && link && !link.startsWith("/") && link !== "#" ? "_blank" : "_self" } rel={ isPreviewMode && link && !link.startsWith("/") && link !== "#" ? "noopener noreferrer" : "" } className={`inline-block px-6 py-3 font-semibold shadow-md hover:opacity-90 transition-all ${sizeClass || "text-base"} ${fullWidth ? "w-full" : "w-auto"}`} style={buttonStyle}>
                 <span contentEditable={!isPreviewMode && isEditable} suppressContentEditableWarning onBlur={handleTextBlur} dangerouslySetInnerHTML={{ __html: buttonText }} className={`${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-white/50 p-0.5 -m-0.5 rounded-sm" : ""}`}></span>
             </a>
@@ -235,31 +252,31 @@ function ButtonElement({ buttonText = "Click Me", link = "#", onUpdate, isSelect
     );
 }
 
-function Divider({ isSelected, isPreviewMode }) {
+function Divider({ isSelected, isPreviewMode, style }) {
     return (
-        <div className={`py-4 px-1 ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/10" : ""}`}>
+        <div className={`py-4 px-1 ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/10" : ""}`} style={style}>
             <hr className="border-t border-slate-300" />
         </div>
     );
 }
 
-function Spacer({ height = "20px", onUpdate, isSelected, isPreviewMode }) {
-    return <div style={{ height }} className={`w-full transition-all ${!isPreviewMode && isSelected ? "bg-green-200/50" : !isPreviewMode ? "bg-transparent hover:bg-slate-200/50" : ""}`}></div>;
+function Spacer({ height = "20px", onUpdate, isSelected, isPreviewMode, style }) {
+    return <div style={{ height, ...style }} className={`w-full transition-all ${!isPreviewMode && isSelected ? "bg-green-200/50" : !isPreviewMode ? "bg-transparent hover:bg-slate-200/50" : ""}`}></div>;
 }
 
-function IconElement({ iconName = "Star", size = "32px", color = "currentColor", onUpdate, isSelected, isPreviewMode, }) {
+function IconElement({ iconName = "Star", size = "32px", color = "currentColor", onUpdate, isSelected, isPreviewMode, style }) {
     const IconComponent = LucideIcons[iconName] || LucideIcons.HelpCircle;
     const ActualIconComponent = IconComponent || LucideIcons.HelpCircle;
     return (
-        <div className={`p-2 flex justify-center items-center ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/10" : ""}`}>
+        <div className={`p-2 flex justify-center items-center ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/10" : ""}`} style={style}>
             <ActualIconComponent style={{ fontSize: size, color: color }} strokeWidth={color === "currentColor" ? 1.75 : 2} />
         </div>
     );
 }
 
-function GoogleMapsPlaceholder({ address = "1600 Amphitheatre Parkway, Mountain View, CA", zoom = 14, onUpdate, isSelected, isPreviewMode, }) {
+function GoogleMapsPlaceholder({ address = "1600 Amphitheatre Parkway, Mountain View, CA", zoom = 14, onUpdate, isSelected, isPreviewMode, style }) {
     return (
-        <div className={`p-3 rounded-xl ${!isPreviewMode ? `${isSelected ? "bg-green-500/10" : "bg-slate-100 border border-slate-200 hover:border-green-300"}` : "bg-slate-100 border border-slate-200"} aspect-video flex flex-col items-center justify-center text-center`}>
+        <div className={`p-3 rounded-xl ${!isPreviewMode ? `${isSelected ? "bg-green-500/10" : "bg-slate-100 border border-slate-200 hover:border-green-300"}` : "bg-slate-100 border border-slate-200"} aspect-video flex flex-col items-center justify-center text-center`} style={style}>
             <LucideIcons.MapPin className="h-12 w-12 text-slate-400 mb-2" />
             <p className="text-sm font-medium text-slate-600">{address}</p>
             <p className="text-xs text-slate-500 mt-0.5">Maps Placeholder (Zoom: {zoom})</p>
@@ -267,7 +284,7 @@ function GoogleMapsPlaceholder({ address = "1600 Amphitheatre Parkway, Mountain 
     );
 }
 
-function VideoElement({ videoType = "mp4", src, width = "100%", height = "auto", controls = true, autoplay = false, loop = false, muted = true, isSelected, isPreviewMode, }) {
+function VideoElement({ videoType = "mp4", src, width = "100%", height = "auto", controls = true, autoplay = false, loop = false, muted = true, isSelected, isPreviewMode, style }) {
     const getYouTubeEmbedUrl = (videoId) => `https://www.youtube.com/embed/${videoId}?autoplay=${autoplay ? 1 : 0}&loop=${loop ? 1 : 0}&mute=${muted ? 1 : 0}&controls=${controls ? 1 : 0}${loop ? `&playlist=${videoId}` : ""}`;
     const getVimeoEmbedUrl = (videoId) => `https://player.vimeo.com/video/${videoId}?autoplay=${autoplay ? 1 : 0}&loop=${loop ? 1 : 0}&muted=${muted ? 1 : 0}&controls=${controls ? 1 : 0}`;
     const effectiveHeight = height === "auto" ? "auto" : parseInt(height) ? `${parseInt(height)}px` : "300px";
@@ -281,19 +298,19 @@ function VideoElement({ videoType = "mp4", src, width = "100%", height = "auto",
         }
     };
     return (
-        <div className={`p-1 ${!isPreviewMode ? `rounded-xl ${isSelected ? "" : "hover:ring-1 hover:ring-green-300/70"}` : ""}`}>
+        <div className={`p-1 ${!isPreviewMode ? `rounded-xl ${isSelected ? "" : "hover:ring-1 hover:ring-green-300/70"}` : ""}`} style={style}>
             {renderVideo()}
         </div>
     );
 }
 
-function InnerSectionComponentDisplay({ sectionData, onOpenStructureModal, onSelect, isSelected, onUpdateProps, onDelete, selectedItemId, isPreviewMode, isDraggable, }) {
+function InnerSectionComponentDisplay({ sectionData, onOpenStructureModal, onSelect, isSelected, onUpdateProps, onDelete, selectedItemId, isPreviewMode, isDraggable, style }) {
   const hasColumns = sectionData.columns && sectionData.columns.length > 0;
   const ownPath = sectionData.path;
 
   if (!hasColumns) {
     return (
-      <div onClick={(e) => { if (!isPreviewMode && isDraggable) { e.stopPropagation(); onSelect(sectionData.id, "element", ownPath); } }} className={`p-4 min-h-[80px] flex flex-col items-center justify-center ${!isPreviewMode ? `rounded-xl border-2 border-dashed ${isSelected ? "border-green-500 bg-green-50/80" : "border-slate-300 bg-slate-100/80 hover:border-green-400 hover:bg-green-50/50"} cursor-pointer transition-all` : ""}`}>
+      <div onClick={(e) => { if (!isPreviewMode && isDraggable) { e.stopPropagation(); onSelect(sectionData.id, "element", ownPath); } }} className={`p-4 min-h-[80px] flex flex-col items-center justify-center ${!isPreviewMode ? `rounded-xl border-2 border-dashed ${isSelected ? "border-green-500 bg-green-50/80" : "border-slate-300 bg-slate-100/80 hover:border-green-400 hover:bg-green-50/50"} cursor-pointer transition-all` : ""}`} style={style}>
           <LucideIcons.Rows3 className="h-8 w-8 text-slate-400 mb-2" />
           {!isPreviewMode && (
             <button onClick={(e) => { e.stopPropagation(); onOpenStructureModal(ownPath, "innerSection"); }} className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors">Set Inner Structure</button>
@@ -303,7 +320,7 @@ function InnerSectionComponentDisplay({ sectionData, onOpenStructureModal, onSel
   }
 
   return (
-    <div onClick={(e) => { if (!isPreviewMode && isDraggable) { e.stopPropagation(); onSelect(sectionData.id, "element", ownPath); } }} className={`p-1 ${!isPreviewMode ? `border rounded-xl ${isSelected ? "border-green-500 bg-green-50/50" : "border-slate-200 hover:border-green-300/70"}` : ""}`}>
+    <div onClick={(e) => { if (!isPreviewMode && isDraggable) { e.stopPropagation(); onSelect(sectionData.id, "element", ownPath); } }} className={`p-1 ${!isPreviewMode ? `border rounded-xl ${isSelected ? "border-green-500 bg-green-50/50" : "border-slate-200 hover:border-green-300/70"}` : ""}`} style={style}>
         <div className="flex flex-wrap -m-0.5">
             {sectionData.columns.map((col, colIdx) => (
                 <ColumnComponent key={col.id} parentPath={ownPath} columnData={col} columnIndex={colIdx} onUpdateProps={onUpdateProps} onDelete={onDelete} onSelect={onSelect} selectedItemId={selectedItemId} onOpenStructureModal={onOpenStructureModal} isInner={true} isPreviewMode={isPreviewMode} isDraggable={isDraggable} />
@@ -313,7 +330,7 @@ function InnerSectionComponentDisplay({ sectionData, onOpenStructureModal, onSel
   );
 }
 
-function CardSliderElement({ slides = [], slidesPerView = 3, spaceBetween = 16, speed = 500, autoplay = false, autoplayDelay = 3000, loop = false, showNavigation = true, showPagination = true, cardBorderRadius = "8px", onUpdate, isSelected, isPreviewMode, onNavigate, isEditable, }) {
+function CardSliderElement({ slides = [], slidesPerView = 3, spaceBetween = 16, speed = 500, autoplay = false, autoplayDelay = 3000, loop = false, showNavigation = true, showPagination = true, cardBorderRadius = "8px", onUpdate, isSelected, isPreviewMode, onNavigate, isEditable, style }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const timeoutRef = useRef(null);
   const sliderWrapperRef = useRef(null);
@@ -348,7 +365,7 @@ function CardSliderElement({ slides = [], slidesPerView = 3, spaceBetween = 16, 
   };
   if (totalSlides === 0 && !isPreviewMode) {
       return (
-          <div className={`p-4 min-h-[150px] flex flex-col items-center justify-center text-center border-2 border-dashed rounded-xl ${isSelected ? "border-green-500 bg-green-500/10" : "border-slate-300 bg-slate-100/80"}`}>
+          <div className={`p-4 min-h-[150px] flex flex-col items-center justify-center text-center border-2 border-dashed rounded-xl ${isSelected ? "border-green-500 bg-green-500/10" : "border-slate-300 bg-slate-100/80"}`} style={style}>
               <LucideIcons.GalleryHorizontalEnd className="h-12 w-12 text-slate-400 mb-3" />
               <p className="text-sm font-medium text-slate-600">Card Slider</p>
               <p className="text-xs text-slate-500">Add slides in the Properties Panel.</p>
@@ -357,7 +374,7 @@ function CardSliderElement({ slides = [], slidesPerView = 3, spaceBetween = 16, 
   }
   if (totalSlides === 0 && isPreviewMode) return null;
   return (
-      <div className={`p-2 relative ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/10" : ""}`}>
+      <div className={`p-2 relative ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/10" : ""}`} style={style}>
           <div className="overflow-hidden relative">
               <div ref={sliderWrapperRef} className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${currentIndex * (100 / effectiveSlidesPerView)}%)`, transitionDuration: `${speed}ms` }}>
                   {slides.map((slide, index) => (
@@ -389,9 +406,9 @@ function CardSliderElement({ slides = [], slidesPerView = 3, spaceBetween = 16, 
   );
 }
 
-function NavbarElement({ logoType = "text", logoText = "MySite", logoSrc = img, links = [], rightContentType = "none", backgroundColor = "#ffffff", textColor = "#334155", linkColor = "#16a34a", isSelected, isPreviewMode, onUpdate, onNavigate, onSelect, onDelete, path, previewDevice, isDraggable, }) {
+function NavbarElement({ logoType = "text", logoText = "MySite", logoSrc = img, links = [], rightContentType = "none", backgroundColor = "#ffffff", textColor = "#334155", linkColor = "#16a34a", isSelected, isPreviewMode, onUpdate, onNavigate, onSelect, onDelete, path, previewDevice, isDraggable, style }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const navStyle = { backgroundColor };
+    const navStyle = { backgroundColor, ...style };
     const textStyle = { color: textColor };
     const linkStyle = { color: linkColor };
     const forceMobileLayout = isPreviewMode && (previewDevice === "mobile" || previewDevice === "tablet");
@@ -440,9 +457,6 @@ function NavbarElement({ logoType = "text", logoText = "MySite", logoSrc = img, 
                         </div>
                     </div>
                 )}
-                {!isPreviewMode && links.length === 0 && (
-                    <div className="hidden md:block text-xs text-slate-400 mt-2 text-center">Navbar: Edit properties to add links</div>
-                )}
             </nav>
             {!isPreviewMode && isSelected && onDelete && (
                 <button onClick={(e) => { e.stopPropagation(); onDelete(); }} title="Remove Global Navbar" className="absolute -top-2.5 -right-2.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 hover:scale-110 transition-all w-7 h-7 flex items-center justify-center shadow-md z-30 print-hidden">
@@ -453,8 +467,8 @@ function NavbarElement({ logoType = "text", logoText = "MySite", logoSrc = img, 
     );
 }
 
-function FooterElement({ copyrightText = `© ${new Date().getFullYear()} MySite. All rights reserved.`, links = [], backgroundColor = "#f1f5f9", textColor = "#64748b", linkColor = "#16a34a", isSelected, isPreviewMode, onUpdate, onNavigate, onSelect, onDelete, path, isDraggable, }) {
-    const footerStyle = { backgroundColor };
+function FooterElement({ copyrightText = `© ${new Date().getFullYear()} MySite. All rights reserved.`, links = [], backgroundColor = "#f1f5f9", textColor = "#64748b", linkColor = "#16a34a", isSelected, isPreviewMode, onUpdate, onNavigate, onSelect, onDelete, path, isDraggable, style }) {
+    const footerStyle = { backgroundColor, ...style };
     const textStyle = { color: textColor };
     const linkStyle = { color: linkColor };
     const handleLinkClick = (e, linkUrl) => {
@@ -563,6 +577,11 @@ const ALL_ELEMENT_TYPES = {
     NavbarElement, FooterElement, CardSliderElement
 };
 
+const getDefaultProps = (id) => ({
+    ...(AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === id)?.defaultProps || {}),
+    style: {}
+})
+
 const AVAILABLE_ELEMENTS_CONFIG = [
   { id: "header", name: "Heading", component: "Heading", defaultProps: { text: "Powerful Headline Here", sizeClass: "text-4xl", fontWeight: "font-bold", textColor: "#1e293b", textAlign: "text-left" } },
   { id: "textBlock", name: "Paragraph", component: "TextBlock", defaultProps: { text: "This is an engaging paragraph. You can edit this text to share more about your brand, services, or products.", sizeClass: "text-base", textColor: "#475569", textAlign: "text-left" } },
@@ -572,7 +591,7 @@ const AVAILABLE_ELEMENTS_CONFIG = [
   { id: "spacer", name: "Spacer", component: "Spacer", defaultProps: { height: "40px" } },
   { id: "icon", name: "Icon", component: "IconElement", defaultProps: { iconName: "Rocket", size: "48px", color: "#16a34a" } },
   { id: "video", name: "Video", component: "VideoElement", defaultProps: { videoType: "mp4", src: "" } },
-  { id: "innerSection", name: "Inner Section", component: "InnerSectionComponentDisplay", isContainer: true, hasOwnColumns: true },
+  { id: "innerSection", name: "Inner Section", component: "InnerSectionComponentDisplay", isContainer: true, hasOwnColumns: true, defaultProps: {} },
   { id: "cardSlider", name: "Card Slider", component: "CardSliderElement", defaultProps: { slides: [{ id: generateId(), imgSrc: img, heading: "Feature One", text: "Description for feature one.", link: "#" }], slidesPerView: 3, spaceBetween: 16 } },
   { id: "navbar", name: "Navbar", component: "NavbarElement", isGlobalOnly: true, defaultProps: { logoType: "text", logoText: "SiteName", links: [{ id: generateId(), text: "Home", url: "#" }, { id: generateId(), text: "About", url: "#" }], backgroundColor: "#FFFFFF", linkColor: "#16a34a" } },
   { id: "footer", name: "Footer", component: "FooterElement", isGlobalOnly: true, defaultProps: { copyrightText: `© ${new Date().getFullYear()} Your Company.`, links: [{ id: generateId(), text: "Privacy", url: "#" }], backgroundColor: "#0f172a", textColor: "#94a3b8", linkColor: "#ffffff" } },
@@ -591,7 +610,9 @@ const elementIcons = {
   cardSlider: <LucideIcons.GalleryHorizontalEnd />, 
   navbar: <LucideIcons.Navigation />, 
   footer: <LucideIcons.PanelBottom />,
-  default: <LucideIcons.Puzzle />
+  default: <LucideIcons.Puzzle />,
+  section: <LucideIcons.LayoutPanelTop />,
+  column: <LucideIcons.View />
 };
 
 function DraggableCanvasElement({ elementData, onUpdateProps, onDelete, onSelect, isSelected, onOpenStructureModal, parentColumnId, isPreviewMode, onNavigate, isDraggable, }) {
@@ -647,9 +668,10 @@ function ColumnComponent({ parentPath, columnData, columnIndex, onUpdateProps, o
   const handleClick = (e) => { e.stopPropagation(); if (!isPreviewMode && isDraggable) { onSelect(columnData.id, "column", columnPath, columnData); } };
   const { setNodeRef: setDroppableRef, isOver } = useDroppable({ id: `col-${columnData.id}`, data: { type: "column", columnId: columnData.id, path: columnPath, accepts: ["paletteItem", "canvasElement"] }, disabled: isPreviewMode || !isDraggable });
   const elementIds = useMemo(() => columnData.elements.map((el) => el.id), [columnData.elements]);
+  const columnStyle = { ...columnData.props?.style, flexBasis: columnData.props.width || "100%" };
 
   return (
-    <div onClick={handleClick} style={{ flexBasis: columnData.props.width || "100%" }} className={`p-1.5 md:p-2 flex-shrink-0 transition-all ${!isPreviewMode && isDraggable ? 'cursor-pointer' : ''} ${!isPreviewMode && isSelected ? "outline outline-2 outline-offset-2 outline-green-500 rounded-2xl bg-green-50/70" : !isPreviewMode ? "hover:outline hover:outline-1 hover:outline-offset-1 hover:outline-green-300/70 rounded-2xl" : ""}`}>
+    <div onClick={handleClick} style={columnStyle} className={`p-1.5 md:p-2 flex-shrink-0 transition-all ${!isPreviewMode && isDraggable ? 'cursor-pointer' : ''} ${!isPreviewMode && isSelected ? "outline outline-2 outline-offset-2 outline-green-500 rounded-2xl bg-green-50/70" : !isPreviewMode ? "hover:outline hover:outline-1 hover:outline-offset-1 hover:outline-green-300/70 rounded-2xl" : ""}`}>
         <SortableContext items={elementIds} strategy={verticalListSortingStrategy} disabled={isPreviewMode || !isDraggable}>
             <div ref={setDroppableRef} className={`min-h-[100px] p-2 rounded-xl transition-all ${!isPreviewMode ? `border ${isOver && isDraggable ? "bg-green-100/90 border-green-400 border-solid ring-2 ring-green-400" : "bg-white/30 border-slate-200/90"} ${columnData.elements.length === 0 && !isOver ? "border-dashed flex items-center justify-center text-slate-400/80 text-sm font-medium" : ""}` : ""}`}>
                 {!isPreviewMode && columnData.elements.length === 0 && !isOver && isDraggable ? "Drop Element Here" : null}
@@ -686,7 +708,7 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
 
   const sortableStyle = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging && !isPreviewMode ? 0.75 : 1, zIndex: isDragging && !isPreviewMode ? 200 : "auto" };
   const sectionProps = sectionData.props || {};
-  const effectiveBgStyle = { ...sortableStyle };
+  const effectiveBgStyle = { ...sortableStyle, ...sectionProps.style };
   if (sectionProps.backgroundType === "color" && sectionProps.backgroundColor) { effectiveBgStyle.backgroundColor = sectionProps.backgroundColor; }
 
   const getSectionBaseBgClass = () => {
@@ -743,7 +765,7 @@ function DeviceFrame({ device, page, globalNavbar, globalFooter, onUpdateProps, 
         <div className="flex flex-col gap-4 items-center flex-shrink-0">
             <h3 className="text-white/90 font-semibold px-4 py-1 bg-black/20 rounded-lg flex items-center gap-2"> <device.icon className="w-4 h-4" /> {device.name} </h3>
             <div className="relative">
-                <div style={{ width: device.width }} className="bg-white shadow-2xl rounded-lg transform transition-all duration-200">
+                <div style={{ width: device.width }} className="bg-gray-50 shadow-2xl rounded-lg border border-gray-200 transform transition-all duration-200">
                     {globalNavbar && (
                         <header className="p-2 border-b border-slate-200 shadow-sm z-10 flex-shrink-0 relative">
                             <NavbarElement {...globalNavbar.props} path="globalNavbar" isSelected={selectedItemId === globalNavbar.id} onSelect={() => onSelect(globalNavbar.id, 'globalElement', 'globalNavbar')} onUpdate={(p) => onUpdateProps("globalNavbar", p)} onDelete={() => onDeleteGlobalElement("navbar")} isDraggable={isDraggable} previewDevice={device.name.toLowerCase()} />
@@ -862,7 +884,61 @@ function AiModeView({ onBack, onAiSubmit, isAiLoading, aiChatHistory }) {
     );
 }
 
-function LeftPanel({ isOpen, onClose, onAddTopLevelSection, pages, activePageId, onAddPage, onSelectPage, onRenamePage, onDeletePage, onAiSubmit, isAiLoading, aiChatHistory, onSwitchToAiMode }) {
+function LayerNode({ node, type, path, depth, onSelect, selectedItemId }) {
+    const [isOpen, setIsOpen] = useState(depth < 2);
+    const isSelected = selectedItemId === node.id;
+    const hasChildren = (node.columns && node.columns.length > 0) || (node.elements && node.elements.length > 0);
+    const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === node.type);
+    const Icon = elementIcons[type] || elementIcons.default;
+    
+    const handleSelect = (e) => {
+        e.stopPropagation();
+        onSelect(node.id, type, path, node);
+    };
+
+    const handleToggle = (e) => {
+        e.stopPropagation();
+        setIsOpen(!isOpen);
+    };
+
+    return (
+        <div>
+            <div onClick={handleSelect} className={`flex items-center p-1.5 rounded-lg cursor-pointer transition-colors ${isSelected ? 'bg-green-100 text-green-800' : 'hover:bg-slate-100'}`}>
+                <div style={{ paddingLeft: `${depth * 16}px` }} className="flex items-center flex-grow truncate">
+                    {hasChildren ? (
+                        <button onClick={handleToggle} className="p-0.5 mr-1 rounded-sm hover:bg-slate-200">
+                            <LucideIcons.ChevronRight className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+                        </button>
+                    ) : (
+                        <span className="w-5 h-5 mr-1"></span>
+                    )}
+                    <div className="w-4 h-4 mr-2 text-slate-500">{React.cloneElement(Icon, { className: 'w-full h-full' })}</div>
+                    <span className="text-sm truncate">{node.name || config?.name || node.type}</span>
+                </div>
+            </div>
+            {isOpen && hasChildren && (
+                <div>
+                    {node.columns && node.columns.map((col, idx) => <LayerNode key={col.id} node={col} type="column" path={`${path}.columns[${idx}]`} depth={depth + 1} onSelect={onSelect} selectedItemId={selectedItemId} />)}
+                    {node.elements && node.elements.map((el, idx) => <LayerNode key={el.id} node={el} type="element" path={`${path}.elements[${idx}]`} depth={depth + 1} onSelect={onSelect} selectedItemId={selectedItemId} />)}
+                </div>
+            )}
+        </div>
+    );
+}
+
+function LayersTreeView({ page, pagePath, onSelect, selectedItemId }) {
+    if (!page) return <div className="p-4 text-sm text-slate-500">No page selected.</div>;
+    return (
+        <div className="p-2 space-y-1">
+            {page.layout.map((section, idx) => (
+                <LayerNode key={section.id} node={section} type="section" path={`${pagePath}.layout[${idx}]`} depth={0} onSelect={onSelect} selectedItemId={selectedItemId} />
+            ))}
+        </div>
+    );
+}
+
+
+function LeftPanel({ isOpen, onClose, onAddTopLevelSection, pages, activePageId, onAddPage, onSelectPage, onRenamePage, onDeletePage, onAiSubmit, isAiLoading, aiChatHistory, onSwitchToAiMode, onSelect, selectedItemId }) {
   const [activeTab, setActiveTab] = useState("insert");
   const [searchTerm, setSearchTerm] = useState("");
   const [isAiMode, setIsAiMode] = useState(false);
@@ -888,7 +964,11 @@ function LeftPanel({ isOpen, onClose, onAddTopLevelSection, pages, activePageId,
                 <LucideIcons.PanelLeftClose className="w-5 h-5"/>
             </button>
         </div>
-        <div className="flex border-b border-slate-200/80"><TabButton tabName="insert" icon={<LucideIcons.PlusSquare className="w-4 h-4" />} label="Insert" /><TabButton tabName="pages" icon={<LucideIcons.FileText className="w-4 h-4" />} label="Pages" /></div>
+        <div className="flex border-b border-slate-200/80">
+            <TabButton tabName="insert" icon={<LucideIcons.PlusSquare className="w-4 h-4" />} label="Insert" />
+            <TabButton tabName="layers" icon={<LucideIcons.Layers className="w-4 h-4" />} label="Layers" />
+            <TabButton tabName="pages" icon={<LucideIcons.FileText className="w-4 h-4" />} label="Pages" />
+        </div>
         <div className="flex-1 overflow-y-auto">
             {activeTab === 'insert' && isAiMode && <AiModeView onBack={() => setIsAiMode(false)} onAiSubmit={onAiSubmit} isAiLoading={isAiLoading} aiChatHistory={aiChatHistory}/>}
             {activeTab === 'insert' && !isAiMode && (
@@ -908,6 +988,7 @@ function LeftPanel({ isOpen, onClose, onAddTopLevelSection, pages, activePageId,
                     {globalElements.length > 0 && <div><h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">Global</h3><div className="space-y-1.5">{globalElements.map((elConf) => (<ElementPaletteItem key={elConf.id} config={elConf} />))}</div></div>}
                 </div>
             )}
+            {activeTab === 'layers' && <LayersTreeView page={pages[activePageId]} pagePath={`pages[${activePageId}]`} onSelect={onSelect} selectedItemId={selectedItemId} />}
             {activeTab === 'pages' && (
                 <div className="p-3">
                     <div className="flex justify-between items-center mb-3">
@@ -941,10 +1022,52 @@ function DebouncedTextInput({ label, type, initialValue, onCommit, ...props }) {
   const InputComponent = type === 'textarea' ? 'textarea' : 'input';
   return (
     <div>
-        <label className="block text-xs font-medium text-slate-700 mb-1.5">{label}</label>
+        {label && <label className="block text-xs font-medium text-slate-600 mb-1.5">{label}</label>}
         <InputComponent type={type} value={value || ''} onChange={e => setValue(e.target.value)} onBlur={handleBlur} className="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500 focus:border-green-500" {...props} />
     </div>
   );
+}
+
+function DimensionInput({ label, value, unit, onValueChange, onUnitChange }) {
+    const units = ['px', '%', 'auto'];
+    const numericValue = value ? String(value).replace(/[^0-9.]/g, '') : '';
+    return (
+        <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1.5">{label}</label>
+            <div className="flex items-center">
+                <input type="text" value={numericValue} onChange={e => onValueChange(e.target.value)} className="w-full px-3 py-1.5 border border-r-0 border-slate-300 rounded-l-lg text-sm focus:ring-1 focus:ring-green-500 focus:border-green-500" disabled={unit === 'auto'}/>
+                <select value={unit || 'px'} onChange={e => onUnitChange(e.target.value)} className="px-2 py-1.5 border border-slate-300 rounded-r-lg text-sm bg-slate-50 focus:ring-1 focus:ring-green-500 focus:border-green-500">
+                    {units.map(u => <option key={u} value={u}>{u}</option>)}
+                </select>
+            </div>
+        </div>
+    );
+}
+
+function FourPointInput({ label, values, onChange }) {
+    const sides = ['Top', 'Right', 'Bottom', 'Left'];
+    const handleSideChange = (side, val) => {
+        onChange({ ...values, [side.toLowerCase()]: val });
+    };
+
+    return (
+        <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1.5">{label}</label>
+            <div className="grid grid-cols-2 gap-2">
+                {sides.map(side => (
+                    <div key={side} className="relative">
+                        <input
+                            type="text"
+                            value={values?.[side.toLowerCase()] || ''}
+                            onChange={(e) => handleSideChange(side, e.target.value)}
+                            className="w-full pl-6 pr-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500 focus:border-green-500"
+                        />
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400">{side.charAt(0)}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 }
 
 function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePageId, onRenamePage, onAddGlobalElement, comments, onUpdateComment, onDeleteComment }) {
@@ -974,7 +1097,7 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
       const displayValue = parseInt(value, 10) || 0;
       return (
         <div>
-            <div className="flex justify-between items-center mb-1"><label className="text-xs font-medium text-slate-700">{label}</label><span className="text-xs text-slate-500">{`${displayValue}${unit}`}</span></div>
+            <div className="flex justify-between items-center mb-1"><label className="text-xs font-medium text-slate-600">{label}</label><span className="text-xs text-slate-500">{`${displayValue}${unit}`}</span></div>
             <input type="range" min={min} max={max} step={step} value={displayValue} onChange={(e) => onChange(`${e.target.value}${unit}`)} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600" />
         </div>
       );
@@ -987,7 +1110,7 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
   );
   const AlignmentButtons = ({ value, onChange }) => (
     <div>
-        <label className="block text-xs font-medium text-slate-700 mb-1.5">Alignment</label>
+        <label className="block text-xs font-medium text-slate-600 mb-1.5">Alignment</label>
         <div className="flex items-center gap-1">{textAlignOptions.map(opt => (<button key={opt.value} onClick={() => onChange(opt.value)} title={opt.label} className={`flex-1 p-2 rounded-lg transition-colors ${value === opt.value ? 'bg-green-600 text-white' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}`}>{opt.icon}</button>))}</div>
     </div>
   );
@@ -1009,18 +1132,38 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
       return ( <> <div className="flex justify-between items-center p-4 border-b border-slate-200/80 h-[60px]"><h2 className="text-lg font-semibold text-slate-800">Page Settings</h2></div><div className="p-4 space-y-4"><DebouncedTextInput label="Page Name" initialValue={currentPage?.name || ""} onCommit={onRenamePage} key={activePageId}/><PropertyGroup title="Global Elements"><button onClick={() => onAddGlobalElement('navbar')} className="w-full text-sm text-center p-2 bg-slate-100 hover:bg-green-100 rounded-lg">Add Navbar</button><button onClick={() => onAddGlobalElement('footer')} className="w-full text-sm text-center p-2 bg-slate-100 hover:bg-green-100 rounded-lg">Add Footer</button></PropertyGroup></div> </> );
     }
     const { id, path, props, itemType } = selectedItemData;
-    const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === itemType);
+    const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === itemType) || {};
     const onUpdate = (newProps) => onUpdateSelectedProps(path, newProps);
+
+    const GeneralStyling = () => (
+        <>
+        <PropertyGroup title="Layout" defaultOpen={false}>
+            <FourPointInput label="Margin" values={props.style?.margin} onChange={val => onUpdate({ style: { margin: val } })} />
+            <FourPointInput label="Padding" values={props.style?.padding} onChange={val => onUpdate({ style: { padding: val } })} />
+        </PropertyGroup>
+        <PropertyGroup title="Size" defaultOpen={false}>
+            <DimensionInput label="Width" value={props.style?.width} unit={props.style?.width?.includes('%') ? '%' : 'px'} onValueChange={val => onUpdate({ style: { width: val + (props.style?.width?.includes('%') ? '%' : 'px') } })} onUnitChange={unit => onUpdate({ style: { width: (props.style?.width?.replace(/[^0-9.]/g, '') || '100') + unit } })} />
+            <DimensionInput label="Height" value={props.style?.height} unit={props.style?.height?.includes('%') ? '%' : 'px'} onValueChange={val => onUpdate({ style: { height: val + (props.style?.height?.includes('%') ? '%' : 'px') } })} onUnitChange={unit => onUpdate({ style: { height: (props.style?.height?.replace(/[^0-9.]/g, '') || 'auto') + unit } })} />
+        </PropertyGroup>
+        <PropertyGroup title="Style" defaultOpen={true}>
+            <SliderInput label="Opacity" value={props.style?.opacity * 100 || 100} onChange={val => onUpdate({ style: { opacity: parseInt(val) / 100 } })} max={100} unit="%" />
+            <SliderInput label="Radius" value={props.style?.borderRadius} onChange={val => onUpdate({ style: { borderRadius: val } })} max={100} />
+            <DebouncedTextInput label="Border" initialValue={props.style?.border} onCommit={val => onUpdate({ style: { border: val } })} placeholder="e.g. 1px solid #ccc" />
+        </PropertyGroup>
+        </>
+    );
+    
     return (<> <div className="flex justify-between items-center p-4 border-b border-slate-200/80 h-[60px]"><h2 className="text-lg font-semibold text-slate-800 capitalize">{config?.name || itemType || 'Properties'}</h2></div><div className="overflow-y-auto flex-grow text-sm p-4"> {(() => {
         switch(itemType) {
-            case 'header': case 'textBlock': return <><PropertyGroup title="Content"><DebouncedTextInput label="Text" type="textarea" rows={5} initialValue={props.text} onCommit={val => onUpdate({ text: val })} key={id}/></PropertyGroup><PropertyGroup title="Typography"><CustomDropdown label="Size" options={textSizeOptions} value={props.sizeClass} onChange={val => onUpdate({ sizeClass: val })} /><CustomDropdown label="Weight" options={fontWeightOptions} value={props.fontWeight} onChange={val => onUpdate({ fontWeight: val })} /><ColorInput label="Color" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><AlignmentButtons value={props.textAlign} onChange={val => onUpdate({ textAlign: val })} /></PropertyGroup></>;
-            case 'button': return <><PropertyGroup title="Content"><DebouncedTextInput label="Button Text" initialValue={props.buttonText} onCommit={val => onUpdate({ buttonText: val })} key={`${id}-text`} /><DebouncedTextInput label="Link URL" initialValue={props.link} onCommit={val => onUpdate({ link: val })} key={`${id}-link`} /></PropertyGroup><PropertyGroup title="Styling"><ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /><ColorInput label="Text Color" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><SliderInput label="Border Radius" value={props.borderRadius} onChange={val => onUpdate({ borderRadius: val })} max={50} /><CustomDropdown label="Variant" options={[{label: 'Solid', value: 'solid'}, {label: 'Outline', value: 'outline'}]} value={props.variant} onChange={val => onUpdate({ variant: val })} /></PropertyGroup><PropertyGroup title="Layout"><AlignmentButtons value={props.textAlign} onChange={val => onUpdate({ textAlign: val })} /><ToggleSwitch label="Full Width" checked={props.fullWidth} onChange={val => onUpdate({ fullWidth: val })} /></PropertyGroup></>;
-            case 'image': return <><PropertyGroup title="Content"><DebouncedTextInput label="Image Source (URL)" initialValue={props.src} onCommit={val => onUpdate({ src: val })} key={`${id}-src`} /><DebouncedTextInput label="Alt Text" initialValue={props.alt} onCommit={val => onUpdate({ alt: val })} key={`${id}-alt`} /></PropertyGroup><PropertyGroup title="Styling"><SliderInput label="Border Radius" value={props.borderRadius} onChange={val => onUpdate({ borderRadius: val })} max={50} /></PropertyGroup></>;
+            case 'header': case 'textBlock': return <><PropertyGroup title="Content"><DebouncedTextInput label="Text" type="textarea" rows={5} initialValue={props.text} onCommit={val => onUpdate({ text: val })} key={id}/></PropertyGroup><PropertyGroup title="Typography"><CustomDropdown label="Size" options={textSizeOptions} value={props.sizeClass} onChange={val => onUpdate({ sizeClass: val })} /><CustomDropdown label="Weight" options={fontWeightOptions} value={props.fontWeight} onChange={val => onUpdate({ fontWeight: val })} /><ColorInput label="Color" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><AlignmentButtons value={props.textAlign} onChange={val => onUpdate({ textAlign: val })} /></PropertyGroup><GeneralStyling/></>;
+            case 'button': return <><PropertyGroup title="Content"><DebouncedTextInput label="Button Text" initialValue={props.buttonText} onCommit={val => onUpdate({ buttonText: val })} key={`${id}-text`} /><DebouncedTextInput label="Link URL" initialValue={props.link} onCommit={val => onUpdate({ link: val })} key={`${id}-link`} /></PropertyGroup><PropertyGroup title="Styling"><ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /><ColorInput label="Text Color" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><SliderInput label="Border Radius" value={props.borderRadius} onChange={val => onUpdate({ borderRadius: val })} max={50} /><CustomDropdown label="Variant" options={[{label: 'Solid', value: 'solid'}, {label: 'Outline', value: 'outline'}]} value={props.variant} onChange={val => onUpdate({ variant: val })} /></PropertyGroup><PropertyGroup title="Layout"><AlignmentButtons value={props.textAlign} onChange={val => onUpdate({ textAlign: val })} /><ToggleSwitch label="Full Width" checked={props.fullWidth} onChange={val => onUpdate({ fullWidth: val })} /></PropertyGroup><GeneralStyling/></>;
+            case 'image': return <><PropertyGroup title="Content"><DebouncedTextInput label="Image Source (URL)" initialValue={props.src} onCommit={val => onUpdate({ src: val })} key={`${id}-src`} /><DebouncedTextInput label="Alt Text" initialValue={props.alt} onCommit={val => onUpdate({ alt: val })} key={`${id}-alt`} /></PropertyGroup><GeneralStyling/></>;
             case 'spacer': return <><PropertyGroup title="Layout"><SliderInput label="Height" value={props.height} onChange={val => onUpdate({ height: val })} max={300} /></PropertyGroup></>;
-            case 'section': return <><PropertyGroup title="Spacing"><SliderInput label="Padding Top" value={props.paddingTop} onChange={val => onUpdate({ paddingTop: val })} /><SliderInput label="Padding Bottom" value={props.paddingBottom} onChange={val => onUpdate({ paddingBottom: val })} /><SliderInput label="Padding Left" value={props.paddingLeft} onChange={val => onUpdate({ paddingLeft: val })} /><SliderInput label="Padding Right" value={props.paddingRight} onChange={val => onUpdate({ paddingRight: val })} /></PropertyGroup><PropertyGroup title="Background"><ColorInput label="Color" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /></PropertyGroup></>;
-            case 'navbar': return <><PropertyGroup title="Logo"><DebouncedTextInput label="Logo Text" initialValue={props.logoText} onCommit={val => onUpdate({ logoText: val })} key={`${id}-logo`}/></PropertyGroup><PropertyGroup title="Styling"><ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /><ColorInput label="Text" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><ColorInput label="Link" value={props.linkColor} onChange={val => onUpdate({ linkColor: val })} /></PropertyGroup><PropertyGroup title="Links"><LinkManager links={props.links} onUpdateLinks={links => onUpdate({links})} elementId={id} pages={pages} /></PropertyGroup></>;
-            case 'footer': return <><PropertyGroup title="Content"><DebouncedTextInput label="Copyright Text" initialValue={props.copyrightText} onCommit={val => onUpdate({ copyrightText: val })} key={`${id}-copyright`}/></PropertyGroup><PropertyGroup title="Styling"><ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /><ColorInput label="Text" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><ColorInput label="Link" value={props.linkColor} onChange={val => onUpdate({ linkColor: val })} /></PropertyGroup><PropertyGroup title="Links"><LinkManager links={props.links} onUpdateLinks={links => onUpdate({links})} elementId={id} pages={pages} linkTypeLabel="Footer Link"/></PropertyGroup></>;
-            case 'cardSlider': return <><PropertyGroup title="Slides"><SlideManager slides={props.slides} onUpdateSlides={slides => onUpdate({slides})} elementId={id} /></PropertyGroup><PropertyGroup title="Settings"><SliderInput label="Slides Per View" value={props.slidesPerView} onChange={val => onUpdate({ slidesPerView: parseInt(val) })} min={1} max={6} unit=""/><SliderInput label="Space Between" value={props.spaceBetween} onChange={val => onUpdate({ spaceBetween: parseInt(val) })} max={100} unit="px"/></PropertyGroup><PropertyGroup title="Behavior"><ToggleSwitch label="Autoplay" checked={props.autoplay} onChange={val => onUpdate({ autoplay: val })} /><ToggleSwitch label="Loop" checked={props.loop} onChange={val => onUpdate({ loop: val })} /><ToggleSwitch label="Navigation Arrows" checked={props.showNavigation} onChange={val => onUpdate({ showNavigation: val })} /><ToggleSwitch label="Pagination Dots" checked={props.showPagination} onChange={val => onUpdate({ showPagination: val })} /></PropertyGroup></>;
+            case 'section': return <><PropertyGroup title="Spacing"><SliderInput label="Padding Top" value={props.paddingTop} onChange={val => onUpdate({ paddingTop: val })} /><SliderInput label="Padding Bottom" value={props.paddingBottom} onChange={val => onUpdate({ paddingBottom: val })} /><SliderInput label="Padding Left" value={props.paddingLeft} onChange={val => onUpdate({ paddingLeft: val })} /><SliderInput label="Padding Right" value={props.paddingRight} onChange={val => onUpdate({ paddingRight: val })} /></PropertyGroup><PropertyGroup title="Background"><ColorInput label="Color" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /></PropertyGroup><GeneralStyling/></>;
+            case 'column': return <><PropertyGroup title="Layout"><CustomDropdown label="Direction" options={[{label: 'Vertical', value: 'column'}, {label: 'Horizontal', value: 'row'}]} value={props.style?.flexDirection} onChange={val => onUpdate({ style: { flexDirection: val } })} /><CustomDropdown label="Justify" options={[{label: 'Start', value: 'flex-start'}, {label: 'Center', value: 'center'}, {label: 'End', value: 'flex-end'}, {label: 'Space Between', value: 'space-between'}]} value={props.style?.justifyContent} onChange={val => onUpdate({ style: { justifyContent: val } })} /><CustomDropdown label="Align" options={[{label: 'Start', value: 'flex-start'}, {label: 'Center', value: 'center'}, {label: 'End', value: 'flex-end'}, {label: 'Stretch', value: 'stretch'}]} value={props.style?.alignItems} onChange={val => onUpdate({ style: { alignItems: val } })} /><SliderInput label="Gap" value={props.style?.gap} onChange={val => onUpdate({ style: { gap: val } })}/></PropertyGroup><GeneralStyling/></>;
+            case 'navbar': return <><PropertyGroup title="Logo"><DebouncedTextInput label="Logo Text" initialValue={props.logoText} onCommit={val => onUpdate({ logoText: val })} key={`${id}-logo`}/></PropertyGroup><PropertyGroup title="Styling"><ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /><ColorInput label="Text" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><ColorInput label="Link" value={props.linkColor} onChange={val => onUpdate({ linkColor: val })} /></PropertyGroup><PropertyGroup title="Links"><LinkManager links={props.links} onUpdateLinks={links => onUpdate({links})} elementId={id} pages={pages} /></PropertyGroup><GeneralStyling/></>;
+            case 'footer': return <><PropertyGroup title="Content"><DebouncedTextInput label="Copyright Text" initialValue={props.copyrightText} onCommit={val => onUpdate({ copyrightText: val })} key={`${id}-copyright`}/></PropertyGroup><PropertyGroup title="Styling"><ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /><ColorInput label="Text" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><ColorInput label="Link" value={props.linkColor} onChange={val => onUpdate({ linkColor: val })} /></PropertyGroup><PropertyGroup title="Links"><LinkManager links={props.links} onUpdateLinks={links => onUpdate({links})} elementId={id} pages={pages} linkTypeLabel="Footer Link"/></PropertyGroup><GeneralStyling/></>;
+            case 'cardSlider': return <><PropertyGroup title="Slides"><SlideManager slides={props.slides} onUpdateSlides={slides => onUpdate({slides})} elementId={id} /></PropertyGroup><PropertyGroup title="Settings"><SliderInput label="Slides Per View" value={props.slidesPerView} onChange={val => onUpdate({ slidesPerView: parseInt(val) })} min={1} max={6} unit=""/><SliderInput label="Space Between" value={props.spaceBetween} onChange={val => onUpdate({ spaceBetween: parseInt(val) })} max={100} unit="px"/></PropertyGroup><PropertyGroup title="Behavior"><ToggleSwitch label="Autoplay" checked={props.autoplay} onChange={val => onUpdate({ autoplay: val })} /><ToggleSwitch label="Loop" checked={props.loop} onChange={val => onUpdate({ loop: val })} /><ToggleSwitch label="Navigation Arrows" checked={props.showNavigation} onChange={val => onUpdate({ showNavigation: val })} /><ToggleSwitch label="Pagination Dots" checked={props.showPagination} onChange={val => onUpdate({ showPagination: val })} /></PropertyGroup><GeneralStyling/></>;
             default: return <p className="text-sm text-slate-500 text-center py-8">No properties to edit for this '{itemType}'.</p>;
         }
     })()}</div></>);
@@ -1046,24 +1189,24 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
 
 function AiCanvasLoader() {
     return (
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-green-900/80 to-slate-900 flex flex-col items-center justify-center z-[1000] overflow-hidden">
-            <style>{` @keyframes rotate-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } @keyframes rotate-fast { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } } @keyframes pulse-grow { 0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 20px 10px rgba(74, 222, 128, 0.4); } 50% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 30px 15px rgba(74, 222, 128, 0.6); } } `}</style>
+        <div className="absolute inset-0 bg-gradient-to-br from-green-50/70 via-teal-100/60 to-green-100/80 flex flex-col items-center justify-center z-[1000] overflow-hidden">
+            <style>{` @keyframes rotate-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } @keyframes rotate-fast { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } } @keyframes pulse-grow { 0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 20px 10px rgba(52, 211, 153, 0.4); } 50% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 30px 15px rgba(52, 211, 153, 0.6); } } `}</style>
             <div className="relative w-48 h-48 flex items-center justify-center">
-                <div className="absolute w-20 h-20 bg-green-400 rounded-full flex items-center justify-center" style={{ animation: 'pulse-grow 2.5s ease-in-out infinite' }}>
-                    <LucideIcons.BrainCircuit className="w-12 h-12 text-green-900/70" />
+                <div className="absolute w-20 h-20 bg-green-300 rounded-full flex items-center justify-center" style={{ animation: 'pulse-grow 2.5s ease-in-out infinite' }}>
+                    <LucideIcons.BrainCircuit className="w-12 h-12 text-green-700/90" />
                 </div>
                 <div className="absolute w-full h-full" style={{ animation: 'rotate-slow 10s linear infinite' }}>
-                    <div className="absolute top-0 left-1/2 -ml-2 w-4 h-4 bg-teal-300 rounded-full"></div>
+                    <div className="absolute top-0 left-1/2 -ml-2 w-4 h-4 bg-teal-400 rounded-full"></div>
                 </div>
                 <div className="absolute w-40 h-40" style={{ animation: 'rotate-fast 8s linear infinite' }}>
-                    <div className="absolute bottom-0 left-1/2 -ml-3 w-6 h-6 border-2 border-green-300 rounded-full"></div>
+                    <div className="absolute bottom-0 left-1/2 -ml-3 w-6 h-6 border-2 border-green-400 rounded-full"></div>
                 </div>
                 <div className="absolute w-32 h-32" style={{ animation: 'rotate-slow 12s linear infinite' }}>
-                    <div className="absolute top-1/2 -mt-2 right-0 w-3 h-3 bg-white/80 rounded-full"></div>
+                    <div className="absolute top-1/2 -mt-2 right-0 w-3 h-3 bg-green-600/80 rounded-full"></div>
                 </div>
             </div>
-            <p className="text-white text-lg font-semibold mt-8 tracking-wider animate-pulse">Building with AI...</p>
-            <p className="text-green-300/70 text-sm mt-2">Crafting something amazing for you!</p>
+            <p className="text-slate-800 text-lg font-semibold mt-8 tracking-wider animate-pulse">Building with AI...</p>
+            <p className="text-green-700 text-sm mt-2">Crafting something amazing for you!</p>
         </div>
     );
 }
@@ -1125,7 +1268,7 @@ function CanvasToolbar({ selectedItem, zoom, onZoomChange, onSelect, pages, acti
     );
 }
 
-function TopBar({ onSave, onTogglePreview, isPreviewMode, onToggleLeftPanel }) {
+function TopBar({ onSave, onTogglePreview, isPreviewMode, onToggleLeftPanel, onToggleFullscreen, isFullscreen }) {
     return (
         <header className="bg-white/95 backdrop-blur-sm h-[60px] p-2.5 border-b border-slate-200/80 shadow-sm print-hidden flex justify-between items-center px-4 z-[50] relative">
             <div className="flex items-center gap-3">
@@ -1153,12 +1296,21 @@ function TopBar({ onSave, onTogglePreview, isPreviewMode, onToggleLeftPanel }) {
                 </div>
             </div>
 
-            <div className="flex items-center">
+            <div className="flex items-center gap-2">
                 {!isPreviewMode && (
                     <StyledModalButton onClick={onSave} variant="primary">
                         <LucideIcons.Save className="w-4 h-4 mr-2" />
                         Save
                     </StyledModalButton>
+                )}
+                 {!isPreviewMode && (
+                    <button 
+                        onClick={onToggleFullscreen} 
+                        className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors" 
+                        title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+                    >
+                        {isFullscreen ? <LucideIcons.Minimize className="w-5 h-5" /> : <LucideIcons.Maximize className="w-5 h-5" />}
+                    </button>
                 )}
             </div>
         </header>
@@ -1221,6 +1373,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [comments, setComments] = useState(initialBuilderState?.comments || {});
   const canvasRef = useRef(null);
+  const builderRef = useRef(null);
   const isPanning = useRef(false);
   const lastMousePos = useRef({ x: 0, y: 0 });
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(false);
@@ -1230,7 +1383,26 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   const aiSessionId = useRef(null);
   const [aiChatHistory, setAiChatHistory] = useState([]);
   const [modalStates, setModalStates] = useState({ addPage: { isOpen: false }, renamePage: { isOpen: false, pageId: null, currentName: "" }, deletePage: { isOpen: false, pageId: null, pageName: "" }, alert: { isOpen: false, title: "", message: "" }, saveConfirm: { isOpen: false, title: "", message: "" } });
-  
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const handleToggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+        builderRef.current?.requestFullscreen().catch(err => {
+            alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+        setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   useEffect(() => {
     if (newlyAddedElementId && pages) {
         let foundItem = null, foundPath = null;
@@ -1273,11 +1445,11 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   
   const handleOpenStructureModal = (path, type, pageId) => { setStructureModalContext({ path, elementType: type, pageId: pageId }); setIsStructureModalOpen(true); };
   const handleSetStructure = (columnLayouts, context) => {
-    const newColumns = columnLayouts.map(layout => ({ id: generateId("col"), type: "column", props: { width: layout.width }, elements: [] }));
+    const newColumns = columnLayouts.map(layout => ({ id: generateId("col"), type: "column", props: { width: layout.width, style: {} }, elements: [] }));
     const targetPageId = context.pageId || activePageId;
     updateLayoutForPage(targetPageId, layout => {
         const newLayout = JSON.parse(JSON.stringify(layout));
-        if (context.path === null) { newLayout.push({ id: generateId("section"), type: "section", props: { paddingTop: "48px", paddingBottom: "48px" }, columns: newColumns }); } 
+        if (context.path === null) { newLayout.push({ id: generateId("section"), type: "section", props: { paddingTop: "48px", paddingBottom: "48px", style: {} }, columns: newColumns }); } 
         else { const item = getItemByPath({ layout: newLayout }, context.path.replace(`pages[${targetPageId}].`, '')); if (item) item.columns = newColumns; }
         return newLayout;
     });
@@ -1295,27 +1467,40 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     if (itemData) {
         const pageIdMatch = path.match(/pages\[([\w-]+)\]/);
         const pageId = pageIdMatch ? pageIdMatch[1] : activePageId;
-        const newSelectedItem = { pageId, id: itemData.id, type: type, itemType: type === 'element' ? itemData.type : type, path, props: itemData.props || {} };
+        const newSelectedItem = { pageId, id: itemData.id, type: type, itemType: itemData.type || type, path, props: itemData.props || {} };
         setSelectedItem(newSelectedItem);
     }
   };
   
   const handleUpdateProps = (path, newProps) => {
-    if (path === 'globalNavbar') { setGlobalNavbar(prev => ({ ...prev, props: { ...prev.props, ...newProps } })); if (selectedItem?.path === path) setSelectedItem(prev => ({ ...prev, props: { ...prev.props, ...newProps } })); return; }
-    if (path === 'globalFooter') { setGlobalFooter(prev => ({ ...prev, props: { ...prev.props, ...newProps } })); if (selectedItem?.path === path) setSelectedItem(prev => ({ ...prev, props: { ...prev.props, ...newProps } })); return; }
-    setPages(currentPages => {
-        const newPagesState = JSON.parse(JSON.stringify(currentPages));
-        const pageIdMatch = path.match(/pages\[([\w-]+)\]/); if (!pageIdMatch) return currentPages;
-        const pageToSearchIn = newPagesState[pageIdMatch[1]]; if (!pageToSearchIn) return currentPages;
-        const relativePath = path.substring(pageIdMatch[0].length); const itemToUpdate = getItemByPath(pageToSearchIn, relativePath);
-        if (itemToUpdate) { itemToUpdate.props = { ...(itemToUpdate.props || {}), ...newProps }; return newPagesState; }
-        return currentPages;
-    });
-    if (selectedItem?.path === path) setSelectedItem(prev => ({...prev, props: { ...(prev.props || {}), ...newProps } }));
+    const updateState = (prevState, updater) => {
+        const newState = JSON.parse(JSON.stringify(prevState));
+        updater(newState);
+        return newState;
+    };
+
+    if (path === 'globalNavbar') {
+        setGlobalNavbar(prev => updateState(prev, state => { state.props = mergeDeep({}, state.props || {}, newProps); }));
+    } else if (path === 'globalFooter') {
+        setGlobalFooter(prev => updateState(prev, state => { state.props = mergeDeep({}, state.props || {}, newProps); }));
+    } else {
+        setPages(currentPages => updateState(currentPages, newPagesState => {
+            const itemToUpdate = getItemByPath(newPagesState, path);
+            if (itemToUpdate) {
+                itemToUpdate.props = mergeDeep({}, itemToUpdate.props || {}, newProps);
+            }
+        }));
+    }
+
+    if (selectedItem?.path === path) {
+        setSelectedItem(prev => updateState(prev, state => {
+            state.props = mergeDeep({}, state.props || {}, newProps);
+        }));
+    }
   };
   
   const handleDelete = (path) => { setPages(currentPages => { const newPages = JSON.parse(JSON.stringify(currentPages)); if (deleteItemByPath(newPages, path)) { if (selectedItem?.path.startsWith(path)) { setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); } return newPages; } return currentPages; }); };
-  const handleAddGlobalElement = (type) => { const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === type && c.isGlobalOnly); if(!config) return; const newGlobalElement = { id: `global-${config.id}`, type: config.id, props: config.defaultProps }; if (type === 'navbar') setGlobalNavbar(newGlobalElement); if (type === 'footer') setGlobalFooter(newGlobalElement); };
+  const handleAddGlobalElement = (type) => { const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === type && c.isGlobalOnly); if(!config) return; const newGlobalElement = { id: `global-${config.id}`, type: config.id, props: getDefaultProps(type) }; if (type === 'navbar') setGlobalNavbar(newGlobalElement); if (type === 'footer') setGlobalFooter(newGlobalElement); };
   const handleDeleteGlobalElement = (elementType) => { const updater = elementType === "navbar" ? setGlobalNavbar : setGlobalFooter; updater(null); if (selectedItem?.itemType === elementType) setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); };
 
   const findContainer = (items, id) => {
@@ -1350,14 +1535,14 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
 
     if (activeType === 'paletteItem') {
         const config = active.data.current.config; if (config.isGlobalOnly) { handleAddGlobalElement(config.id); return; }
-        const newElement = { id: generateId(config.id), type: config.id, props: { ...config.defaultProps }, ...(config.hasOwnColumns && { columns: [] }) };
+        const newElement = { id: generateId(config.id), type: config.id, props: getDefaultProps(config.id), ...(config.hasOwnColumns && { columns: [] }) };
         setNewlyAddedElementId(newElement.id);
         setPages(currentPages => {
             let newPagesState = JSON.parse(JSON.stringify(currentPages));
             const target = findContainer(newPagesState[activePageId]?.layout, overId);
             if (target) { target.container.splice(target.index, 0, newElement); }
             else {
-                const newSection = { id: generateId("section"), type: "section", props: { paddingTop: "48px", paddingBottom: "48px" }, columns: [{ id: generateId("col"), type: "column", props: { width: "100%" }, elements: [newElement] }] };
+                const newSection = { id: generateId("section"), type: "section", props: { ...getDefaultProps('section'), paddingTop: "48px", paddingBottom: "48px" }, columns: [{ id: generateId("col"), type: "column", props: { ...getDefaultProps('column'), width: "100%" }, elements: [newElement] }] };
                 const layout = newPagesState[activePageId]?.layout;
                 if(layout) { const overSectionIndex = overData.type === 'section' ? layout.findIndex(s => s.id === overId) : -1; layout.splice(overSectionIndex !== -1 ? overSectionIndex + 1 : layout.length, 0, newSection); }
             }
@@ -1391,7 +1576,11 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   };
 
   const togglePreviewMode = () => { setSelectedItem(null); setIsPreviewMode((prev) => !prev); };
-  const handleSave = () => { if (onExternalSave) onExternalSave({ pages, activePageId, globalNavbar, globalFooter, comments }); setModalStates(p => ({ ...p, saveConfirm: { isOpen: true, title: "Save Successful", message: "Your project has been saved." } })); };
+  const handleSave = () => {
+    setIsAiLoading(false);
+    if (onExternalSave) onExternalSave({ pages, activePageId, globalNavbar, globalFooter, comments });
+    setModalStates(p => ({ ...p, saveConfirm: { isOpen: true, title: "Save Successful", message: "Your project has been saved." } }));
+  };
   
   const startAiSession = async () => {
     if(aiSessionId.current) return;
@@ -1406,7 +1595,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
 
   const handleAiSubmit = async (prompt) => {
     if (!aiSessionId.current) { setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: "AI session not started. Please try again."}})); startAiSession(); return; }
-    setIsAiLoading(true); setIsLeftPanelOpen(false);
+    setIsAiLoading(true);
     const historyId = generateId('history');
     setAiChatHistory(prev => [...prev, { id: historyId, prompt, status: 'loading' }]);
     try {
@@ -1443,45 +1632,50 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   const isRightPanelOpen = !!selectedItem;
   
   if (isPreviewMode) {
-    return (<div className="flex flex-col h-screen bg-white antialiased"><TopBar onSave={handleSave} onTogglePreview={togglePreviewMode} isPreviewMode={true} onToggleLeftPanel={() => setIsLeftPanelOpen(p => !p)} /><PagePreviewRenderer pageLayout={pages[activePageId]?.layout || []} globalNavbar={globalNavbar} globalFooter={globalFooter} onNavigate={handleNavigate} activePageId={activePageId} /></div>);
+    return (<div className="flex flex-col h-screen bg-white antialiased"><TopBar onSave={handleSave} onTogglePreview={togglePreviewMode} isPreviewMode={true} onToggleLeftPanel={() => setIsLeftPanelOpen(p => !p)} onToggleFullscreen={handleToggleFullscreen} isFullscreen={isFullscreen} /><PagePreviewRenderer pageLayout={pages[activePageId]?.layout || []} globalNavbar={globalNavbar} globalFooter={globalFooter} onNavigate={handleNavigate} activePageId={activePageId} /></div>);
   }
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd} disabled={isPreviewMode || activeTool !== 'select'}>
-        <style>{`.selected-element-style { position: relative; } .selected-element-style::after { content: ''; position: absolute; inset: -2px; border: 2px solid #16a34a; border-radius: 1.125rem; animation: pulse-ring 1.5s infinite ease-in-out; pointer-events: none; } @keyframes pulse-ring { 0%, 100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.02); opacity: 1; } }`}</style>
-      <div className="h-screen bg-white antialiased flex flex-col">
-        <TopBar onSave={handleSave} onTogglePreview={togglePreviewMode} isPreviewMode={false} onToggleLeftPanel={() => setIsLeftPanelOpen(p => !p)} />
-        <div className="flex-1 flex flex-row relative overflow-hidden">
-            <LeftPanel isOpen={isLeftPanelOpen} onClose={() => setIsLeftPanelOpen(false)} onAddTopLevelSection={() => handleOpenStructureModal(null, "section", activePageId)} pages={pages} activePageId={activePageId} onAddPage={handleAddPage} onSelectPage={handleSelectPage} onRenamePage={handleRenamePage} onDeletePage={handleDeletePage} onAiSubmit={handleAiSubmit} isAiLoading={isAiLoading} aiChatHistory={aiChatHistory} onSwitchToAiMode={startAiSession}/>
-            
-            <main ref={canvasRef} className={`flex-1 flex flex-col relative bg-slate-100 ${isAiLoading ? 'overflow-hidden' : 'overflow-auto'}`} onMouseDown={handleCanvasMouseDown} onMouseMove={handleCanvasMouseMove} onMouseUp={handleCanvasMouseUpOrLeave} onMouseLeave={handleCanvasMouseUpOrLeave} style={{ cursor: getCanvasCursor(), backgroundImage: 'radial-gradient(#d1d5db 1px, transparent 1px)', backgroundSize: '20px 20px', backgroundPosition: '0px 0px' }}>
-              <CanvasToolbar selectedItem={selectedItem} zoom={zoom} onZoomChange={setZoom} onSelect={handleSelect} pages={pages} activeTool={activeTool} onToolChange={setActiveTool}/>
-              {isAiLoading && <AiCanvasLoader />}
-              <div style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`, transformOrigin: "0 0", transition: isPanning.current ? 'none' : "transform 0.2s" }} className="flex gap-20 items-start p-20" onClick={(e) => { if (e.target === e.currentTarget && activeTool === 'select') { setSelectedItem(null); } }}>
-                {activePage && DEVICE_FRAMES_CONFIG.map((device) => (
-                    <DeviceFrame
-                        key={device.name} device={device} page={activePage} globalNavbar={globalNavbar} globalFooter={globalFooter}
-                        onUpdateProps={handleUpdateProps} onDelete={handleDelete} onSelect={handleSelect} selectedItemId={selectedItem?.id}
-                        onOpenStructureModal={(path, type) => handleOpenStructureModal(path, type, activePage.id)} isPreviewMode={isPreviewMode}
-                        onNavigate={handleNavigate} onDeleteGlobalElement={handleDeleteGlobalElement} isDraggable={activeTool === 'select'}
-                        comments={(comments[activePageId] || []).filter(c => c.frame === device.name)} onAddComment={handleAddComment} activeTool={activeTool}
-                    />
-                ))}
-              </div>
-            </main>
-          
-            <div className={`absolute top-0 right-0 h-full transition-transform duration-300 ease-in-out z-40 transform ${isRightPanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-              <RightSidebar selectedItemData={selectedItem} onUpdateSelectedProps={handleUpdateProps} pages={pages} activePageId={activePageId} onRenamePage={handleRenameActivePage} onAddGlobalElement={handleAddGlobalElement} comments={comments} onUpdateComment={handleUpdateComment} onDeleteComment={handleDeleteComment} />
+        <div ref={builderRef} className="h-screen bg-white antialiased flex flex-col">
+            <style>{`.selected-element-style { position: relative; } .selected-element-style::after { content: ''; position: absolute; inset: -2px; border: 2px solid #16a34a; border-radius: 1.125rem; animation: pulse-ring 1.5s infinite ease-in-out; pointer-events: none; } @keyframes pulse-ring { 0%, 100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.02); opacity: 1; } }`}</style>
+            <TopBar onSave={handleSave} onTogglePreview={togglePreviewMode} isPreviewMode={false} onToggleLeftPanel={() => setIsLeftPanelOpen(p => !p)} onToggleFullscreen={handleToggleFullscreen} isFullscreen={isFullscreen} />
+            <div className="flex-1 flex flex-row relative overflow-hidden z-0">
+                <LeftPanel isOpen={isLeftPanelOpen} onClose={() => setIsLeftPanelOpen(false)} onAddTopLevelSection={() => handleOpenStructureModal(null, "section", activePageId)} pages={pages} activePageId={activePageId} onAddPage={handleAddPage} onSelectPage={handleSelectPage} onRenamePage={handleRenamePage} onDeletePage={handleDeletePage} onAiSubmit={handleAiSubmit} isAiLoading={isAiLoading} aiChatHistory={aiChatHistory} onSwitchToAiMode={startAiSession} onSelect={handleSelect} selectedItemId={selectedItem?.id}/>
+                
+                <main ref={canvasRef} className={`flex-1 flex flex-col relative bg-slate-100 ${isAiLoading ? '' : 'overflow-auto'}`} onMouseDown={handleCanvasMouseDown} onMouseMove={handleCanvasMouseMove} onMouseUp={handleCanvasMouseUpOrLeave} onMouseLeave={handleCanvasMouseUpOrLeave} style={{ cursor: getCanvasCursor() }}>
+                {isAiLoading ? (
+                    <AiCanvasLoader />
+                ) : (
+                    <>
+                    <CanvasToolbar selectedItem={selectedItem} zoom={zoom} onZoomChange={setZoom} onSelect={handleSelect} pages={pages} activeTool={activeTool} onToolChange={setActiveTool}/>
+                    <div style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`, transformOrigin: "0 0", transition: isPanning.current ? 'none' : "transform 0.2s", backgroundImage: 'radial-gradient(#d1d5db 1px, transparent 1px)', backgroundSize: '20px 20px' }} className="flex-1 flex gap-20 items-start p-20" onClick={(e) => { if (e.target === e.currentTarget && activeTool === 'select') { setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); } }}>
+                        {activePage && DEVICE_FRAMES_CONFIG.map((device) => (
+                            <DeviceFrame
+                                key={device.name} device={device} page={activePage} globalNavbar={globalNavbar} globalFooter={globalFooter}
+                                onUpdateProps={handleUpdateProps} onDelete={handleDelete} onSelect={handleSelect} selectedItemId={selectedItem?.id}
+                                onOpenStructureModal={(path, type) => handleOpenStructureModal(path, type, activePage.id)} isPreviewMode={isPreviewMode}
+                                onNavigate={handleNavigate} onDeleteGlobalElement={handleDeleteGlobalElement} isDraggable={activeTool === 'select'}
+                                comments={(comments[activePageId] || []).filter(c => c.frame === device.name)} onAddComment={handleAddComment} activeTool={activeTool}
+                            />
+                        ))}
+                    </div>
+                    </>
+                )}
+                </main>
+              
+                <div className={`absolute top-0 right-0 h-full transition-transform duration-300 ease-in-out z-40 transform ${isRightPanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                  <RightSidebar selectedItemData={selectedItem} onUpdateSelectedProps={handleUpdateProps} pages={pages} activePageId={activePageId} onRenamePage={handleRenameActivePage} onAddGlobalElement={handleAddGlobalElement} comments={comments} onUpdateComment={handleUpdateComment} onDeleteComment={handleDeleteComment} />
+                </div>
             </div>
         </div>
-      </div>
-      <DragOverlay dropAnimation={null} zIndex={9999}>{activeDragItem && activeDragItem.data.current?.type === "paletteItem" ? (<PaletteItemDragOverlay config={activeDragItem.data.current.config} />) : null}</DragOverlay>
-      <StructureSelectorModal isOpen={isStructureModalOpen} onClose={() => setIsStructureModalOpen(false)} onSelectStructure={handleSetStructure} context={structureModalContext} />
-      <InputModal isOpen={modalStates.addPage.isOpen} onClose={() => closeModal("addPage")} onSubmit={submitAddPage} title="Add New Page" inputLabel="Page Name" initialValue={`Page ${Object.keys(pages).length + 1}`} />
-      <InputModal isOpen={modalStates.renamePage.isOpen} onClose={() => closeModal("renamePage")} onSubmit={submitRenamePage} title="Rename Page" inputLabel="New Page Name" initialValue={modalStates.renamePage.currentName} />
-      <ConfirmationModal isOpen={modalStates.deletePage.isOpen} onClose={() => closeModal("deletePage")} onConfirm={confirmDeletePage} title="Delete Page" message={`Are you sure you want to delete "${modalStates.deletePage.pageName}"?`} confirmButtonVariant="danger" />
-      <ConfirmationModal isOpen={modalStates.saveConfirm.isOpen} onClose={() => closeModal("saveConfirm")} onConfirm={() => {}} title={modalStates.saveConfirm.title} message={modalStates.saveConfirm.message} confirmText="OK" />
-      <ConfirmationModal isOpen={modalStates.alert.isOpen} onClose={() => closeModal("alert")} onConfirm={() => {}} title={modalStates.alert.title} message={modalStates.alert.message} confirmText="OK" />
+        <DragOverlay dropAnimation={null} zIndex={9999}>{activeDragItem && activeDragItem.data.current?.type === "paletteItem" ? (<PaletteItemDragOverlay config={activeDragItem.data.current.config} />) : null}</DragOverlay>
+        <StructureSelectorModal isOpen={isStructureModalOpen} onClose={() => setIsStructureModalOpen(false)} onSelectStructure={handleSetStructure} context={structureModalContext} />
+        <InputModal isOpen={modalStates.addPage.isOpen} onClose={() => closeModal("addPage")} onSubmit={submitAddPage} title="Add New Page" inputLabel="Page Name" initialValue={`Page ${Object.keys(pages).length + 1}`} />
+        <InputModal isOpen={modalStates.renamePage.isOpen} onClose={() => closeModal("renamePage")} onSubmit={submitRenamePage} title="Rename Page" inputLabel="New Page Name" initialValue={modalStates.renamePage.currentName} />
+        <ConfirmationModal isOpen={modalStates.deletePage.isOpen} onClose={() => closeModal("deletePage")} onConfirm={confirmDeletePage} title="Delete Page" message={`Are you sure you want to delete "${modalStates.deletePage.pageName}"?`} confirmButtonVariant="danger" />
+        <ConfirmationModal isOpen={modalStates.saveConfirm.isOpen} onClose={() => closeModal("saveConfirm")} onConfirm={() => {}} title={modalStates.saveConfirm.title} message={modalStates.saveConfirm.message} confirmText="OK" />
+        <ConfirmationModal isOpen={modalStates.alert.isOpen} onClose={() => closeModal("alert")} onConfirm={() => {}} title={modalStates.alert.title} message={modalStates.alert.message} confirmText="OK" />
     </DndContext>
   );
 }
