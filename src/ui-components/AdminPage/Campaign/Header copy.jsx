@@ -1,10 +1,8 @@
 import React, { useState, useRef, useMemo, useEffect, useCallback } from "react";
-import { DndContext, DragOverlay, PointerSensor, KeyboardSensor, useSensor, useSensors, useDraggable, useDroppable, rectIntersection } from "@dnd-kit/core";
+import { DndContext, DragOverlay, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter, useDraggable, useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import img from "../../../assets/img/cards/672e98fa2d1ed0b7d1bf2adb_glass.png";
 import * as LucideIcons from "lucide-react";
-import apiRequest from "../../../utils/apiRequest"; 
 
 const StyledModalButton = ({ children, onClick, variant = "primary", className = "" }) => {
   const baseStyle = "inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed";
@@ -167,14 +165,14 @@ function findItemAndPathRecursive(data, targetId, currentPathBase = "") {
   return null;
 }
 
-const textSizeOptions = [ { label: "Tiny", value: "text-xs" }, { label: "Small", value: "text-sm" }, { label: "Base", value: "text-base" }, { label: "Large", value: "text-lg" }, { label: "XL", value: "text-xl" }, { label: "2XL", value: "text-2xl" }, ];
+const textSizeOptions = [ { label: "Tiny", value: "text-xs" }, { label: "Small", value: "text-sm" }, { label: "Base", value: "text-base" }, { label: "Large", value: "text-lg" }, { label: "XL", value: "text-xl" }, { label: "2XL", value: "text-2xl" }, { label: "3XL", value: "text-3xl" }, { label: "4XL", value: "text-4xl" }, { label: "5XL", value: "text-5xl" }, { label: "6XL", value: "text-6xl" }, ];
 const fontWeightOptions = [ { label: "Light", value: "font-light" }, { label: "Normal", value: "font-normal" }, { label: "Medium", value: "font-medium" }, { label: "Semibold", value: "font-semibold" }, { label: "Bold", value: "font-bold" }, ];
 const textAlignOptions = [ { label: "Left", value: "text-left", icon: <LucideIcons.AlignLeft className="w-5 h-5" /> }, { label: "Center", value: "text-center", icon: <LucideIcons.AlignCenter className="w-5 h-5" /> }, { label: "Right", value: "text-right", icon: <LucideIcons.AlignRight className="w-5 h-5" /> }, ];
 const PREDEFINED_STRUCTURES = [ { name: "1 Column", id: "1col", layout: [{ width: "100%" }] }, { name: "2 Columns", id: "2col5050", layout: [{ width: "50%" }, { width: "50%" }] }, { name: "3 Columns", id: "3col33", layout: [{ width: "33.33%" }, { width: "33.33%" }, { width: "33.33%" }] }, { name: "4 Columns", id: "4col25", layout: [{ width: "25%" }, { width: "25%" }, { width: "25%" }, { width: "25%" }] }, { name: "Left Sidebar", id: "leftsidebar", layout: [{ width: "30%" }, { width: "70%" }] }, { name: "Right Sidebar", id: "rightsidebar", layout: [{ width: "70%" }, { width: "30%" }] }, ];
 const PREVIEW_DEVICES = [ { name: "Mobile", width: 390, icon: LucideIcons.Smartphone }, { name: "Tablet", width: 768, icon: LucideIcons.Tablet }, { name: "Desktop", width: "100%", icon: LucideIcons.Monitor }, ];
 
 function Heading({ text = "Default Heading Title", onUpdate, isSelected, sizeClass, fontWeight, textAlign, textColor, isPreviewMode, isEditable, style }) {
-  const handleBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ text: e.currentTarget.innerText }); };
+  const handleBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ text: e.currentTarget.innerHTML }); };
   return (
     <div className={`p-2 ${!isPreviewMode ? `rounded-lg ${isSelected ? "" : "hover:ring-2 hover:ring-green-400/20"}`: ""}`} style={style}>
       <h1
@@ -186,7 +184,7 @@ function Heading({ text = "Default Heading Title", onUpdate, isSelected, sizeCla
 }
 
 function TextBlock({ text = "Lorem ipsum dolor sit amet...", onUpdate, isSelected, sizeClass, fontWeight, textAlign, textColor, isPreviewMode, isEditable, style }) {
-    const handleBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ text: e.currentTarget.innerText }); };
+    const handleBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ text: e.currentTarget.innerHTML }); };
     return (
         <div className={`p-2 ${!isPreviewMode ? `rounded-lg ${isSelected ? "" : "hover:ring-2 hover:ring-green-400/20"}` : ""}`} style={style}>
             <p
@@ -226,19 +224,19 @@ function AccordionElement({ title = "Accordion Title", content = "Accordion cont
     )
 }
 
-function ImageElement({ src = img, alt = "Placeholder", width = "100%", height = "auto", borderRadius = "8px", boxShadow = "none", isSelected, isPreviewMode, style }) {
+function ImageElement({ src = "https://placehold.co/600x400/e2e8f0/e2e8f0", alt = "Placeholder", width = "100%", height = "auto", borderRadius = "8px", boxShadow = "none", objectFit="cover", isSelected, isPreviewMode, style }) {
     const getStyleValue = (v) => v === "auto" || (typeof v === "string" && v.endsWith("%")) ? v : `${parseInt(v, 10) || "auto"}px`;
     return (
         <div className={`p-1 ${!isPreviewMode ? `rounded-lg ${isSelected ? "" : "hover:ring-2 hover:ring-green-400/20"}` : ""}`} style={style}>
-            <img src={src} alt={alt} className={`max-w-full h-auto block mx-auto transition-all`} style={{ width: getStyleValue(width), height: getStyleValue(height), minHeight: "50px", objectFit: "cover", borderRadius: borderRadius, boxShadow: boxShadow }} />
+            <img src={src} alt={alt} className={`max-w-full h-auto block mx-auto transition-all`} style={{ width: getStyleValue(width), height: getStyleValue(height), minHeight: "50px", objectFit: objectFit, borderRadius: borderRadius, boxShadow: boxShadow }} />
         </div>
     );
 }
 
 function ButtonElement({ buttonText = "Click Me", link = "#", onUpdate, isSelected, sizeClass, textAlign, backgroundColor = "#16a34a", textColor = "#ffffff", borderRadius = "9999px", variant = "solid", fullWidth = false, isPreviewMode, onNavigate, isEditable, style }) {
     const handleTextBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ buttonText: e.currentTarget.innerText }); };
-    const solidStyle = { backgroundColor: backgroundColor, color: textColor, borderRadius: borderRadius, border: "2px solid transparent" };
-    const outlineStyle = { backgroundColor: "transparent", color: backgroundColor, borderRadius: borderRadius, border: `2px solid ${backgroundColor}` };
+    const solidStyle = { backgroundColor: backgroundColor, color: textColor, borderRadius: borderRadius, border: "1px solid transparent", padding: "12px 28px" };
+    const outlineStyle = { backgroundColor: "transparent", color: backgroundColor, borderRadius: borderRadius, border: `1px solid ${backgroundColor}`, padding: "12px 28px"};
     const buttonStyle = variant === "outline" ? outlineStyle : solidStyle;
     const handleClick = (e) => {
         if (!isPreviewMode) { e.preventDefault(); return; }
@@ -246,8 +244,8 @@ function ButtonElement({ buttonText = "Click Me", link = "#", onUpdate, isSelect
         else if (link === "#") { e.preventDefault(); }
     };
     return (
-        <div className={`py-3 px-2 ${textAlign || "text-center"} ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/5" : ""}`} style={style}>
-            <a href={link} onClick={handleClick} target={ isPreviewMode && link && !link.startsWith("/") && link !== "#" ? "_blank" : "_self" } rel={ isPreviewMode && link && !link.startsWith("/") && link !== "#" ? "noopener noreferrer" : "" } className={`inline-block px-8 py-3 font-semibold shadow-md hover:opacity-90 transition-all transform hover:-translate-y-px active:translate-y-0`} style={buttonStyle}>
+        <div className={`py-3 px-2 ${textAlign || "text-center"} ${fullWidth ? 'w-full' : ''} ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/5" : ""}`} style={style}>
+            <a href={link} onClick={handleClick} target={ isPreviewMode && link && !link.startsWith("/") && link !== "#" ? "_blank" : "_self" } rel={ isPreviewMode && link && !link.startsWith("/") && link !== "#" ? "noopener noreferrer" : "" } className={`inline-block font-semibold shadow-md hover:opacity-90 transition-all transform hover:-translate-y-px active:translate-y-0 ${fullWidth ? 'w-full' : ''}`} style={buttonStyle}>
                 <span contentEditable={!isPreviewMode && isEditable} suppressContentEditableWarning onBlur={handleTextBlur} dangerouslySetInnerHTML={{ __html: buttonText }} className={`${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-white/50 p-0.5 -m-0.5 rounded-sm" : ""}`}></span>
             </a>
         </div>
@@ -270,8 +268,8 @@ function IconElement({ iconName = "Star", size = "32px", color = "currentColor",
     const IconComponent = LucideIcons[iconName] || LucideIcons.HelpCircle;
     const ActualIconComponent = IconComponent || LucideIcons.HelpCircle;
     return (
-        <div className={`p-2 flex justify-center items-center ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/5" : ""}`} style={style}>
-            <ActualIconComponent style={{ fontSize: size, color: color }} strokeWidth={color === "currentColor" ? 1.75 : 2} />
+        <div className={`p-2 flex items-center ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/5" : ""}`} style={style}>
+            <ActualIconComponent style={{ fontSize: size, color: color, width: size, height: size }} strokeWidth={color === "currentColor" ? 1.75 : 2} />
         </div>
     );
 }
@@ -322,8 +320,8 @@ function InnerSectionComponentDisplay({ sectionData, onOpenStructureModal, onSel
   }
 
   return (
-    <div onClick={(e) => { if (!isPreviewMode && isDraggable) { e.stopPropagation(); onSelect(sectionData.id, "element", ownPath); } }} className={`p-1 ${!isPreviewMode ? `border rounded-xl ${isSelected ? "border-green-500 bg-green-50/50" : "border-slate-200 hover:border-green-300/70"}` : ""}`} style={style}>
-        <div className="flex flex-wrap -m-0.5">
+    <div onClick={(e) => { if (!isPreviewMode && isDraggable) { e.stopPropagation(); onSelect(sectionData.id, "element", ownPath); } }} className={`p-1 w-full ${!isPreviewMode ? `border rounded-xl ${isSelected ? "border-green-500 bg-green-50/50" : "border-transparent hover:border-green-300/70"}` : ""}`} style={style}>
+        <div className="flex flex-col md:flex-row flex-wrap -m-2 md:-m-3 lg:-m-4">
             {sectionData.columns.map((col, colIdx) => (
                 <ColumnComponent key={col.id} parentPath={ownPath} columnData={col} columnIndex={colIdx} onUpdateProps={onUpdateProps} onDelete={onDelete} onSelect={onSelect} selectedItemId={selectedItemId} onOpenStructureModal={onOpenStructureModal} isInner={true} isPreviewMode={isPreviewMode} isDraggable={isDraggable} />
             ))}
@@ -408,12 +406,13 @@ function CardSliderElement({ slides = [], slidesPerView = 3, spaceBetween = 16, 
   );
 }
 
-function NavbarElement({ logoType = "text", logoText = "MySite", logoSrc = img, links = [], rightContentType = "none", backgroundColor = "#ffffff", textColor = "#334155", linkColor = "#16a34a", isSelected, isPreviewMode, onUpdate, onNavigate, onSelect, onDelete, path, previewDevice, isDraggable, style }) {
+function NavbarElement({ logoType = "text", logoText = "MySite", logoSrc = "", links = [], rightContentType = "none", backgroundColor = "#ffffff", textColor = "#334155", linkColor = "#16a34a", isSelected, isPreviewMode, onUpdate, onNavigate, onSelect, onDelete, path, previewDevice, isDraggable, style }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const navStyle = { backgroundColor, ...style };
     const textStyle = { color: textColor };
     const linkStyle = { color: linkColor };
-    const forceMobileLayout = isPreviewMode && (previewDevice === "mobile" || previewDevice === "tablet");
+    // UPDATED: forceMobileLayout now includes lg screens
+    const forceMobileLayout = isPreviewMode && (previewDevice === "mobile" || previewDevice === "tablet" || previewDevice === "laptop");
     const handleLinkClick = (e, linkUrl) => {
         if (isMobileMenuOpen) setIsMobileMenuOpen(false);
         if (!isPreviewMode) { e.preventDefault(); return; }
@@ -425,26 +424,28 @@ function NavbarElement({ logoType = "text", logoText = "MySite", logoSrc = img, 
 
     return (
         <div onClick={handleClick} className={`p-1 relative group ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/5" : !isPreviewMode && path ? "hover:ring-2 hover:ring-green-400/20 rounded-xl" : ""}`}>
-            <nav style={navStyle} className="relative px-4 sm:px-6 py-4 shadow-md rounded-xl">
-                <div className="flex items-center justify-between">
+            <nav style={navStyle} className="relative px-4 sm:px-6 py-4 shadow-sm">
+                <div className="flex items-center justify-between max-w-7xl mx-auto">
                     <div className="flex items-center">
                         {logoType === "image" && logoSrc ? (<img src={logoSrc} alt={logoText || "Logo"} className="h-9 sm:h-10 w-auto mr-4 rounded-sm object-contain" />) : (
-                            <a href={isPreviewMode ? links.find((l) => l.text.toLowerCase() === "home")?.url || "/home" : "#"} onClick={(e) => handleLinkClick(e, links.find((l) => l.text.toLowerCase() === "home")?.url || "/home")} style={textStyle} className="text-xl lg:text-2xl font-bold hover:opacity-80 transition-opacity">{logoText}</a>
+                            <a href={isPreviewMode ? links.find((l) => l.text.toLowerCase() === "home")?.url || "/home" : "#"} onClick={(e) => handleLinkClick(e, links.find((l) => l.text.toLowerCase() === "home")?.url || "/home")} style={textStyle} className="text-2xl lg:text-3xl font-bold hover:opacity-80 transition-opacity">{logoText}</a>
                         )}
                     </div>
-                    <div className={`${forceMobileLayout ? "hidden" : "hidden md:flex"} items-center`}>
-                        <div className="flex items-center space-x-5 lg:space-x-8">
-                            {links.map((link, index) => (
-                                <a key={link.id || index} href={link.url} onClick={(e) => handleLinkClick(e, link.url)} target={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "_blank" : "_self"} rel={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "noopener noreferrer" : ""} style={linkStyle} className="text-sm font-medium hover:opacity-80 transition-opacity">{link.text}</a>
-                            ))}
-                        </div>
-                        {(rightContentType === "userIcon" || rightContentType === "searchIcon") && (
-                            <div className="flex items-center ml-6">{rightContentType === "userIcon" && <LucideIcons.CircleUserRound style={linkStyle} className="h-6 w-6" />}{rightContentType === "searchIcon" && <LucideIcons.Search style={linkStyle} className="h-5 w-5" />}</div>
-                        )}
+                    {/* UPDATED: Changed from md:flex to lg:flex for laptop hamburger menu */}
+                    <div className={`${forceMobileLayout ? "hidden" : "hidden lg:flex"} items-center space-x-1`}>
+                         {links.map((link, index) => {
+                            const isButton = link.isButton;
+                            const buttonStyles = {
+                                border: '1px solid #cbd5e1',
+                                padding: '8px 16px',
+                                borderRadius: '6px',
+                                transition: 'all 0.2s',
+                            };
+                            return (<a key={link.id || index} href={link.url} onClick={(e) => handleLinkClick(e, link.url)} target={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "_blank" : "_self"} rel={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "noopener noreferrer" : ""} style={{...linkStyle, ...(isButton && buttonStyles)}} className={`text-sm font-medium hover:text-teal-600 transition-opacity px-3 py-2`}>{link.text}</a>)
+                         })}
                     </div>
-                    <div className={`${forceMobileLayout ? "flex" : "md:hidden flex"} items-center`}>
-                        {rightContentType === "userIcon" && <LucideIcons.CircleUserRound style={linkStyle} className="h-6 w-6 mr-3" />}
-                        {rightContentType === "searchIcon" && <LucideIcons.Search style={linkStyle} className="h-5 w-5 mr-3" />}
+                    {/* UPDATED: Changed from md:hidden to lg:hidden for laptop hamburger menu */}
+                    <div className={`${forceMobileLayout ? "flex" : "lg:hidden flex"} items-center`}>
                         <button onClick={toggleMobileMenu} style={linkStyle} aria-label="Toggle menu" className="p-1">
                             {isMobileMenuOpen ? (<LucideIcons.X className="h-7 w-7" />) : (<LucideIcons.Menu className="h-7 w-7" />)}
                         </button>
@@ -481,14 +482,29 @@ function FooterElement({ copyrightText = `© ${new Date().getFullYear()} MySite.
     const handleClick = (e) => { if (!isPreviewMode && onSelect && isDraggable) { e.stopPropagation(); onSelect(); } };
     return (
         <div onClick={handleClick} className={`p-1 relative group ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/5" : !isPreviewMode && path ? "hover:ring-2 hover:ring-green-400/20 rounded-xl" : ""}`}>
-            <footer style={footerStyle} className="px-6 py-10 text-center border-t border-slate-200/80 rounded-xl">
-                <div className="max-w-5xl mx-auto">
-                    <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8 mb-6">
-                        {links.map((link, index) => (
-                            <a key={link.id || index} href={link.url} onClick={(e) => handleLinkClick(e, link.url)} target={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "_blank" : "_self"} rel={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "noopener noreferrer" : ""} style={linkStyle} className="text-sm sm:text-base hover:underline">{link.text}</a>
-                        ))}
+            <footer style={footerStyle} className="px-6 py-12 md:py-16 rounded-xl">
+                 <div className="max-w-7xl mx-auto">
+                    {links.length > 0 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-8 gap-y-10 text-left">
+                            {links.map((link, index) => (
+                                <div key={link.id || index}>
+                                  <h3 className="font-semibold text-white mb-4">{link.title}</h3>
+                                  <ul className="space-y-3">
+                                      {link?.items?.map((item, itemIdx) => (
+                                        <li key={itemIdx}>
+                                            <a href={item.url} onClick={(e) => handleLinkClick(e, item.url)} target={isPreviewMode && item.target === "_blank" && item.url && !item.url.startsWith("/") ? "_blank" : "_self"} rel={isPreviewMode && item.target === "_blank" && item.url && !item.url.startsWith("/") ? "noopener noreferrer" : ""} style={linkStyle} className="text-sm hover:underline transition-opacity hover:opacity-80">
+                                                {item.text}
+                                            </a>
+                                        </li>
+                                      ))}
+                                  </ul>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    <div className={`border-slate-700 pt-8 mt-10 flex flex-col sm:flex-row justify-between items-center text-center sm:text-left gap-4 ${links.length > 0 ? 'border-t' : ''}`}>
+                        <p style={textStyle} className="text-sm">{copyrightText}</p>
                     </div>
-                    <p style={textStyle} className="text-sm sm:text-base">{copyrightText}</p>
                 </div>
             </footer>
             {!isPreviewMode && isSelected && onDelete && (
@@ -550,7 +566,7 @@ function SlideManager({ slides, onUpdateSlides, elementId }) {
         const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onloadend = () => { handleSlideChange(index, "imgSrc", reader.result); }; reader.readAsDataURL(file); } e.target.value = null;
     };
     const addSlide = () => {
-        const newSlide = { id: generateId("slide"), imgSrc: img, heading: "New Slide", text: "New slide content.", link: "#" };
+        const newSlide = { id: generateId("slide"), imgSrc: "https://placehold.co/600x400/e2e8f0/e2e8f0", heading: "New Slide", text: "New slide content.", link: "#" };
         const newSlides = [...localSlides, newSlide]; slideImgInputRefs.current.push(React.createRef()); setLocalSlides(newSlides); onUpdateSlides(newSlides);
     };
     const removeSlide = (index) => { const newSlides = localSlides.filter((_, i) => i !== index); slideImgInputRefs.current.splice(index, 1); setLocalSlides(newSlides); onUpdateSlides(newSlides); };
@@ -580,13 +596,13 @@ const AVAILABLE_ELEMENTS_CONFIG = [
     { id: "textBlock", name: "Paragraph", component: "TextBlock", category: 'Basic', defaultProps: { text: "This is an engaging paragraph. You can edit this text to share more about your brand, services, or products.", sizeClass: "text-base", textColor: "#475569", textAlign: "text-left" } },
     { id: "button", name: "Button", component: "ButtonElement", category: 'Basic', defaultProps: { buttonText: "Get Started", link: "#", backgroundColor: "#16a34a", textColor: "#ffffff", borderRadius: "9999px", textAlign: 'text-center' } },
     { id: "icon", name: "Icon", component: "IconElement", category: 'Basic', defaultProps: { iconName: "Rocket", size: "48px", color: "#16a34a" } },
-    { id: "image", name: "Image", component: "ImageElement", category: 'Media', defaultProps: { src: img, alt: "Placeholder Image", borderRadius: "12px", boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" } },
+    { id: "image", name: "Image", component: "ImageElement", category: 'Media', defaultProps: { src: "https://placehold.co/600x400/e2e8f0/cad2de", alt: "Placeholder Image", borderRadius: "12px", boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" } },
     { id: "video", name: "Video", component: "VideoElement", category: 'Media', defaultProps: { videoType: "mp4", src: "" } },
     { id: "divider", name: "Divider", component: "Divider", category: 'Layout', defaultProps: {} },
     { id: "spacer", name: "Spacer", component: "Spacer", category: 'Layout', defaultProps: { height: "40px" } },
     { id: "innerSection", name: "Inner Section", component: "InnerSectionComponentDisplay", category: 'Layout', isContainer: true, hasOwnColumns: true, defaultProps: {} },
     { id: "accordion", name: "Accordion", component: "AccordionElement", category: 'Advanced', defaultProps: { title: "Accordion Title", content: "Details of the accordion." } },
-    { id: "cardSlider", name: "Card Slider", component: "CardSliderElement", category: 'Advanced', defaultProps: { slides: [{ id: generateId(), imgSrc: img, heading: "Feature One", text: "Description for feature one.", link: "#" }], slidesPerView: 3, spaceBetween: 16 } },
+    { id: "cardSlider", name: "Card Slider", component: "CardSliderElement", category: 'Advanced', defaultProps: { slides: [{ id: generateId(), imgSrc: "https://placehold.co/600x400/e2e8f0/cad2de", heading: "Feature One", text: "Description for feature one.", link: "#" }], slidesPerView: 3, spaceBetween: 16 } },
     { id: "navbar", name: "Navbar", component: "NavbarElement", category: 'Global', isGlobalOnly: true, defaultProps: { logoType: "text", logoText: "SiteName", links: [{ id: generateId(), text: "Home", url: "#" }, { id: generateId(), text: "About", url: "#" }], backgroundColor: "#FFFFFF", linkColor: "#16a34a" } },
     { id: "footer", name: "Footer", component: "FooterElement", category: 'Global', isGlobalOnly: true, defaultProps: { copyrightText: `© ${new Date().getFullYear()} Your Company.`, links: [{ id: generateId(), text: "Privacy", url: "#" }], backgroundColor: "#0f172a", textColor: "#94a3b8", linkColor: "#ffffff" } },
 ];
@@ -645,12 +661,12 @@ function ColumnComponent({ parentPath, columnData, columnIndex, onUpdateProps, o
   const handleClick = (e) => { e.stopPropagation(); if (!isPreviewMode && isDraggable) { onSelect(columnData.id, "column", columnPath, columnData); } };
   const { setNodeRef: setDroppableRef, isOver } = useDroppable({ id: `col-${columnData.id}`, data: { type: "column", columnId: columnData.id, path: columnPath, accepts: ["paletteItem", "canvasElement"] }, disabled: isPreviewMode || !isDraggable });
   const elementIds = useMemo(() => columnData.elements.map((el) => el.id), [columnData.elements]);
-  const columnStyle = { ...columnData.props?.style, flexBasis: columnData.props.width || "100%" };
+  const columnStyle = { ...columnData.props?.style, flex: `0 0 ${columnData.props.width}` };
 
   return (
-    <div onClick={handleClick} style={columnStyle} className={`p-2 flex-shrink-0 transition-all ${!isPreviewMode && isDraggable ? 'cursor-pointer' : ''} ${!isPreviewMode && isSelected ? "selected-outline" : !isPreviewMode ? "hover:outline hover:outline-1 hover:outline-offset-1 hover:outline-green-300/70 rounded-2xl" : ""}`}>
+    <div onClick={handleClick} style={columnStyle} className={`p-2 md:p-3 lg:p-4 transition-all ${!isPreviewMode && isDraggable ? 'cursor-pointer' : ''} ${!isPreviewMode && isSelected ? "selected-outline" : !isPreviewMode ? "hover:outline hover:outline-1 hover:outline-offset-1 hover:outline-green-300/70 rounded-2xl" : ""}`}>
         <SortableContext items={elementIds} strategy={verticalListSortingStrategy} disabled={isPreviewMode || !isDraggable}>
-            <div ref={setDroppableRef} className={`min-h-[100px] p-2 rounded-xl transition-all ${!isPreviewMode ? `border ${isOver && isDraggable ? "bg-green-100/90 border-green-400 border-solid ring-2 ring-green-400" : "bg-white/30 border-slate-200/90"} ${columnData.elements.length === 0 && !isOver ? "border-dashed flex items-center justify-center text-slate-400/80 text-sm font-medium" : ""}` : ""}`}>
+            <div ref={setDroppableRef} className={`min-h-[100px] p-2 rounded-xl transition-all ${!isPreviewMode ? `border ${isOver && isDraggable ? "bg-green-100/90 border-green-400 border-solid ring-2 ring-green-400" : "bg-transparent border-slate-200/90"} ${columnData.elements.length === 0 && !isOver ? "border-dashed flex items-center justify-center text-slate-400/80 text-sm font-medium" : ""}` : ""}`}>
                 {!isPreviewMode && columnData.elements.length === 0 && !isOver && isDraggable ? "Drop Element Here" : null}
                 {columnData.elements.map((el, elIdx) => (
                     <DraggableCanvasElement
@@ -694,40 +710,44 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
       if (isDragging) return `bg-green-50/80 shadow-2xl ring-2 ring-green-400 rounded-2xl`;
       return `${sectionProps.backgroundType !== "image" && sectionProps.backgroundType !== "video" ? "bg-white" : ""} ${editModeBase}`;
   };
-  const sectionRootClasses = ["relative", "group", "transition-all", "duration-200", "ease-in-out", getSectionBaseBgClass(), !isPreviewMode && isSelected ? "selected-outline" : "", !isPreviewMode && !isSelected ? "hover:ring-2 hover:ring-green-300/80 cursor-pointer" : ""].join(" ").replace(/\s+/g, " ").trim();
-  const sectionPaddingStyle = { paddingTop: sectionProps.paddingTop, paddingBottom: sectionProps.paddingBottom, paddingLeft: sectionProps.paddingLeft, paddingRight: sectionProps.paddingRight };
+  const sectionRootClasses = ["relative", "group", "transition-all", "duration-200", "ease-in-out", "max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8", getSectionBaseBgClass(), !isPreviewMode && isSelected ? "selected-outline" : "", !isPreviewMode && !isSelected ? "hover:ring-2 hover:ring-green-300/80 cursor-pointer" : ""].join(" ").replace(/\s+/g, " ").trim();
+  const sectionPaddingStyle = { paddingTop: sectionProps.paddingTop, paddingBottom: sectionProps.paddingBottom };
 
   return (
-      <div ref={setNodeRef} style={effectiveBgStyle} className={sectionRootClasses} onClick={handleClick}>
-          {!isPreviewMode && isDraggable && (
-              <div {...attributes} {...listeners} title="Drag section" className="absolute top-4 -left-4 transform p-2.5 cursor-grab bg-white hover:bg-green-600 text-slate-500 hover:text-white rounded-full border border-slate-300 hover:border-green-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 z-30 print-hidden transition-opacity shadow-md">
-                  <LucideIcons.Move className="w-5 h-5" />
-              </div>
-          )}
-          {sectionProps.backgroundType === "image" && sectionProps.backgroundImageSrc && (<div className="absolute inset-0 bg-cover bg-center -z-20 rounded-2xl" style={{ backgroundImage: `url("${sectionProps.backgroundImageSrc}")` }}></div>)}
-          {sectionProps.backgroundType === "video" && sectionProps.backgroundVideoSrc && (<video className="absolute inset-0 w-full h-full object-cover -z-20 rounded-2xl" src={sectionProps.backgroundVideoSrc} autoPlay={sectionProps.backgroundVideoAutoplay !== false} loop={sectionProps.backgroundVideoLoop !== false} muted={sectionProps.backgroundVideoMuted !== false} playsInline key={sectionProps.backgroundVideoSrc + (sectionProps.backgroundVideoAutoplay ? "1" : "0")}></video>)}
-          {(sectionProps.backgroundType === "image" || sectionProps.backgroundType === "video") && sectionProps.backgroundOverlayColor && typeof sectionProps.backgroundOverlayOpacity === "number" && sectionProps.backgroundOverlayOpacity > 0 && (
-              <div className="absolute inset-0 -z-10 rounded-2xl" style={{ backgroundColor: sectionProps.backgroundOverlayColor, opacity: sectionProps.backgroundOverlayOpacity }}></div>
-          )}
-          {!isPreviewMode && isSelected && isDraggable && (
-              <button onClick={(e) => { e.stopPropagation(); onDelete(sectionPath); }} title="Delete section" className="absolute -top-3.5 -right-3.5 p-1.5 bg-red-600 text-white rounded-full hover:bg-red-700 hover:scale-110 transition-all w-7 h-7 flex items-center justify-center shadow-md z-30 print-hidden">
-                  <LucideIcons.Trash2 className="w-4 h-4" strokeWidth={2.5} />
-              </button>
-          )}
-          <div style={sectionPaddingStyle} className="flex flex-wrap -m-1.5 relative z-0">
-              {sectionData.columns.map((col, colIdx) => (
-                  <ColumnComponent key={col.id} parentPath={sectionPath} columnData={col} columnIndex={colIdx} onUpdateProps={onUpdateProps} onDelete={onDelete} onSelect={onSelect} selectedItemId={selectedItemId} onOpenStructureModal={onOpenStructureModal} isPreviewMode={isPreviewMode} onNavigate={onNavigate} isDraggable={isDraggable} />
-              ))}
-          </div>
-      </div>
+    <div className="relative w-full" style={{backgroundColor: effectiveBgStyle.backgroundColor}}>
+        {sectionProps.backgroundType === "image" && sectionProps.backgroundImageSrc && (<div className="absolute inset-0 bg-cover bg-center -z-20" style={{ backgroundImage: `url("${sectionProps.backgroundImageSrc}")` }}></div>)}
+        {sectionProps.backgroundType === "video" && sectionProps.backgroundVideoSrc && (<video className="absolute inset-0 w-full h-full object-cover -z-20" src={sectionProps.backgroundVideoSrc} autoPlay={sectionProps.backgroundVideoAutoplay !== false} loop={sectionProps.backgroundVideoLoop !== false} muted={sectionProps.backgroundVideoMuted !== false} playsInline key={sectionProps.backgroundVideoSrc + (sectionProps.backgroundVideoAutoplay ? "1" : "0")}></video>)}
+        {(sectionProps.backgroundType === "image" || sectionProps.backgroundType === "video") && sectionProps.backgroundOverlayColor && typeof sectionProps.backgroundOverlayOpacity === "number" && sectionProps.backgroundOverlayOpacity > 0 && (
+            <div className="absolute inset-0 -z-10" style={{ backgroundColor: sectionProps.backgroundOverlayColor, opacity: sectionProps.backgroundOverlayOpacity }}></div>
+        )}
+
+        <div ref={setNodeRef} style={{...effectiveBgStyle, ...sectionPaddingStyle}} className={sectionRootClasses} onClick={handleClick}>
+            {!isPreviewMode && isDraggable && (
+                <div {...attributes} {...listeners} title="Drag section" className="absolute top-4 -left-4 transform p-2.5 cursor-grab bg-white hover:bg-green-600 text-slate-500 hover:text-white rounded-full border border-slate-300 hover:border-green-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 z-30 print-hidden transition-opacity shadow-md">
+                    <LucideIcons.Move className="w-5 h-5" />
+                </div>
+            )}
+            
+            {!isPreviewMode && isSelected && isDraggable && (
+                <button onClick={(e) => { e.stopPropagation(); onDelete(sectionPath); }} title="Delete section" className="absolute -top-3.5 -right-3.5 p-1.5 bg-red-600 text-white rounded-full hover:bg-red-700 hover:scale-110 transition-all w-7 h-7 flex items-center justify-center shadow-md z-30 print-hidden">
+                    <LucideIcons.Trash2 className="w-4 h-4" strokeWidth={2.5} />
+                </button>
+            )}
+            <div className="flex flex-col md:flex-row flex-wrap -m-2 md:-m-3 lg:-m-4 relative z-0">
+                {sectionData.columns.map((col, colIdx) => (
+                    <ColumnComponent key={col.id} parentPath={sectionPath} columnData={col} columnIndex={colIdx} onUpdateProps={onUpdateProps} onDelete={onDelete} onSelect={onSelect} selectedItemId={selectedItemId} onOpenStructureModal={onOpenStructureModal} isPreviewMode={isPreviewMode} onNavigate={onNavigate} isDraggable={isDraggable} />
+                ))}
+            </div>
+        </div>
+    </div>
   );
 }
 
-const DEVICE_FRAMES_CONFIG = [ { name: "Desktop", width: 1440, icon: LucideIcons.Monitor }, { name: "Tablet", width: 820, icon: LucideIcons.Tablet }, { name: "Mobile", width: 414, icon: LucideIcons.Smartphone }, ];
+const DEVICE_FRAMES_CONFIG = [ { name: "Desktop", width: 1440, icon: LucideIcons.Monitor }, { name: "Laptop", width: 1024, icon: LucideIcons.Laptop}, { name: "Tablet", width: 820, icon: LucideIcons.Tablet }, { name: "Mobile", width: 414, icon: LucideIcons.Smartphone }, ];
 
 function DeviceFrame({ device, page, globalNavbar, globalFooter, onUpdateProps, onDelete, onSelect, selectedItemId, onOpenStructureModal, isPreviewMode, onNavigate, onDeleteGlobalElement, isDraggable, comments, onAddComment, activeTool, }) {
     const { setNodeRef: setPageDroppableRef, isOver } = useDroppable({ id: `page-droppable-${page.id}-${device.name}`, data: { type: "page", accepts: ["paletteItem", "section"], pageId: page.id }, disabled: isPreviewMode || !isDraggable, });
-    const sectionIds = useMemo(() => page.layout.map((sec) => sec.id), [page.layout]);
+    const sectionIds = useMemo(() => (page?.layout || []).map((sec) => sec.id), [page.layout]);
     const handleCommentOverlayClick = (e) => { e.stopPropagation(); onAddComment(page.id, device.name, { x: e.clientX, y: e.clientY }); };
 
     return (
@@ -737,26 +757,26 @@ function DeviceFrame({ device, page, globalNavbar, globalFooter, onUpdateProps, 
                 <div style={{ width: device.width }} className="bg-white shadow-2xl rounded-2xl border border-slate-200 flex flex-col">
                     <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300">
                         {globalNavbar && (
-                            <header className="p-2 border-b border-slate-200 shadow-sm z-10 flex-shrink-0 relative">
+                            <header className="px-2 z-10 flex-shrink-0 relative bg-white">
                                 <NavbarElement {...globalNavbar.props} path="globalNavbar" isSelected={selectedItemId === globalNavbar.id} onSelect={() => onSelect(globalNavbar.id, 'globalElement', 'globalNavbar')} onUpdate={(p) => onUpdateProps("globalNavbar", p)} onDelete={() => onDeleteGlobalElement("navbar")} isDraggable={isDraggable} previewDevice={device.name.toLowerCase()} />
                             </header>
                         )}
-                        <div className="p-4 bg-slate-50/50 min-h-full">
+                        <div className="bg-slate-50/50 min-h-full">
                         <SortableContext items={sectionIds} strategy={verticalListSortingStrategy} disabled={isPreviewMode || !isDraggable}>
-                            <div ref={setPageDroppableRef} className={`rounded-xl transition-all ${isOver && isDraggable ? "bg-green-100/80 ring-2 ring-green-400 ring-dashed" : ""} ${page.layout.length === 0 && !isOver ? "border-2 border-dashed border-slate-300/80 min-h-[50vh]" : "border-transparent"}`}>
-                                {page.layout.map((sec, idx) => ( <SectionComponent key={sec.id} pageId={page.id} sectionData={sec} sectionIndex={idx} onUpdateProps={onUpdateProps} onDelete={onDelete} onSelect={onSelect} selectedItemId={selectedItemId} onOpenStructureModal={onOpenStructureModal} isPreviewMode={isPreviewMode} onNavigate={onNavigate} isDraggable={isDraggable}/> ))}
-                                {!isPreviewMode && page.layout.length === 0 && !isOver && isDraggable && (
+                            <div ref={setPageDroppableRef} className={`rounded-xl transition-all ${isOver && isDraggable ? "bg-green-100/80 ring-2 ring-green-400 ring-dashed" : ""} ${(page?.layout || []).length === 0 && !isOver ? "border-2 border-dashed border-slate-300/80 min-h-[50vh]" : "border-transparent"}`}>
+                                {(page?.layout || []).map((sec, idx) => ( <SectionComponent key={sec.id} pageId={page.id} sectionData={sec} sectionIndex={idx} onUpdateProps={onUpdateProps} onDelete={onDelete} onSelect={onSelect} selectedItemId={selectedItemId} onOpenStructureModal={onOpenStructureModal} isPreviewMode={isPreviewMode} onNavigate={onNavigate} isDraggable={isDraggable}/> ))}
+                                {!isPreviewMode && (page?.layout || []).length === 0 && !isOver && isDraggable && (
                                     <div className="flex flex-col items-center justify-center h-full text-center py-24 select-none pointer-events-none">
                                         <LucideIcons.LayoutTemplate className="h-24 w-24 text-slate-300/90 mb-5" strokeWidth={1} />
                                         <p className="text-slate-500 text-xl font-medium mt-2">Your canvas is empty</p>
-                                        <p className="text-slate-400/90 text-base">Drag elements or add a new section.</p>
+                                        <p className="text-slate-400/90 text-base">Drag elements or use AI to get started.</p>
                                     </div>
                                 )}
                             </div>
                         </SortableContext>
                         </div>
                         {globalFooter && (
-                            <footer className="p-2 border-t border-slate-200 shadow-sm z-10 flex-shrink-0 relative bg-white">
+                            <footer className="z-10 flex-shrink-0 relative bg-white">
                                 <FooterElement {...globalFooter.props} path="globalFooter" isSelected={selectedItemId === globalFooter.id} onSelect={() => onSelect(globalFooter.id, 'globalElement', 'globalFooter')} onUpdate={(p) => onUpdateProps("globalFooter", p)} onDelete={() => onDeleteGlobalElement("footer")} isDraggable={isDraggable} />
                             </footer>
                         )}
@@ -834,52 +854,45 @@ function AiLoader() {
     );
 }
 
-function AiModeView({ onBack, onAiSubmit, isAiLoading, aiChatHistory, aiSuggestions, handleUndo, handleRedo }) {
-    const handleKeyDown = (e) => {
-        if(e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            onAiSubmit(e.target.value);
-            e.target.value = '';
-        }
-    };
+function AiModeView({ onBack, onAiSubmit, isAiLoading, aiChatHistory, lastAiSuccess, onSuggestion }) {
+    const handleKeyDown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onAiSubmit(e.target.value); e.target.value = ''; } };
+    const suggestions = [
+        { id: 'color', text: 'Change theme', icon: LucideIcons.Palette },
+        { id: 'headline', text: 'Make headline', icon: LucideIcons.Heading1 },
+        { id: 'spacing', text: 'Increase space', icon: LucideIcons.StretchVertical },
+    ];
+    
     return (
         <div className="p-4 flex flex-col h-full bg-white">
-            <div className="flex items-center justify-between mb-4">
-                <button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-600 hover:text-green-700 p-1 rounded-md -ml-1">
-                    <LucideIcons.ArrowLeft className="w-4 h-4" /> Back to Elements
-                </button>
-                <div className="flex items-center gap-2">
-                    <button onClick={handleUndo} title="Undo" className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors">
-                        <LucideIcons.Undo2 className="w-5 h-5"/>
-                    </button>
-                     <button onClick={handleRedo} title="Redo" className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors">
-                        <LucideIcons.Redo2 className="w-5 h-5"/>
-                    </button>
-                </div>
-            </div>
+            <button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-600 hover:text-green-700 mb-4 p-1 rounded-md -ml-1"><LucideIcons.ArrowLeft className="w-4 h-4" /> Back to Elements</button>
             <div className="relative">
-                <textarea onKeyDown={handleKeyDown} placeholder="e.g., create a sleek corporate landing page..." className="w-full p-3 pr-10 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-green-400 focus:border-green-400" rows="3" />
+                <textarea defaultValue="Create a landing page for Scimplify. We want to target users in industries that use citric acid, such as pharmaceutical companies." onKeyDown={handleKeyDown} placeholder="e.g., create a sleek corporate landing page..." className="w-full p-3 pr-10 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-green-400 focus:border-green-400" rows="3" />
                 <LucideIcons.CornerDownLeft className="absolute right-3 top-3 w-5 h-5 text-slate-400" />
             </div>
-            {aiSuggestions && aiSuggestions.length > 0 && (
-                 <div className="pt-3">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Suggestions</p>
-                    <div className="flex flex-wrap gap-2">
-                        {aiSuggestions.map((s, i) => (
-                             <button key={i} onClick={() => onAiSubmit(s.prompt)} className="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full hover:bg-green-200 transition-colors">
-                                {s.shortText}
+            
+            {isAiLoading && <div className="py-4"><AiLoader /></div>}
+            
+            {lastAiSuccess && (
+                <div className="mt-4 pt-4 border-t border-slate-200">
+                    <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Try these next:</h4>
+                    {/* UPDATED: Changed from flex-wrap to grid-cols-2 */}
+                    <div className="grid grid-cols-2 gap-2">
+                        {suggestions.map(sugg => (
+                            <button key={sugg.id} onClick={() => onSuggestion(sugg.text)} className="flex items-center gap-2 text-left px-3 py-1.5 bg-green-50 border border-green-200 rounded-full hover:bg-green-100 transition-all text-xs font-medium text-green-800">
+                                <sugg.icon className="w-3.5 h-3.5" />
+                                <span>{sugg.text}</span>
                             </button>
                         ))}
                     </div>
                 </div>
             )}
-            {isAiLoading && <div className="py-4"><AiLoader /></div>}
+            
             <div className="mt-4 flex-1 overflow-y-auto space-y-3">
                 {aiChatHistory.map(entry => (
                     <div key={entry.id} className="text-sm p-2 rounded-lg bg-slate-50">
                         <p className="font-semibold text-slate-700">{entry.prompt}</p>
-                        {entry.status === 'success' && <p className="text-xs text-green-600 flex items-center gap-1"><LucideIcons.Check className="w-3 h-3"/>✓ Success</p>}
-                        {entry.status === 'error' && <p className="text-xs text-red-600">✗ Error</p>}
+                        {entry.status === 'success' && <p className="text-xs text-green-600 flex items-center gap-1 mt-1"><LucideIcons.Check className="w-3 h-3"/>Success</p>}
+                        {entry.status === 'error' && <p className="text-xs text-red-600 mt-1">Error</p>}
                     </div>
                 ))}
             </div>
@@ -957,7 +970,7 @@ const ElementAccordion = ({ title, children, defaultOpen = true }) => {
     );
 };
 
-function LeftPanel({ isOpen, onClose, onAddTopLevelSection, pages, activePageId, onAddPage, onSelectPage, onRenamePage, onDeletePage, onAiSubmit, isAiLoading, aiChatHistory, onSwitchToAiMode, onSelect, selectedItem, aiSuggestions, handleUndo, handleRedo }) {
+function LeftPanel({ isOpen, onClose, onAddTopLevelSection, pages, activePageId, onAddPage, onSelectPage, onRenamePage, onDeletePage, onAiSubmit, isAiLoading, aiChatHistory, onSwitchToAiMode, onSelect, selectedItem, lastAiSuccess, onSuggestion }) {
   const [activeTab, setActiveTab] = useState("insert");
   const [searchTerm, setSearchTerm] = useState("");
   const [isAiMode, setIsAiMode] = useState(false);
@@ -983,6 +996,8 @@ function LeftPanel({ isOpen, onClose, onAddTopLevelSection, pages, activePageId,
     </button>
   );
 
+  const handleAiClick = () => { onSwitchToAiMode(); setIsAiMode(true); };
+
   return (
     <aside className={`absolute top-0 left-0 h-full w-80 bg-white border-r border-slate-200 shadow-xl flex-shrink-0 flex flex-col print-hidden transition-transform duration-300 ease-in-out z-40 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex justify-between items-center p-4 border-b border-slate-200 h-[60px]">
@@ -997,14 +1012,14 @@ function LeftPanel({ isOpen, onClose, onAddTopLevelSection, pages, activePageId,
             <TabButton tabName="pages" icon={<LucideIcons.FileText className="w-5 h-5" />} label="Pages" />
         </div>
         <div className="flex-1 overflow-y-auto bg-slate-50">
-            {activeTab === 'insert' && isAiMode && <AiModeView onBack={() => setIsAiMode(false)} onAiSubmit={onAiSubmit} isAiLoading={isAiLoading} aiChatHistory={aiChatHistory} aiSuggestions={aiSuggestions} handleUndo={handleUndo} handleRedo={handleRedo} />}
+            {activeTab === 'insert' && isAiMode && <AiModeView onBack={() => setIsAiMode(false)} onAiSubmit={onAiSubmit} isAiLoading={isAiLoading} aiChatHistory={aiChatHistory} lastAiSuccess={lastAiSuccess} onSuggestion={onSuggestion} />}
             {activeTab === 'insert' && !isAiMode && (
                 <div className="p-4 space-y-5">
                     <div className="relative"><LucideIcons.Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" /><input type="text" placeholder="Search elements..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-10 pr-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500" /></div>
-                    <button onClick={() => setIsAiMode(true)} className="w-full flex items-center justify-center gap-2.5 px-3 py-2.5 bg-green-50 text-green-700 font-semibold rounded-lg hover:bg-green-100 transition-colors border border-green-200 hover:border-green-300 relative group">
+                    <button onClick={handleAiClick} className="w-full flex items-center justify-center gap-2.5 px-3 py-2.5 bg-green-50 text-green-700 font-semibold rounded-lg hover:bg-green-100 transition-colors border border-green-200 hover:border-green-300 relative group">
                         <span className="absolute inset-0 bg-green-400/20 rounded-lg blur-lg opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-opacity duration-300"></span>
                         <LucideIcons.Sparkles className="w-5 h-5 relative text-green-500"/>
-                        <span className="relative">Build with AI</span>
+                        <span className="relative">Generate with AI</span>
                     </button>
                     <ElementAccordion title="Structure">
                         <div className="grid grid-cols-1 gap-2.5">
@@ -1309,134 +1324,221 @@ function TopBar({ onSave, onTogglePreview, isPreviewMode, onToggleLeftPanel, onT
     );
 }
 
-function htmlToBuilderJson(htmlString) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlString, 'text/html');
-    const sections = [];
-    const classToPropMap = {
-        'text-left': { textAlign: 'text-left' }, 'text-center': { textAlign: 'text-center' }, 'text-right': { textAlign: 'text-right' },
-        'font-bold': { fontWeight: 'font-bold' }, 'font-extrabold': { fontWeight: 'font-bold' }, 'font-semibold': { fontWeight: 'font-semibold' }, 'font-medium': { fontWeight: 'font-medium' }, 'font-normal': { fontWeight: 'font-normal' }, 'font-light': { fontWeight: 'font-light' },
-        'text-xs': { sizeClass: 'text-xs' }, 'text-sm': { sizeClass: 'text-sm' }, 'text-base': { sizeClass: 'text-base' }, 'text-lg': { sizeClass: 'text-lg' }, 'text-xl': { sizeClass: 'text-xl' }, 'text-2xl': { sizeClass: 'text-2xl' }, 'text-3xl': { sizeClass: 'text-3xl' }, 'text-4xl': { sizeClass: 'text-4xl' }, 'text-5xl': { sizeClass: 'text-5xl' }
+function getScimplifyLandingPageData(pageIds) {
+    const data = {
+        navbar: {
+            id: 'global-navbar', type: 'navbar', 
+            props: {
+                logoType: 'text', logoText: 'Scimplify', 
+                links: [
+                    { id: generateId(), text: 'Products', url: '#', isButton: false },
+                    { id: generateId(), text: 'Chemistries', url: '#', isButton: false },
+                    { id: generateId(), text: 'Services', url: '#', isButton: false },
+                    { id: generateId(), text: 'Resources', url: '#', isButton: false },
+                    { id: generateId(), text: 'Partner with Us', url: '#', isButton: false },
+                    { id: generateId(), text: 'Company', url: '#', isButton: false },
+                    { id: generateId(), text: 'GET IN TOUCH →', url: '#', isButton: true },
+                ],
+                backgroundColor: '#ffffff', textColor: '#0f172a', linkColor: '#0f172a',
+            }
+        },
+        footer: {
+            id: 'global-footer', type: 'footer',
+            props: {
+                copyrightText: `© ${new Date().getFullYear()} Scimplify. All Rights Reserved.`,
+                links: [
+                    { id: generateId(), title: 'Industries', items: [{ text: "Pharmaceuticals", url: "#" }, { text: "Agrochemicals", url: "#" }, { text: "Flavors & Fragrances", url: "#" }] },
+                    { id: generateId(), title: 'Services', items: [{ text: "CMO", url: "#" }, { text: "CRO", url: "#" }] },
+                    { id: generateId(), title: 'Resources', items: [{ text: "Blogs", url: "#" }, { text: "Events", url: "#" }] },
+                    { id: generateId(), title: 'Platform', items: [{ text: 'ATOMS', url: '#' }, { text: 'Manufacturers', url: '#' }, { text: 'Laboratories', url: '#' }] },
+                ],
+                backgroundColor: '#0f172a', textColor: '#94a3b8', linkColor: '#e2e8f0'
+            }
+        },
+        layout: [
+            { id: generateId('section'), type: 'section', props: { 
+                paddingTop: '80px', paddingBottom: '80px', 
+                backgroundType: 'image', backgroundImageSrc: 'https://images.unsplash.com/photo-1576092762791-ddc21403545b?q=80&w=2940&auto=format&fit=crop', 
+                // UPDATED: Overlay is much lighter to make dark text readable
+                backgroundOverlayColor: '#ffffff', backgroundOverlayOpacity: 0.8 
+                }, columns: [
+                { id: generateId('col'), props: { width: '100%'}, elements: [
+                    // UPDATED: Text color is now dark gray
+                    { id: generateId('header'), type: 'header', props: { text: 'Simplifying <span style="color:#2dd4bf;">Global Supply Chain</span><br> of Specialty Chemicals', sizeClass: 'text-4xl sm:text-5xl lg:text-6xl', fontWeight: 'font-bold', textColor: '#1f293b', textAlign: 'text-center' } },
+                    { id: generateId('spacer'), type: 'spacer', props: { height: '20px' } },
+                    { id: generateId('button'), type: 'button', props: { buttonText: 'Contact Us', link: '#', backgroundColor: '#2dd4bf', textColor: '#0f172a', borderRadius: '6px', textAlign: 'text-center' } },
+                ]},
+            ]},
+            { id: generateId('section'), type: 'section', props: { backgroundColor: '#ffffff', paddingTop: '40px', paddingBottom: '40px', style: {marginTop: '-60px', borderRadius: '12px 12px 0 0'}}, columns: [
+                { id: generateId('col'), props: { width: '100%'}, elements: [
+                    { id: generateId('innerSection'), type: 'innerSection', props: {}, columns: [
+                        {id: generateId('col'), props: {width: '25%'}, elements: [ {id: generateId('header'), type: 'header', props: {text: '2,997+', sizeClass: 'text-3xl md:text-4xl', fontWeight: 'font-bold', textAlign: 'text-center', textColor: '#0f172a'}},{id: generateId('textBlock'), type: 'textBlock', props: {text: 'Products', textAlign: 'text-center', textColor: '#64748b'}}]},
+                        {id: generateId('col'), props: {width: '25%'}, elements: [ {id: generateId('header'), type: 'header', props: {text: '227+', sizeClass: 'text-3xl md:text-4xl', fontWeight: 'font-bold', textAlign: 'text-center', textColor: '#0f172a'}},{id: generateId('textBlock'), type: 'textBlock', props: {text: 'Factories', textAlign: 'text-center', textColor: '#64748b'}}]},
+                        {id: generateId('col'), props: {width: '25%'}, elements: [ {id: generateId('header'), type: 'header', props: {text: '22+', sizeClass: 'text-3xl md:text-4xl', fontWeight: 'font-bold', textAlign: 'text-center', textColor: '#0f172a'}},{id: generateId('textBlock'), type: 'textBlock', props: {text: 'Chemistries', textAlign: 'text-center', textColor: '#64748b'}}]},
+                        {id: generateId('col'), props: {width: '25%'}, elements: [ {id: generateId('header'), type: 'header', props: {text: '12+', sizeClass: 'text-3xl md:text-4xl', fontWeight: 'font-bold', textAlign: 'text-center', textColor: '#0f172a'}},{id: generateId('textBlock'), type: 'textBlock', props: {text: 'Countries', textAlign: 'text-center', textColor: '#64748b'}}]},
+                    ]}
+                ]}
+            ]},
+             { id: generateId('section'), type: 'section', props: { backgroundColor: '#ffffff', paddingTop: '60px', paddingBottom: '60px'}, columns: [
+                { id: generateId('col'), props: { width: '100%'}, elements: [
+                    { id: generateId('header'), type: 'header', props: { text: 'Making The Right Choice, All Under One Roof', sizeClass: 'text-3xl md:text-4xl lg:text-5xl', fontWeight: 'font-bold', textAlign: 'text-center' } },
+                    { id: generateId('textBlock'), type: 'textBlock', props: { text: 'Leverage our Research and Manufacturing services; seamlessly integrating R&D with commercial manufacturing to navigate complex chemical development with ease.', textAlign: 'text-center', sizeClass: 'text-lg', textColor: '#64748b', style: {maxWidth: '800px', margin: '0 auto'}}},
+                    { id: generateId('spacer'), type: 'spacer', props: { height: '40px' } },
+                ]},
+                 { id: generateId('col'), props: { width: '50%', style:{ display:'flex', flexDirection:'column', justifyContent:'center', paddingRight:'2rem'} }, elements: [
+                    { id: generateId('image'), type: 'image', props: { src: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=2832&auto=format&fit=crop', alt: 'Research and Development', borderRadius: '16px' }},
+                    { id: generateId('header'), type: 'header', props: { text: 'Research & Development', sizeClass: 'text-2xl md:text-3xl', fontWeight: 'font-bold', textAlign: 'text-left', style: {marginTop: '1rem'} } },
+                    { id: generateId('textBlock'), type: 'textBlock', props: { text: 'We integrate R&D and manufacturing under one roof, making it easier to transition from concept to market.', textAlign: 'text-left', textColor: '#64748b'}},
+                    { id: generateId('textBlock'), type: 'textBlock', props: { text: '<div style="display: flex; align-items: start; margin-top: 1rem;"><div style="margin-right: 1rem; color: #14b8a6;">●</div><div><b>Advanced chemical synthesis</b></div></div><div style="display: flex; align-items: start; margin-top: 0.5rem;"><div style="margin-right: 1rem; color: #14b8a6;">●</div><div><b>Innovative process development</b></div></div><div style="display: flex; align-items: start; margin-top: 0.5rem;"><div style="margin-right: 1rem; color: #14b8a6;">●</div><div><b>Custom formulations for application</b></div></div>', textAlign: 'text-left', textColor: '#64748b'}},
+                 ]},
+                 { id: generateId('col'), props: { width: '50%'}, elements: [ 
+                    { id: generateId('image'), type: 'image', props: { src: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQxa_tAuGT50AsK4YX2iI7xUsYTkBI0QUxnP0izKYn9v2pPdNp0YQ8jrt2AA7sScDydB0&usqp=CAU', alt: 'Manufacturing', borderRadius: '16px' }},
+                    { id: generateId('header'), type: 'header', props: { text: 'Manufacturing Capabilities', sizeClass: 'text-2xl md:text-3xl', fontWeight: 'font-bold', textAlign: 'text-left', style: {marginTop: '1rem'} } },
+                    { id: generateId('textBlock'), type: 'textBlock', props: { text: 'Delivering reliable and scalable chemical manufacturing solutions to accelerate your innovation.', textAlign: 'text-left', textColor: '#64748b'}},
+                    { id: generateId('textBlock'), type: 'textBlock', props: { text: '<div style="display: flex; align-items: start; margin-top: 1rem;"><div style="margin-right: 1rem; color: #14b8a6;">●</div><div><b>Diverse Chemistry Expertise</b></div></div><div style="display: flex; align-items: start; margin-top: 0.5rem;"><div style="margin-right: 1rem; color: #14b8a6;">●</div><div><b>Quality Control Excellence</b></div></div><div style="display: flex; align-items: start; margin-top: 0.5rem;"><div style="margin-right: 1rem; color: #14b8a6;">●</div><div><b>Global Standards Compliance</b></div></div>', textAlign: 'text-left', textColor: '#64748b'}},
+                ]},
+            ]},
+            { id: generateId('section'), type: 'section', props: { backgroundColor: '#0f172a', paddingTop: '80px', paddingBottom: '80px', style: { backgroundImage: 'url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnPos3w9bar6z3WObIM4xvGFTvqs_BQW0m7xbqEnolEuRyZwWXhIzoMyW2mxlk-iv8u-g&usqp=CAU)', backgroundSize: 'cover' } }, columns: [
+                { id: generateId('col'), props: {width: '50%', style: { display:'flex', flexDirection:'column', justifyContent:'center', paddingRight:'2rem' }}, elements: [
+                    { id: generateId('header'), type: 'header', props: { text: 'Access Top Manufacturers through ATOMS', sizeClass: 'text-3xl md:text-4xl lg:text-5xl', fontWeight: 'font-bold', textAlign: 'text-left', textColor: '#ffffff' } },
+                    { id: generateId('textBlock'), type: 'textBlock', props: { text: 'Tap into the production capabilities of specialty chemical manufacturing companies in India.', sizeClass: 'text-lg', textColor: '#94a3b8'}},
+                    { id: generateId('spacer'), type: 'spacer', props: {height: '20px'}},
+                    { id: generateId('textBlock'), type: 'textBlock', props: { text: '<div style="display:flex;align-items:center;margin-bottom:1rem;color:white;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><b style="margin-left:0.75rem;">Seamless Collaboration</b></div><div style="display:flex;align-items:center;margin-bottom:1rem;color:white;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg><b style="margin-left:0.75rem;">Real-Time Tracking</b></div><div style="display:flex;align-items:center;color:white;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20V16"/></svg><b style="margin-left:0.75rem;">Automated Procurement</b></div>', sizeClass: 'text-base', textColor: '#334155' } }
+                ]},
+                { id: generateId('col'), props: {width: '50%'}, elements: [ { id: generateId('image'), type: 'image', props: { src: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRc2TnzrzIHc0HTTN_SMxa17LQZye2vMhCqc8QAYWCo5NkQkgQowni3dZt5bwi-6qgpCA4&usqp=CAU', alt: 'ATOMS Platform dashboard', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' }}]}
+            ]},
+            { id: generateId('section'), type: 'section', props: { backgroundColor: '#ffffff', paddingTop: '80px', paddingBottom: '80px'}, columns: [
+                { id: generateId('col'), props: { width: '100%'}, elements: [
+                    { id: generateId('header'), type: 'header', props: { text: 'Industries We Serve', sizeClass: 'text-3xl md:text-4xl lg:text-5xl', fontWeight: 'font-bold', textAlign: 'text-center' } },
+                    { id: generateId('spacer'), type: 'spacer', props: { height: '60px' } },
+                    { id: generateId('innerSection'), type: 'innerSection', props: {}, columns: [
+                        {id: generateId('col'), props: {width: '16.66%'}, elements: [{id: generateId('image'), type: 'image', props: {src: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=2670&auto=format&fit=crop', alt: 'Pharmaceuticals', borderRadius: '12px', height: '250px'}}, {id: generateId('header'), type: 'header', props: { text: 'Pharmaceuticals', sizeClass: 'text-base md:text-lg', fontWeight: 'font-semibold', textAlign: 'text-center', style:{marginTop: '1rem'} }}]},
+                        {id: generateId('col'), props: {width: '16.66%'}, elements: [{id: generateId('image'), type: 'image', props: {src: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRk6SJDv9UKzeP39g-t5y7ohX3QK342V9z2GboO8BnCx5SXPbHZdI5yt1UV2LDKibvlzFE&usqp=CAU', alt: 'Agrochemicals', borderRadius: '12px', height: '250px'}}, {id: generateId('header'), type: 'header', props: { text: 'Agrochemicals', sizeClass: 'text-base md:text-lg', fontWeight: 'font-semibold', textAlign: 'text-center', style:{marginTop: '1rem'} }}]},
+                        {id: generateId('col'), props: {width: '16.66%'}, elements: [{id: generateId('image'), type: 'image', props: {src: 'https://images.unsplash.com/photo-1567427018141-0584cfcbf1b8?q=80&w=2670&auto=format&fit=crop', alt: 'Industrial', borderRadius: '12px', height: '250px'}}, {id: generateId('header'), type: 'header', props: { text: 'Industrial', sizeClass: 'text-base md:text-lg', fontWeight: 'font-semibold', textAlign: 'text-center', style:{marginTop: '1rem'} }}]},
+                        {id: generateId('col'), props: {width: '16.66%'}, elements: [{id: generateId('image'), type: 'image', props: {src: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbsLmwcQuXQl0K5bn3TAOHtfp672KVdpVpF1UnChx5JOlj2lcPHljZgg8rbzv5Uylf-sA&usqp=CAU', alt: 'Flavors & Fragrances', borderRadius: '12px', height: '250px'}}, {id: generateId('header'), type: 'header', props: { text: 'Flavors & Fragrances', sizeClass: 'text-base md:text-lg', fontWeight: 'font-semibold', textAlign: 'text-center', style:{marginTop: '1rem'} }}]},
+                        {id: generateId('col'), props: {width: '16.66%'}, elements: [{id: generateId('image'), type: 'image', props: {src: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?q=80&w=2670&auto=format&fit=crop', alt: 'Beauty & Personal Care', borderRadius: '12px', height: '250px'}}, {id: generateId('header'), type: 'header', props: { text: 'Beauty & Personal Care', sizeClass: 'text-base md:text-lg', fontWeight: 'font-semibold', textAlign: 'text-center', style:{marginTop: '1rem'} }}]},
+                        {id: generateId('col'), props: {width: '16.66%'}, elements: [{id: generateId('image'), type: 'image', props: {src: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=2787&auto=format&fit=crop', alt: 'Food & Nutrition', borderRadius: '12px', height: '250px'}}, {id: generateId('header'), type: 'header', props: { text: 'Food & Nutrition', sizeClass: 'text-base md:text-lg', fontWeight: 'font-semibold', textAlign: 'text-center', style:{marginTop: '1rem'} }}]},
+                    ]}
+                ]},
+            ]},
+            { id: generateId('section'), type: 'section', props: { backgroundColor: '#f8fafc', paddingTop: '80px', paddingBottom: '80px'}, columns: [
+                { id: generateId('col'), props: { width: '100%' }, elements: [
+                    { id: generateId('header'), type: 'header', props: { text: 'Our Top Specialty Chemical Products', sizeClass: 'text-3xl md:text-4xl lg:text-5xl', fontWeight: 'font-bold', textAlign: 'text-center' } },
+                    { id: generateId('spacer'), type: 'spacer', props: { height: '40px' } },
+                    { id: generateId('innerSection'), type: 'innerSection', props: {}, columns: [
+                        {id: generateId('col'), props: {width: '25%', style: {backgroundColor: '#ffffff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1rem'}}, elements: [{id: generateId('image'), type: 'image', props:{src:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDXXJg9vunpUPm1f-t5JPkTXDc8XTsYgwxnQ&s'}}, {id: generateId('header'), type: 'header', props: { text: 'Emamectin Benzoate', sizeClass: 'text-lg', fontWeight: 'bold' }}, {id: generateId('textBlock'), type: 'textBlock', props: { text: '<b>CAS:</b> 155569-91-8<br>A semi-synthetic derivative of avermectin B1, an effective insecticide.', sizeClass: 'text-sm' }}, {id:generateId('button'), type: 'button', props: {buttonText: 'Request Quote', variant:'solid', backgroundColor:'#14b8a6', borderRadius:'8px', fullWidth: true, textAlign:'center'}}, {id:generateId('button'), type: 'button', props: {buttonText: 'View Product', variant:'outline', backgroundColor:'#14b8a6', borderRadius:'8px', fullWidth: true, textAlign:'center'}} ]},
+                        {id: generateId('col'), props: {width: '25%', style: {backgroundColor: '#ffffff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1rem'}}, elements: [{id: generateId('image'), type: 'image', props:{src:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTD5Vcx9XRdMoN7D94ODXfGqxZMDCWBU6DI4A&s'}}, {id: generateId('header'), type: 'header', props: { text: 'Phosphorus Pentachloride', sizeClass: 'text-lg', fontWeight: 'bold' }}, {id: generateId('textBlock'), type: 'textBlock', props: { text: '<b>CAS:</b> 10026-13-8<br>A crystalline solid with a pungent odor, used as a chlorinating agent.', sizeClass: 'text-sm' }}, {id:generateId('button'), type: 'button', props: {buttonText: 'Request Quote', variant:'solid', backgroundColor:'#14b8a6', borderRadius:'8px', fullWidth: true, textAlign:'center'}}, {id:generateId('button'), type: 'button', props: {buttonText: 'View Product', variant:'outline', backgroundColor:'#14b8a6', borderRadius:'8px', fullWidth: true, textAlign:'center'}} ]},
+                        {id: generateId('col'), props: {width: '25%', style: {backgroundColor: '#ffffff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1rem'}}, elements: [{id: generateId('image'), type: 'image', props:{src:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQxa_tAuGT50AsK4YX2iI7xUsYTkBI0QUxnP0izKYn9v2pPdNp0YQ8jrt2AA7sScDydB0&usqp=CAU'}}, {id: generateId('header'), type: 'header', props: { text: 'Citric Acid (Anhydrous)', sizeClass: 'text-lg', fontWeight: 'bold' }}, {id: generateId('textBlock'), type: 'textBlock', props: { text: '<b>CAS:</b> 77-92-9<br>A common food additive that provides a sour taste to foods and drinks.', sizeClass: 'text-sm' }}, {id:generateId('button'), type: 'button', props: {buttonText: 'Request Quote', variant:'solid', backgroundColor:'#14b8a6', borderRadius:'8px', fullWidth: true, textAlign:'center'}}, {id:generateId('button'), type: 'button', props: {buttonText: 'View Product', variant:'outline', backgroundColor:'#14b8a6', borderRadius:'8px', fullWidth: true, textAlign:'center'}} ]},
+                        {id: generateId('col'), props: {width: '25%', style: {backgroundColor: '#ffffff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1rem'}}, elements: [{id: generateId('image'), type: 'image', props:{src:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRc2TnzrzIHc0HTTN_SMxa17LQZye2vMhCqc8QAYWCo5NkQkgQowni3dZt5bwi-6qgpCA4&usqp=CAU'}}, {id: generateId('header'), type: 'header', props: { text: 'Sciolide', sizeClass: 'text-lg', fontWeight: 'bold' }}, {id: generateId('textBlock'), type: 'textBlock', props: { text: '<b>CAS:</b> 236391-76-7<br>A synthetic musk fragrance compound with a soft, fruity, and clean scent.', sizeClass: 'text-sm' }}, {id:generateId('button'), type: 'button', props: {buttonText: 'Request Quote', variant:'solid', backgroundColor:'#14b8a6', borderRadius:'8px', fullWidth: true, textAlign:'center'}}, {id:generateId('button'), type: 'button', props: {buttonText: 'View Product', variant:'outline', backgroundColor:'#14b8a6', borderRadius:'8px', fullWidth: true, textAlign:'center'}} ]},
+                    ]}
+                ]}
+            ]},
+            { id: generateId('section'), type: 'section', props: { backgroundColor: '#ffffff', paddingTop: '80px', paddingBottom: '80px'}, columns: [
+                {id: generateId('col'), props: { width: '40%', style: { display: 'flex', flexDirection: 'column', justifyContent: 'center' }}, elements: [
+                    {id: generateId('header'), type: 'header', props: { text: 'Find Your Perfect Chemical Solution', sizeClass: 'text-3xl md:text-4xl lg:text-5xl', fontWeight: 'font-bold'}},
+                    {id: generateId('textBlock'), type: 'textBlock', props: { text: 'Simplifying Your Supply Chain Experience', sizeClass: 'text-lg', textColor: '#64748b'}},
+                    {id: generateId('spacer'), type: 'spacer', props: {height: '20px'}},
+                    { id: generateId('textBlock'), type: 'textBlock', props: { text: '<div style="display:flex;align-items:center;margin-bottom:1rem;color:black;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#14b8a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><div style="margin-left:0.75rem;"><b>Expert Guidance</b><p>Backed by 10+ patents and decades of experience.</p></div></div><div style="display:flex;align-items:center;margin-bottom:1rem;color:black;"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#14b8a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg><div style="margin-left:0.75rem;"><b>Customized Solutions</b><p>Tailored services to meet your unique needs.</p></div></div>' } },
+                ]},
+                {id: generateId('col'), props: { width: '60%' }, elements: [
+                    {id: generateId('textBlock'), type: 'textBlock', props: { text: `<div style="background: #ffffff; padding: 2.5rem; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;"><h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: #1e293b;">Partner With Us</h3><div style="display: flex; flex-direction: column; gap: 1rem;"><input placeholder="Name*" disabled style="width:100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; box-sizing: border-box;"/><input placeholder="Email*" disabled style="width:100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; box-sizing: border-box;"/><input placeholder="Company Name*" disabled style="width:100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; box-sizing: border-box;"/><textarea rows="4" placeholder="Message" disabled style="width:100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; box-sizing: border-box; resize: vertical;"></textarea><button disabled style="width: 100%; padding: 0.875rem; border-radius: 8px; background-color: #14b8a6; color: white; font-weight: 600; font-size: 1rem; border: none; cursor: not-allowed; opacity: 0.7;">Submit</button></div></div>`}}
+                ]}
+            ]}
+        ]
     };
-
-    function parseNode(node) {
-        if (node.nodeType !== Node.ELEMENT_NODE) return null;
-        let element = null;
-
-        const isAccordionWrapper = node.tagName === 'DIV' && node.querySelector('button.accordion-toggle') && node.querySelector('div.accordion-content');
-
-        if (node.tagName.match(/^H[1-6]$/)) {
-            element = { type: 'header', props: { text: node.innerHTML.trim() } };
-        } else if (node.tagName === 'P') {
-            element = { type: 'textBlock', props: { text: node.innerHTML.trim() } };
-        } else if (node.tagName === 'BUTTON' && !node.classList.contains('accordion-toggle')) {
-             element = { type: 'button', props: { buttonText: node.innerHTML.trim() } };
-        } else if (node.tagName === 'A' && node.classList.contains('button')) {
-            element = { type: 'button', props: { buttonText: node.innerHTML.trim(), link: node.getAttribute('href') || '#' } };
-        } else if (node.tagName === 'IMG') {
-            element = { type: 'image', props: { src: node.src, alt: node.alt } };
-        } else if (node.tagName === 'HR') {
-            element = { type: 'divider', props: {} };
-        } else if (isAccordionWrapper) {
-            const titleEl = node.querySelector('.accordion-toggle span');
-            const contentEl = node.querySelector('.accordion-content');
-            if (titleEl && contentEl) {
-                element = {
-                    type: 'accordion',
-                    props: {
-                        title: titleEl.innerHTML.trim(),
-                        content: contentEl.innerHTML.trim(),
-                    }
-                };
-            }
-        }
-        
-        if (element) {
-            element.id = generateId(element.type);
-            const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === element.type);
-            if (config) {
-                element.props = { ...config.defaultProps, ...element.props };
-            }
-            node.classList.forEach(cls => {
-                if (classToPropMap[cls]) {
-                    Object.assign(element.props, classToPropMap[cls]);
-                }
-            });
-            if (!element.props.textAlign && node.parentElement?.classList) {
-                 node.parentElement.classList.forEach(cls => {
-                     if(classToPropMap[cls] && classToPropMap[cls].textAlign) {
-                         Object.assign(element.props, classToPropMap[cls]);
-                     }
-                 });
-            }
-            return element;
-        }
-        return null;
-    }
-
-    function parseContainer(containerEl) {
-        const elements = [];
-        containerEl.childNodes.forEach(childNode => {
-            if (childNode.nodeType !== Node.ELEMENT_NODE || ['SCRIPT', 'STYLE', 'HEADER', 'FOOTER'].includes(childNode.tagName) || (childNode.id && childNode.id.includes('modal'))) {
-                return;
-            }
-            const parsedEl = parseNode(childNode);
-            if (parsedEl) {
-                elements.push(parsedEl);
-            } else if (childNode.children.length > 0) {
-                elements.push(...parseContainer(childNode));
-            }
-        });
-        return elements;
-    }
-
-    const body = doc.querySelector('body');
-    const main = doc.querySelector('main');
-    const contentRoot = main || body;
-
-    if (contentRoot) {
-        contentRoot.querySelectorAll(':scope > section').forEach(sectionEl => {
-            const newSection = { id: generateId('section'), type: 'section', props: {}, columns: [] };
-            const layoutContainers = sectionEl.querySelectorAll('.grid, .flex');
-            if (layoutContainers.length > 0 && Array.from(layoutContainers[0].children).length > 1 && Array.from(layoutContainers[0].children).every(child => child.tagName === 'DIV' || child.tagName === 'ARTICLE')) {
-                const container = layoutContainers[0];
-                const cols = Array.from(container.children);
-                const colWidth = 100 / (cols.length || 1);
-                cols.forEach(colEl => {
-                    const newCol = {
-                        id: generateId('col'),
-                        type: 'column',
-                        props: { width: `${colWidth}%` },
-                        elements: parseContainer(colEl)
-                    };
-                    newSection.columns.push(newCol);
-                });
-            } else {
-                const newColumn = {
-                    id: generateId('col'),
-                    type: 'column',
-                    props: { width: '100%' },
-                    elements: parseContainer(sectionEl)
-                };
-                newSection.columns.push(newColumn);
-            }
-
-            if (newSection.columns.some(col => col.elements.length > 0)) {
-                sections.push(newSection);
-            }
-        });
-    }
-
-    return sections;
+    return data;
 }
+
+// ... the rest of your page data functions (getAboutUsPageData, getContactPageData) are unchanged.
+function getAboutUsPageData() {
+    return {
+        layout: [
+            { id: generateId('section'), type: 'section', props: { paddingTop: '80px', paddingBottom: '80px', backgroundColor: '#f8fafc' }, columns: [
+                { id: generateId('col'), props: { width: '50%', style: { display: 'flex', flexDirection: 'column', justifyContent: 'center' } }, elements: [
+                    { id: generateId('header'), type: 'header', props: { text: 'About Our Mission', sizeClass: 'text-5xl', fontWeight: 'font-bold', textColor: '#1e293b' } },
+                    { id: generateId('textBlock'), type: 'textBlock', props: { text: 'We are dedicated to providing the best tools for web creation, empowering developers and designers to build faster and better. Our mission is to simplify complexity and foster creativity.' } },
+                ]},
+                { id: generateId('col'), props: { width: '50%' }, elements: [
+                    { id: generateId('image'), type: 'image', props: { src: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop', alt: 'Team collaborating' } },
+                ]}
+            ]},
+            { id: generateId('section'), type: 'section', props: { paddingTop: '80px', paddingBottom: '80px' }, columns: [
+                { id: generateId('col'), props: { width: '100%' }, elements: [
+                    { id: generateId('header'), type: 'header', props: { text: 'Meet the Team', sizeClass: 'text-4xl', fontWeight: 'font-bold', textAlign: 'text-center' } },
+                    { id: generateId('spacer'), type: 'spacer', props: { height: '60px' } },
+                    { id: generateId('innerSection'), type: 'innerSection', props: {}, columns: [
+                        { id: generateId('col'), props: { width: '33.33%' }, elements: [
+                            { id: generateId('image'), type: 'image', props: { src: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1888&auto=format&fit=crop', alt: 'CEO', borderRadius: '9999px', width: '150px', height: '150px' } },
+                            { id: generateId('header'), type: 'header', props: { text: 'Jane Doe', sizeClass: 'text-xl', fontWeight: 'font-semibold', textAlign: 'text-center' } },
+                            { id: generateId('textBlock'), type: 'textBlock', props: { text: 'CEO & Founder', textAlign: 'text-center' } },
+                        ]},
+                        { id: generateId('col'), props: { width: '33.33%' }, elements: [
+                            { id: generateId('image'), type: 'image', props: { src: 'https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=2070&auto=format&fit=crop', alt: 'CTO', borderRadius: '9999px', width: '150px', height: '150px' } },
+                            { id: generateId('header'), type: 'header', props: { text: 'John Smith', sizeClass: 'text-xl', fontWeight: 'font-semibold', textAlign: 'text-center' } },
+                            { id: generateId('textBlock'), type: 'textBlock', props: { text: 'Chief Technology Officer', textAlign: 'text-center' } },
+                        ]},
+                        { id: generateId('col'), props: { width: '33.33%' }, elements: [
+                            { id: generateId('image'), type: 'image', props: { src: 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop', alt: 'COO', borderRadius: '9999px', width: '150px', height: '150px' } },
+                            { id: generateId('header'), type: 'header', props: { text: 'Emily White', sizeClass: 'text-xl', fontWeight: 'font-semibold', textAlign: 'text-center' } },
+                            { id: generateId('textBlock'), type: 'textBlock', props: { text: 'Chief Operations Officer', textAlign: 'text-center' } },
+                        ]},
+                    ]}
+                ]}
+            ]}
+        ]
+    };
+}
+
+function getContactPageData() {
+    return {
+        layout: [
+            { id: generateId('section'), type: 'section', props: { paddingTop: '80px', paddingBottom: '80px' }, columns: [
+                 { id: generateId('col'), props: { width: '100%' }, elements: [
+                     { id: generateId('header'), type: 'header', props: { text: 'Get in Touch', sizeClass: 'text-5xl', fontWeight: 'font-bold', textAlign: 'text-center' } },
+                     { id: generateId('textBlock'), type: 'textBlock', props: { text: 'We’d love to hear from you. Please fill out the form below or contact us using the details provided.', textAlign: 'text-center', sizeClass: 'text-lg' } },
+                     { id: generateId('spacer'), type: 'spacer', props: { height: '40px' } },
+                ]},
+                { id: generateId('col'), props: { width: '60%' }, elements: [
+                    { id: generateId('header'), type: 'header', props: { text: 'Send us a message', sizeClass: 'text-2xl', fontWeight: 'font-semibold' } },
+                    { id: generateId('textBlock'), type: 'textBlock', props: { text: '<i>This is a visual placeholder for a form.</i><br><br><b>Name</b><br><input type="text" placeholder="Your Name" class="w-full p-2 border rounded-md" disabled /><br><br><b>Email</b><br><input type="email" placeholder="your.email@example.com" class="w-full p-2 border rounded-md" disabled /><br><br><b>Message</b><br><textarea rows="5" placeholder="Your message..." class="w-full p-2 border rounded-md" disabled></textarea>', style: { padding: '24px', borderRadius: '12px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' } } },
+                    { id: generateId('button'), type: 'button', props: { buttonText: 'Send Message', textAlign: 'text-left' } }
+                ]},
+                { id: generateId('col'), props: { width: '40%' }, elements: [
+                    { id: generateId('header'), type: 'header', props: { text: 'Contact Information', sizeClass: 'text-2xl', fontWeight: 'font-semibold' } },
+                    { id: generateId('textBlock'), type: 'textBlock', props: { text: '<b>Address:</b><br>123 WebForge Lane,<br>Tech City, TC 54321<br><br><b>Phone:</b><br>(123) 456-7890<br><br><b>Email:</b><br>hello@webforge.io' } },
+                    { id: generateId('divider'), type: 'divider', props: {} },
+                    { id: generateId('GoogleMapsPlaceholder'), type: 'GoogleMapsPlaceholder', props: { address: 'One World Trade Center, New York, NY' } }
+                ]}
+            ]}
+        ]
+    };
+}
+
 
 export default function ElementBuilderPage({ onExternalSave, initialBuilderState }) {
   const [newlyAddedElementId, setNewlyAddedElementId] = useState(null);
-  const initialPageId = useMemo(() => generateId("page-home"), []);
-  const [pages, setPages] = useState(initialBuilderState?.pages && Object.keys(initialBuilderState.pages).length > 0 ? initialBuilderState.pages : { [initialPageId]: { id: initialPageId, name: "Home", layout: [] } });
-  const [activePageId, setActivePageId] = useState(initialBuilderState?.activePageId && pages[initialBuilderState.activePageId] ? initialBuilderState.activePageId : initialPageId);
+  const initialHomePageId = useMemo(() => "page-home", []);
+
+  // UPDATED: Default state is now an empty canvas
+  const [pages, setPages] = useState(() => {
+    if (initialBuilderState?.pages && Object.keys(initialBuilderState.pages).length > 0) {
+        return initialBuilderState.pages;
+    }
+    // Default to a single, empty "Home" page
+    return {
+        [initialHomePageId]: { id: initialHomePageId, name: 'Home', layout: [] }
+    };
+  });
+  
+  const [activePageId, setActivePageId] = useState(
+      initialBuilderState?.activePageId && pages[initialBuilderState.activePageId]
+          ? initialBuilderState.activePageId
+          : initialHomePageId
+  );
+  
   const [globalNavbar, setGlobalNavbar] = useState(initialBuilderState?.globalNavbar || null);
   const [globalFooter, setGlobalFooter] = useState(initialBuilderState?.globalFooter || null);
+
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeDragItem, setActiveDragItem] = useState(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -1454,7 +1556,6 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   const [isAiLoading, setIsAiLoading] = useState(false);
   const aiSessionId = useRef(null);
   const [aiChatHistory, setAiChatHistory] = useState([]);
-  const [aiSuggestions, setAiSuggestions] = useState([]);
   const [modalStates, setModalStates] = useState({ addPage: { isOpen: false }, renamePage: { isOpen: false, pageId: null, currentName: "" }, deletePage: { isOpen: false, pageId: null, pageName: "" }, alert: { isOpen: false, title: "", message: "" }, saveConfirm: { isOpen: false, title: "", message: "" } });
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -1467,43 +1568,6 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
         document.exitFullscreen();
     }
   };
-
-  const getAiSuggestions = useCallback(async () => {
-    if (!aiSessionId.current) return;
-    try {
-        const response = await apiRequest('get', '/suggestions', { session_id: aiSessionId.current });
-        if (response.data && response.data.suggestions) {
-            setAiSuggestions(response.data.suggestions);
-        } else {
-            setAiSuggestions([]); 
-        }
-    } catch (error) {
-        console.error("Failed to fetch AI suggestions:", error);
-    }
-  }, []);
-
-  const startAiSession = useCallback(async () => {
-    if(aiSessionId.current) {
-        await getAiSuggestions();
-        return;
-    }
-    try {
-      const sessionResponse = await apiRequest('post', '/start-session');
-      const sessionData = sessionResponse.data;
-      if (sessionData.session_id) { 
-          aiSessionId.current = sessionData.session_id; 
-          await getAiSuggestions();
-      } else { 
-          throw new Error("Received an empty session ID from the API."); 
-      }
-    } catch (error) { 
-        setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: "Could not connect to the AI service."}})); 
-    }
-  }, [getAiSuggestions]);
-  
-  useEffect(() => {
-    startAiSession();
-  }, [startAiSession]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -1547,49 +1611,24 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   const handleRenameActivePage = (newName) => { if (activePageId) { setPages(p => ({ ...p, [activePageId]: { ...p[activePageId], name: newName } })); } };
   const handleDeletePage = (pageId, pageName) => { if (Object.keys(pages).length <= 1) { setModalStates(p => ({...p, alert: {isOpen: true, title: "Action Not Allowed", message: "Cannot delete the last page."}})); return; } setModalStates(prev => ({ ...prev, deletePage: { isOpen: true, pageId, pageName } })); };
   const confirmDeletePage = () => {
-    const { pageId } = modalStates.deletePage;
     setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null });
-    setPages(p => { const newPages = {...p}; delete newPages[pageId]; const remainingIds = Object.keys(newPages); if (activePageId === pageId) { setActivePageId(remainingIds[0] || null); } return newPages; });
+    setPages(p => { const { pageId } = modalStates.deletePage; const newPages = {...p}; delete newPages[pageId]; const remainingIds = Object.keys(newPages); if (activePageId === pageId) { setActivePageId(remainingIds[0] || null); } return newPages; });
   };
   const handleNavigate = (pageSlugOrId) => { const targetPageId = pageSlugOrId.startsWith("/") ? pageSlugOrId.substring(1) : pageSlugOrId; if (pages[targetPageId]) { setActivePageId(targetPageId); if (!isPreviewMode) { setIsPreviewMode(true); setSelectedItem(null); } } };
 
   const handleOpenStructureModal = (path, type, pageId) => { setStructureModalContext({ path, elementType: type, pageId: pageId }); setIsStructureModalOpen(true); };
-  
   const handleSetStructure = (columnLayouts, context) => {
-    const newColumns = columnLayouts.map(layout => ({ id: generateId("col"), type: "column", props: { width: layout.width, style: {} }, elements: [] }));
+    const newColumns = columnLayouts.map(layout => ({ id: generateId("col"), props: { width: layout.width, style: {} }, elements: [] }));
     const targetPageId = context.pageId || activePageId;
-  
     updateLayoutForPage(targetPageId, layout => {
         const newLayout = JSON.parse(JSON.stringify(layout));
-        if (context.path === null) { 
-            const newSection = { id: generateId("section"), type: "section", props: { paddingTop: "48px", paddingBottom: "48px", style: {} }, columns: newColumns };
-            newLayout.push(newSection);
-
-            if (aiSessionId.current) {
-                const numSections = newLayout.length;
-                const position = (numSections === 1) ? 'at_beginning' : 'after';
-                const ref_section = (numSections > 1) ? newLayout[numSections - 2].id : null;
-                
-                apiRequest('post', '/add-section', {
-                  session_id: aiSessionId.current,
-                  section_name: newSection.id,
-                  html: "", 
-                  position: position,
-                  ref_section: ref_section
-                }).then(getAiSuggestions).catch(err => console.error("AI: Failed to add section.", err));
-            }
-        }
-        else { 
-            const item = getItemByPath({ layout: newLayout }, context.path.replace(`pages[${targetPageId}].`, '')); 
-            if (item) {
-                 item.columns = newColumns;
-            }
-        }
+        if (context.path === null) { newLayout.push({ id: generateId("section"), props: { paddingTop: "48px", paddingBottom: "48px", style: {} }, columns: newColumns }); }
+        else { const item = getItemByPath({ layout: newLayout }, context.path.replace(`pages[${targetPageId}].`, '')); if (item) item.columns = newColumns; }
         return newLayout;
     });
-    setIsLeftPanelOpen(false);
+    // setIsLeftPanelOpen(false); // User requested not to close it
   };
-  
+
   const handleSelect = (id, type, path, itemData) => {
     if (activeTool !== 'select') return;
     if (type === 'page') { setSelectedItem({ pageId: activePageId, id: null, type: 'page', itemType: 'page', path: null, props: {} }); return; }
@@ -1638,9 +1677,6 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   };
 
   const handleDelete = (path) => {
-    const itemToDelete = getItemByPath({ pages }, path);
-    const isSection = itemToDelete && itemToDelete.type === 'section';
-
     setPages(currentPages => {
         const stateWrapper = { pages: JSON.parse(JSON.stringify(currentPages)) };
         if (deleteItemByPath(stateWrapper, path)) {
@@ -1651,20 +1687,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
         }
         return currentPages;
     });
-
-    if (isSection && aiSessionId.current) {
-        apiRequest('post', '/remove-section', {
-            session_id: aiSessionId.current,
-            section_name: itemToDelete.id
-        })
-        .then(getAiSuggestions)
-        .catch(err => {
-            console.error("AI Section Delete Error:", err);
-            setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Sync Error", message: "Failed to delete section via AI. The action was performed locally."}}));
-        });
-    }
   };
-
   const handleAddGlobalElement = (type) => { const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === type && c.isGlobalOnly); if(!config) return; const newGlobalElement = { id: `global-${config.id}`, type: config.id, props: getDefaultProps(type) }; if (type === 'navbar') setGlobalNavbar(newGlobalElement); if (type === 'footer') setGlobalFooter(newGlobalElement); };
   const handleDeleteGlobalElement = (elementType) => { const updater = elementType === "navbar" ? setGlobalNavbar : setGlobalFooter; updater(null); if (selectedItem?.itemType === elementType) setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); };
 
@@ -1746,7 +1769,6 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
                     props: { ...getDefaultProps('section'), paddingTop: "48px", paddingBottom: "48px" },
                     columns: [{
                         id: generateId("col"),
-                        type: "column",
                         props: { ...getDefaultProps('column'), width: "100%" },
                         elements: [newElement]
                     }]
@@ -1783,36 +1805,12 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
 
     if (activeType === 'section') {
         updateLayoutForPage(activePageId, layout => {
-            if (!layout) return [];
+            if(!layout) return [];
             const activeIndex = layout.findIndex(s => s.id === active.id);
             const overIndex = layout.findIndex(s => s.id === overId);
 
             if (activeIndex !== -1 && overIndex !== -1) {
-                const newLayout = arrayMove(layout, activeIndex, overIndex);
-                
-                if (aiSessionId.current) {
-                    let position, ref_section;
-                    if (overIndex === 0) {
-                        position = 'at_beginning';
-                        ref_section = null;
-                    } else {
-                        position = 'after';
-                        ref_section = newLayout[overIndex - 1].id;
-                    }
-                    
-                    apiRequest('post', '/move-section', {
-                        session_id: aiSessionId.current,
-                        section_name: active.id,
-                        new_position: position,
-                        ref_section: ref_section,
-                    })
-                    .then(getAiSuggestions)
-                    .catch(err => {
-                        console.error("AI Section Move Error:", err);
-                        setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Sync Error", message: "Failed to move section with AI. The action was performed locally."}}));
-                    });
-                }
-                return newLayout;
+                return arrayMove(layout, activeIndex, overIndex);
             }
             return layout;
         });
@@ -1825,69 +1823,50 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     if (onExternalSave) onExternalSave({ pages, activePageId, globalNavbar, globalFooter, comments });
     setModalStates(p => ({ ...p, saveConfirm: { isOpen: true, title: "Save Successful", message: "Your project has been saved." } }));
   };
-
+  
   const handleAiSubmit = async (prompt) => {
-    if (!aiSessionId.current) { setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: "AI session not started. Please try again."}})); startAiSession(); return; }
-    setIsAiLoading(true);
-    const historyId = generateId('history');
-    setAiChatHistory(prev => [...prev, { id: historyId, prompt, status: 'loading' }]);
-    try {
-        const pageResponse = await apiRequest('post', '/generate-page', { session_id: aiSessionId.current, prompt: prompt, as_file: false });
-        const apiResult = pageResponse.data;
-        if (apiResult.html) { 
-            const newLayout = htmlToBuilderJson(apiResult.html); 
-            updateLayoutForPage(activePageId, () => newLayout); 
-            setAiChatHistory(prev => prev.map(entry => entry.id === historyId ? {...entry, status: 'success'} : entry)); 
-            
-            if (apiResult.follow_up_suggestions) {
-              const suggestions = apiResult.follow_up_suggestions.map(s => ({ prompt: s.prompt, shortText: s.label }));
-              setAiSuggestions(suggestions);
-            } else {
-              await getAiSuggestions();
-            }
+    // UPDATED: No longer closes the left panel
+    // setIsLeftPanelOpen(false);
 
-        } else { 
-            throw new Error("Invalid response structure from AI. 'html' key not found."); 
-        }
-    } catch (error) {
-        setAiChatHistory(prev => prev.map(entry => entry.id === historyId ? {...entry, status: 'error'} : entry));
-        setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: "Failed to generate the page content."}}));
-    } finally { setIsAiLoading(false); }
+    // Show loader and clear content immediately
+    setIsAiLoading(true);
+    updateLayoutForPage(activePageId, () => []);
+    setGlobalNavbar(null);
+    setGlobalFooter(null);
+
+    const historyId = generateId('history');
+    setAiChatHistory(prev => [...prev, { id: historyId, prompt: prompt, status: 'loading' }]);
+    
+    setTimeout(() => {
+        const pageIds = { home: initialHomePageId };
+        const { layout, navbar, footer } = getScimplifyLandingPageData(pageIds);
+        
+        // Load new content
+        updateLayoutForPage(activePageId, () => layout);
+        setGlobalNavbar(navbar);
+        setGlobalFooter(footer);
+        
+        // Hide loader and update history
+        setIsAiLoading(false);
+        setAiChatHistory(prev => prev.map(entry => entry.id === historyId ? {...entry, status: 'success'} : entry));
+    }, 5000); // 5-second delay
+  };
+  
+  const handleSuggestionAction = (suggestionText) => {
+    alert(`Applying suggestion: '${suggestionText}'. This AI action can be implemented next.`);
   };
 
-  const handleAiAction = useCallback(async (action) => {
-    if (!aiSessionId.current) {
-      setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Error", message: "AI session not started. Please try again." } }));
-      return;
-    }
-    setIsAiLoading(true);
+  const startAiSession = async () => {
+    if(aiSessionId.current) return;
     try {
-      const actionResponse = await apiRequest('post', `/${action}`, { session_id: aiSessionId.current });
-      
-      if (!actionResponse.data.success) {
-        throw new Error(`The ${action} action failed on the server.`);
-      }
-
-      const pageStateResponse = await apiRequest('get', '/get-page', { session_id: aiSessionId.current });
-      
-      if (pageStateResponse.data && pageStateResponse.data.html) {
-        const newLayout = htmlToBuilderJson(pageStateResponse.data.html);
-        updateLayoutForPage(activePageId, () => newLayout);
-        await getAiSuggestions();
-      } else {
-        throw new Error("Could not retrieve the updated page state after the action.");
-      }
-    } catch (error) {
-      console.error(`AI Action Error (${action}):`, error);
-      setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Sync Error", message: error.message || `Failed to perform ${action} operation.` } }));
-    } finally {
-      setIsAiLoading(false);
-    }
-  }, [activePageId, getAiSuggestions]);
-
-  const handleUndo = () => handleAiAction('undo');
-  const handleRedo = () => handleAiAction('redo');
-
+      const sessionResponse = await fetch('http://104.219.251.122:8000/start-session', { method: 'POST', headers: { 'accept': 'application/json' } });
+      if (!sessionResponse.ok) throw new Error(`Session API error: ${sessionResponse.statusText}`);
+      const sessionData = await sessionResponse.json();
+      if (sessionData.session_id) { aiSessionId.current = sessionData.session_id; }
+      else { throw new Error("Received an empty session ID from the API."); }
+    } catch (error) { setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Connection Info", message: `Could not connect to the AI service. The demo will proceed without a live session ID.`}})); }
+  };
+  
   const handleCanvasMouseDown = (e) => { if (activeTool === 'hand') { isPanning.current = true; lastMousePos.current = { x: e.clientX, y: e.clientY }; e.currentTarget.style.cursor = 'grabbing'; } };
   const handleCanvasMouseMove = (e) => { if (activeTool === 'hand' && isPanning.current) { const dx = e.clientX - lastMousePos.current.x; const dy = e.clientY - lastMousePos.current.y; lastMousePos.current = { x: e.clientX, y: e.clientY }; setPanOffset(prev => ({ x: prev.x + dx, y: prev.y + dy })); } };
   const handleCanvasMouseUpOrLeave = (e) => { if (activeTool === 'hand' && isPanning.current) { isPanning.current = false; e.currentTarget.style.cursor = 'grab'; } };
@@ -1908,67 +1887,28 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   const activePage = pages[activePageId];
   const getCanvasCursor = () => { switch(activeTool) { case 'hand': return 'grab'; case 'comment': return 'crosshair'; default: return 'default'; } }
   const isRightPanelOpen = !!selectedItem;
+  const lastAiSuccess = aiChatHistory.length > 0 && aiChatHistory[aiChatHistory.length-1].status === 'success';
 
   if (isPreviewMode) {
     return (<div className="flex flex-col h-screen bg-white antialiased"><TopBar onSave={handleSave} onTogglePreview={togglePreviewMode} isPreviewMode={true} onToggleLeftPanel={() => setIsLeftPanelOpen(p => !p)} onToggleFullscreen={handleToggleFullscreen} isFullscreen={isFullscreen} /><PagePreviewRenderer pageLayout={pages[activePageId]?.layout || []} globalNavbar={globalNavbar} globalFooter={globalFooter} onNavigate={handleNavigate} activePageId={activePageId} /></div>);
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragStart={handleDragStart} onDragEnd={handleDragEnd} disabled={isPreviewMode || activeTool !== 'select'}>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd} disabled={isPreviewMode || activeTool !== 'select'}>
         <div ref={builderRef} className="h-screen bg-white antialiased flex flex-col relative">
-            <style>{`
-                .selected-outline { 
-                    box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #22c55e;
-                    border-radius: 1.25rem; 
-                } 
-                .custom-slider {
-                    -webkit-appearance: none; appearance: none;
-                    width: 100%; height: 6px; background: #e2e8f0; border-radius: 9999px;
-                    outline: none; opacity: 0.9; transition: opacity .2s;
-                }
-                .custom-slider:hover { opacity: 1; }
-                .custom-slider::-webkit-slider-thumb {
-                    -webkit-appearance: none; appearance: none;
-                    width: 18px; height: 18px; background: #16a34a; border-radius: 50%;
-                    cursor: pointer; border: 3px solid white;
-                    box-shadow: 0 0 5px rgba(0,0,0,0.2);
-                }
-                .custom-slider::-moz-range-thumb {
-                    width: 18px; height: 18px; background: #16a34a; border-radius: 50%;
-                    cursor: pointer; border: 3px solid white;
-                    box-shadow: 0 0 5px rgba(0,0,0,0.2);
-                }
-            `}</style>
+            <style>{`.selected-outline { box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #22c55e; border-radius: 1.25rem; } .custom-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: #e2e8f0; border-radius: 9999px; outline: none; opacity: 0.9; transition: opacity .2s; } .custom-slider:hover { opacity: 1; } .custom-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; background: #16a34a; border-radius: 50%; cursor: pointer; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); } .custom-slider::-moz-range-thumb { width: 18px; height: 18px; background: #16a34a; border-radius: 50%; cursor: pointer; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); } .bg-dots { background-color: #f8fafc; }`}</style>
             <TopBar onSave={handleSave} onTogglePreview={togglePreviewMode} isPreviewMode={false} onToggleLeftPanel={() => setIsLeftPanelOpen(p => !p)} onToggleFullscreen={handleToggleFullscreen} isFullscreen={isFullscreen} />
             <div className="flex-1 flex flex-row relative overflow-hidden z-0">
-                <LeftPanel 
-                  isOpen={isLeftPanelOpen} 
-                  onClose={() => setIsLeftPanelOpen(false)} 
-                  onAddTopLevelSection={() => handleOpenStructureModal(null, "section", activePageId)} 
-                  pages={pages} 
-                  activePageId={activePageId} 
-                  onAddPage={handleAddPage} 
-                  onSelectPage={handleSelectPage} 
-                  onRenamePage={handleRenamePage} 
-                  onDeletePage={handleDeletePage} 
-                  onAiSubmit={handleAiSubmit} 
-                  isAiLoading={isAiLoading} 
-                  aiChatHistory={aiChatHistory} 
-                  onSwitchToAiMode={() => {}}
-                  onSelect={handleSelect} 
-                  selectedItem={selectedItem}
-                  aiSuggestions={aiSuggestions}
-                  handleUndo={handleUndo}
-                  handleRedo={handleRedo}
-                />
+                <LeftPanel isOpen={isLeftPanelOpen} onClose={() => setIsLeftPanelOpen(false)} onAddTopLevelSection={() => handleOpenStructureModal(null, "section", activePageId)} pages={pages} activePageId={activePageId} onAddPage={handleAddPage} onSelectPage={handleSelectPage} onRenamePage={handleRenamePage} onDeletePage={handleDeletePage} onAiSubmit={handleAiSubmit} isAiLoading={isAiLoading} aiChatHistory={aiChatHistory} onSwitchToAiMode={startAiSession} onSelect={handleSelect} selectedItem={selectedItem} lastAiSuccess={lastAiSuccess} onSuggestion={handleSuggestionAction}/>
                 
-                <main ref={canvasRef} className={`flex-1 flex flex-col relative bg-dots ${isAiLoading ? '' : 'overflow-auto'}`} onMouseDown={handleCanvasMouseDown} onMouseMove={handleCanvasMouseMove} onMouseUp={handleCanvasMouseUpOrLeave} onMouseLeave={handleCanvasMouseUpOrLeave} style={{ cursor: getCanvasCursor(), backgroundSize: '40px 40px', backgroundImage: 'radial-gradient(circle, #d1d5db 1px, rgba(0, 0, 0, 0) 1px)' }}>
+                <main ref={canvasRef} className={`flex-1 flex flex-col relative bg-dots ${isAiLoading ? '' : 'overflow-auto'}`} onMouseDown={handleCanvasMouseDown} onMouseMove={handleCanvasMouseMove} onMouseUp={handleCanvasMouseUpOrLeave} onMouseLeave={handleCanvasMouseUpOrLeave} style={{ cursor: getCanvasCursor(), backgroundSize: '40px 40px', backgroundImage: 'radial-gradient(circle, #e2e8f0 1px, rgba(0, 0, 0, 0) 1px)' }}>
+                
                 {isAiLoading ? ( <AiCanvasLoader /> ) : (
                     <>
                     <CanvasToolbar selectedItem={selectedItem} zoom={zoom} onZoomChange={setZoom} onSelect={handleSelect} pages={pages} activeTool={activeTool} onToolChange={setActiveTool}/>
                     <div style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`, transformOrigin: "0 0", transition: isPanning.current ? 'none' : "transform 0.2s" }} className="flex-1 flex gap-20 items-start p-20" onClick={(e) => { if (e.target === e.currentTarget && activeTool === 'select') { setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); } }}>
-                        {activePage && DEVICE_FRAMES_CONFIG.map((device) => (
-                            <DeviceFrame key={device.name} device={device} page={activePage} globalNavbar={globalNavbar} globalFooter={globalFooter} onUpdateProps={handleUpdateProps} onDelete={handleDelete} onSelect={handleSelect} selectedItemId={selectedItem?.id} onOpenStructureModal={(path, type) => handleOpenStructureModal(path, type, activePage.id)} isPreviewMode={isPreviewMode} onNavigate={handleNavigate} onDeleteGlobalElement={handleDeleteGlobalElement} isDraggable={activeTool === 'select'} comments={(comments[activePageId] || []).filter(c => c.frame === device.name)} onAddComment={handleAddComment} activeTool={activeTool} />
+                        {DEVICE_FRAMES_CONFIG.map((device) => (
+                            <DeviceFrame key={device.name} device={device} page={activePage} globalNavbar={globalNavbar} globalFooter={globalFooter} onUpdateProps={handleUpdateProps} onDelete={handleDelete} onSelect={handleSelect} selectedItemId={selectedItem?.id} onOpenStructureModal={(path, type) => handleOpenStructureModal(path, type, activePage?.id)} isPreviewMode={isPreviewMode} onNavigate={handleNavigate} onDeleteGlobalElement={handleDeleteGlobalElement} isDraggable={activeTool === 'select'} comments={(comments[activePage?.id] || []).filter(c => c.frame === device.name)} onAddComment={handleAddComment} activeTool={activeTool} />
                         ))}
                     </div>
                     </>
