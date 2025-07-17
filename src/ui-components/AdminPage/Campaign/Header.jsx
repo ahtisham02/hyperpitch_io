@@ -694,16 +694,24 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
   );
 }
 // --- HIGH-LEVEL BUILDER COMPONENTS (Panels, Toolbars, etc. UNCHANGED) ---
-const DEVICE_FRAMES_CONFIG = [ { name: "Desktop", width: 1440, icon: LucideIcons.Monitor }, { name: "Tablet", width: 820, icon: LucideIcons.Tablet }, { name: "Mobile", width: 414, icon: LucideIcons.Smartphone }, ];
+const DEVICE_FRAMES_CONFIG = [ { name: "Mobile", width: 390, icon: LucideIcons.Smartphone }, { name: "Tablet", width: 768, icon: LucideIcons.Tablet }, { name: "Desktop", width: 1440, icon: LucideIcons.Monitor }, ];
+
 function DeviceFrame({ device, page, globalNavbar, globalFooter, onUpdateProps, onDelete, onSelect, selectedItemId, onOpenStructureModal, isPreviewMode, onNavigate, onDeleteGlobalElement, isDraggable, comments, onAddComment, activeTool, }) {
     const { setNodeRef: setPageDroppableRef, isOver } = useDroppable({ id: `page-droppable-${page.id}-${device.name}`, data: { type: "page", accepts: ["paletteItem", "section"], pageId: page.id }, disabled: isPreviewMode || !isDraggable, });
     const sectionIds = useMemo(() => page.layout.map((sec) => sec.id), [page.layout]);
     const handleCommentOverlayClick = (e) => { e.stopPropagation(); onAddComment(page.id, device.name, { x: e.clientX, y: e.clientY }); };
+    
+    // **NEW**: Added container-type property to enable container queries for responsiveness.
+    const containerStyle = {
+      width: device.width,
+      containerType: 'inline-size',
+    };
+
     return (
         <div className="flex flex-col gap-4 items-center flex-shrink-0">
             <h3 className="text-white/90 font-semibold px-4 py-1.5 bg-black/20 rounded-lg flex items-center gap-2 text-sm"> <device.icon className="w-4 h-4" /> {device.name} </h3>
             <div className="relative">
-                <div style={{ width: device.width }} className="bg-white shadow-2xl rounded-2xl border border-slate-200 flex flex-col">
+                <div style={containerStyle} className="bg-white shadow-2xl rounded-2xl border border-slate-200 flex flex-col">
                     <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300">
                         {globalNavbar && (
                             <header className="p-2 border-b border-slate-200 shadow-sm z-10 flex-shrink-0 relative">
@@ -1153,13 +1161,14 @@ function AiCanvasLoader() {
 }
 export function PagePreviewRenderer({ pageLayout, globalNavbar, globalFooter, onNavigate, activePageId }) {
     const [device, setDevice] = useState(PREVIEW_DEVICES[2]);
+    const containerStyle = device.width === '100%' ? { width: '100%', height: '100%' } : { maxWidth: device.width, width: '100%', height: '100%', containerType: 'inline-size' };
     return (
         <div className="flex-1 overflow-hidden bg-slate-100 flex flex-col items-center p-4 gap-4">
             <div className="bg-white rounded-full p-1.5 flex items-center justify-center gap-2 text-sm font-medium text-slate-600 shadow-md">
                 {PREVIEW_DEVICES.map(d => (<button key={d.name} onClick={() => setDevice(d)} className={`px-4 py-2 rounded-full flex items-center gap-2 transition-colors ${device.name === d.name ? 'bg-green-600 text-white' : 'hover:bg-slate-100'}`}><d.icon className="w-5 h-5" /> {d.name}</button>))}
             </div>
             <div className="flex-1 w-full flex items-center justify-center overflow-hidden">
-                <div style={{ maxWidth: device.width, width: '100%', height: '100%' }} className="bg-white shadow-2xl mx-auto transition-all duration-300 rounded-2xl">
+                <div style={containerStyle} className="bg-white shadow-2xl mx-auto transition-all duration-300 rounded-2xl">
                     <div className="w-full h-full overflow-y-auto scrollbar-thin scrollbar-thumb-slate-400 scrollbar-track-slate-100">
                         {globalNavbar && (<NavbarElement {...globalNavbar.props} isPreviewMode={true} onNavigate={onNavigate} previewDevice={device.name.toLowerCase()} />)}
                         {pageLayout && pageLayout.map((sec, idx) => ( <SectionComponent key={`${activePageId}-${sec.id}-${idx}`} sectionData={sec} sectionIndex={idx} onUpdateProps={() => {}} onDelete={() => {}} onSelect={() => {}} selectedItemId={null} onOpenStructureModal={() => {}} isPreviewMode={true} onNavigate={onNavigate} />))}
@@ -1374,41 +1383,39 @@ function htmlToBuilderJson(htmlString) {
 
     return sections;
 }
-function apiStateToBuilderJson(apiResponse, currentLayout) {
+
+function apiStateToBuilderJson(apiResponse) {
     const { sections: sectionsHtml, section_order } = apiResponse;
-    if (!sectionsHtml || !section_order) return currentLayout || [];
+    if (!sectionsHtml || !section_order) return [];
 
-    const newLayoutMap = new Map(currentLayout.map(s => [s.id, s]));
-
+    const newLayout = [];
     for (const sectionId of section_order) {
         if (sectionId.includes('navbar') || sectionId.includes('navigation_bar') || sectionId.includes('footer')) continue;
         
         const sectionHtml = sectionsHtml[sectionId];
-        if (!sectionHtml || sectionHtml.trim() === "") {
-             if (!newLayoutMap.has(sectionId)) {
-                newLayoutMap.set(sectionId, {
-                    id: sectionId, type: 'section', props: { paddingTop: "48px", paddingBottom: "48px", style: {} },
-                    columns: [{ id: generateId("col"), type: "column", props: { width: "100%" }, elements: [] }]
-                });
-             }
-            continue;
-        }
+        
+        // This handles both empty sections and sections with content
+        const parsedSections = htmlToBuilderJson(sectionHtml || '<section></section>');
 
-        const parsedSectionsFromHtml = htmlToBuilderJson(sectionHtml);
-        if (parsedSectionsFromHtml.length > 0) {
-             parsedSectionsFromHtml.forEach(parsedSection => {
-                parsedSection.id = sectionId; 
-                newLayoutMap.set(sectionId, parsedSection); 
+        if (parsedSections.length > 0) {
+            // The AI might return multiple sections inside one HTML blob
+            parsedSections.forEach((parsedSection, index) => {
+                // For the first parsed section, use the ID from the backend's order
+                // For subsequent ones, keep their generated ID.
+                if (index === 0) {
+                    parsedSection.id = sectionId;
+                }
+                newLayout.push(parsedSection);
+            });
+        } else {
+            // If parsing results in nothing (e.g., an empty <section> tag), add a placeholder
+            newLayout.push({
+                id: sectionId, type: 'section', props: { paddingTop: "48px", paddingBottom: "48px", style: {} },
+                columns: [{ id: generateId("col"), type: "column", props: { width: "100%" }, elements: [] }]
             });
         }
     }
-    
-    // Create the final layout array, ordered by section_order
-    const finalLayout = section_order
-        .map(id => newLayoutMap.get(id))
-        .filter(Boolean); // Filter out any undefined (e.g., navbar/footer)
-
-    return finalLayout;
+    return newLayout;
 }
 
 // --- MAIN PAGE COMPONENT ---
@@ -1450,8 +1457,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
           const apiResult = pageStateResponse.data;
           
           if (apiResult && apiResult.sections && apiResult.section_order) {
-              const currentLayout = pages[activePageId]?.layout || [];
-              const newLayout = apiStateToBuilderJson(apiResult, currentLayout);
+              const newLayout = apiStateToBuilderJson(apiResult);
               updateLayoutForPage(activePageId, () => newLayout);
 
               if (apiResult.suggestions && apiResult.suggestions.length > 0) {
@@ -1466,7 +1472,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
       } finally {
         setIsAiLoading(false);
       }
-  }, [activePageId, pages]);
+  }, [activePageId]);
 
   const getAiSuggestions = useCallback(async () => {
     if (!aiSessionId.current) return;
@@ -1789,17 +1795,11 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     try {
         const pageResponse = await apiRequest('post', '/generate-page', { session_id: aiSessionId.current, prompt: prompt, as_file: false });
         const apiResult = pageResponse.data;
-        if (apiResult.html) { 
-            const newLayout = htmlToBuilderJson(apiResult.html); 
-            updateLayoutForPage(activePageId, () => newLayout); 
-            setAiChatHistory(prev => prev.map(entry => entry.id === historyId ? {...entry, status: 'success'} : entry));
+        if (apiResult.html || (apiResult.sections && apiResult.section_order)) { 
             await syncPageWithAI();
-        } else if (apiResult.sections && apiResult.section_order) {
-            updateLayoutForPage(activePageId, currentLayout => apiStateToBuilderJson(apiResult, currentLayout));
             setAiChatHistory(prev => prev.map(entry => entry.id === historyId ? {...entry, status: 'success'} : entry));
-            await syncPageWithAI();
         } else { 
-            throw new Error("Invalid response from AI. Expected 'html' or 'sections' data."); 
+            throw new Error("Invalid response from AI. No 'html' or 'sections' data found."); 
         }
     } catch (error) {
         setAiChatHistory(prev => prev.map(entry => entry.id === historyId ? {...entry, status: 'error'} : entry));
