@@ -145,7 +145,7 @@ export default function Sidebar() {
             </button>
 
             <div
-                className={`fixed inset-y-0 left-0 z-40 flex h-screen flex-col ${sidebarBgColor} p-3 py-4 shadow-lg transition-all duration-300 ease-in-out md:relative md:shadow-none border-r border-gray-200
+                className={`fixed bg-white inset-y-0 left-0 z-40 flex h-screen flex-col ${sidebarBgColor} p-3 py-4 shadow-lg transition-all duration-300 ease-in-out md:relative md:shadow-none border-r border-gray-200
                            ${collapsed && !mobileSidebarOpen ? 'md:w-[75px]' : 'w-64'}
                            ${mobileSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full'}
                            md:translate-x-0`}
@@ -153,7 +153,7 @@ export default function Sidebar() {
                 <div className={`flex -mt-2.5 items-center pr-1 h-14 mb-4 ${collapsed && !mobileSidebarOpen ? 'justify-center' : 'justify-between'}`}>
                     <Link to="/" onClick={handleFooterLinkClick} className={`flex items-center group ${collapsed && !mobileSidebarOpen ? 'justify-center w-full' : ''}`}>
                         <SiteIcon size={collapsed && !mobileSidebarOpen ? 0 : 24} className={`${collapsed && !mobileSidebarOpen ? '' : 'mr-2'} ${defaultIconColor} group-hover:text-green-700 transition-colors`} />
-                        {(!collapsed || mobileSidebarOpen) && (<span className={`text-xl font-semibold ${defaultTextColor} group-hover:text-green-700 transition-colors`}>{siteName}</span>)}
+                        {(!collapsed || mobileSidebarOpen) && (<span className={`text-xl font-bold ${defaultTextColor} group-hover:text-green-700 transition-colors`}>{siteName}</span>)}
                     </Link>
                     <button onClick={toggleDesktopCollapse} className={`hidden p-2 rounded-md hover:bg-gray-100 md:block ${collapsed && !mobileSidebarOpen ? 'absolute top-4 right-4' : ''}`} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
                         <ChevronLeft size={24} className={`text-gray-600 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`} />

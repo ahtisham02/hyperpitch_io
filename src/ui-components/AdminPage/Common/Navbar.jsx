@@ -43,7 +43,7 @@ export default function AppSidebarHeader() {
     return (
         <header
             className={`sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between
-                       bg-slate-50 backdrop-blur-md
+                       bg-white backdrop-blur-md
                        border-b border-gray-200/70 px-4 shadow-sm
                        sm:px-6 md:pl-[calc(theme(spacing.4)+theme(spacing.20))] lg:px-6`}
         >

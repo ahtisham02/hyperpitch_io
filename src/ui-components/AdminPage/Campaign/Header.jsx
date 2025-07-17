@@ -4,8 +4,9 @@ import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } 
 import { CSS } from "@dnd-kit/utilities";
 import img from "../../../assets/img/cards/672e98fa2d1ed0b7d1bf2adb_glass.png";
 import * as LucideIcons from "lucide-react";
-import apiRequest from "../../../utils/apiRequest"; 
+import apiRequest from "../../../utils/apiRequest";
 
+// --- MODAL & UI COMPONENTS (UNCHANGED) ---
 const StyledModalButton = ({ children, onClick, variant = "primary", className = "" }) => {
   const baseStyle = "inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed";
   const variantStyles = {
@@ -19,7 +20,6 @@ const StyledModalButton = ({ children, onClick, variant = "primary", className =
     </button>
   );
 };
-
 function GeneralModal({ isOpen, onClose, title, children, size = "md" }) {
   if (!isOpen) return null;
   const sizeClasses = { sm: "max-w-sm", md: "max-w-md", lg: "max-w-lg", xl: "max-w-xl", "2xl": "max-w-2xl" };
@@ -39,7 +39,6 @@ function GeneralModal({ isOpen, onClose, title, children, size = "md" }) {
     </div>
   );
 }
-
 function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, confirmText = "Confirm", cancelText = "Cancel", confirmButtonVariant = "primary" }) {
   if (!isOpen) return null;
   return (
@@ -52,7 +51,6 @@ function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, confirm
     </GeneralModal>
   );
 }
-
 function InputModal({ isOpen, onClose, onSubmit, title, message, inputLabel, initialValue = "", placeholder = "", submitText = "Submit", cancelText = "Cancel" }) {
   const [inputValue, setInputValue] = React.useState(initialValue);
   React.useEffect(() => { if (isOpen) { setInputValue(initialValue); } }, [isOpen, initialValue]);
@@ -70,7 +68,6 @@ function InputModal({ isOpen, onClose, onSubmit, title, message, inputLabel, ini
     </GeneralModal>
   );
 }
-
 function CustomDropdown({ options, value, onChange, placeholder = "Select an option", label, disabled = false, idSuffix = "" }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -94,7 +91,7 @@ function CustomDropdown({ options, value, onChange, placeholder = "Select an opt
     </div>
   );
 }
-
+// --- HELPER FUNCTIONS (UNCHANGED) ---
 function generateId(prefix = "id") { return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`; }
 function isObject(item) { return (item && typeof item === 'object' && !Array.isArray(item)); }
 function mergeDeep(target, ...sources) {
@@ -166,13 +163,12 @@ function findItemAndPathRecursive(data, targetId, currentPathBase = "") {
   }
   return null;
 }
-
+// --- CONFIGS & ELEMENT COMPONENTS (UNCHANGED) ---
 const textSizeOptions = [ { label: "Tiny", value: "text-xs" }, { label: "Small", value: "text-sm" }, { label: "Base", value: "text-base" }, { label: "Large", value: "text-lg" }, { label: "XL", value: "text-xl" }, { label: "2XL", value: "text-2xl" }, ];
 const fontWeightOptions = [ { label: "Light", value: "font-light" }, { label: "Normal", value: "font-normal" }, { label: "Medium", value: "font-medium" }, { label: "Semibold", value: "font-semibold" }, { label: "Bold", value: "font-bold" }, ];
 const textAlignOptions = [ { label: "Left", value: "text-left", icon: <LucideIcons.AlignLeft className="w-5 h-5" /> }, { label: "Center", value: "text-center", icon: <LucideIcons.AlignCenter className="w-5 h-5" /> }, { label: "Right", value: "text-right", icon: <LucideIcons.AlignRight className="w-5 h-5" /> }, ];
 const PREDEFINED_STRUCTURES = [ { name: "1 Column", id: "1col", layout: [{ width: "100%" }] }, { name: "2 Columns", id: "2col5050", layout: [{ width: "50%" }, { width: "50%" }] }, { name: "3 Columns", id: "3col33", layout: [{ width: "33.33%" }, { width: "33.33%" }, { width: "33.33%" }] }, { name: "4 Columns", id: "4col25", layout: [{ width: "25%" }, { width: "25%" }, { width: "25%" }, { width: "25%" }] }, { name: "Left Sidebar", id: "leftsidebar", layout: [{ width: "30%" }, { width: "70%" }] }, { name: "Right Sidebar", id: "rightsidebar", layout: [{ width: "70%" }, { width: "30%" }] }, ];
 const PREVIEW_DEVICES = [ { name: "Mobile", width: 390, icon: LucideIcons.Smartphone }, { name: "Tablet", width: 768, icon: LucideIcons.Tablet }, { name: "Desktop", width: "100%", icon: LucideIcons.Monitor }, ];
-
 function Heading({ text = "Default Heading Title", onUpdate, isSelected, sizeClass, fontWeight, textAlign, textColor, isPreviewMode, isEditable, style }) {
   const handleBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ text: e.currentTarget.innerText }); };
   return (
@@ -184,7 +180,6 @@ function Heading({ text = "Default Heading Title", onUpdate, isSelected, sizeCla
     </div>
   );
 }
-
 function TextBlock({ text = "Lorem ipsum dolor sit amet...", onUpdate, isSelected, sizeClass, fontWeight, textAlign, textColor, isPreviewMode, isEditable, style }) {
     const handleBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ text: e.currentTarget.innerText }); };
     return (
@@ -199,17 +194,18 @@ function TextBlock({ text = "Lorem ipsum dolor sit amet...", onUpdate, isSelecte
         </div>
     );
 }
-
 function AccordionElement({ title = "Accordion Title", content = "Accordion content...", onUpdate, isSelected, isPreviewMode, isEditable, style }) {
     const [isOpen, setIsOpen] = useState(false);
     const handleTitleBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ title: e.currentTarget.innerText }); };
     const handleContentBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ content: e.currentTarget.innerText }); };
-    const toggleOpen = () => { if (isPreviewMode) setIsOpen(!isOpen) };
+    const toggleOpen = () => setIsOpen(!isOpen);
+    const effectiveToggle = !isPreviewMode ? () => {} : toggleOpen;
+
     return (
         <div className={`p-2 ${!isPreviewMode ? `rounded-lg ${isSelected ? "" : "hover:ring-2 hover:ring-green-400/20"}` : ""}`} style={style}>
             <div className={`bg-white rounded-lg shadow-sm border ${isSelected && !isPreviewMode ? "border-green-300" : "border-slate-200"}`}>
                 <h2>
-                    <button type="button" onClick={toggleOpen} className="flex items-center justify-between w-full p-4 font-medium text-left text-slate-800 hover:bg-green-50/50 transition-colors">
+                    <button type="button" onClick={effectiveToggle} className={`flex items-center justify-between w-full p-4 font-medium text-left text-slate-800 ${isPreviewMode ? 'hover:bg-green-50/50' : 'cursor-default'} transition-colors`}>
                         <span contentEditable={!isPreviewMode && isEditable} suppressContentEditableWarning onBlur={handleTitleBlur} className={`flex-1 ${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-green-400 p-0.5 -m-0.5 rounded-sm" : ""}`} dangerouslySetInnerHTML={{ __html: title }}></span>
                         <LucideIcons.ChevronDown className={`w-5 h-5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}/>
                     </button>
@@ -225,7 +221,6 @@ function AccordionElement({ title = "Accordion Title", content = "Accordion cont
         </div>
     )
 }
-
 function ImageElement({ src = img, alt = "Placeholder", width = "100%", height = "auto", borderRadius = "8px", boxShadow = "none", isSelected, isPreviewMode, style }) {
     const getStyleValue = (v) => v === "auto" || (typeof v === "string" && v.endsWith("%")) ? v : `${parseInt(v, 10) || "auto"}px`;
     return (
@@ -234,7 +229,6 @@ function ImageElement({ src = img, alt = "Placeholder", width = "100%", height =
         </div>
     );
 }
-
 function ButtonElement({ buttonText = "Click Me", link = "#", onUpdate, isSelected, sizeClass, textAlign, backgroundColor = "#16a34a", textColor = "#ffffff", borderRadius = "9999px", variant = "solid", fullWidth = false, isPreviewMode, onNavigate, isEditable, style }) {
     const handleTextBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ buttonText: e.currentTarget.innerText }); };
     const solidStyle = { backgroundColor: backgroundColor, color: textColor, borderRadius: borderRadius, border: "2px solid transparent" };
@@ -253,7 +247,6 @@ function ButtonElement({ buttonText = "Click Me", link = "#", onUpdate, isSelect
         </div>
     );
 }
-
 function Divider({ isSelected, isPreviewMode, style }) {
     return (
         <div className={`py-4 px-1 ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/5" : ""}`} style={style}>
@@ -261,11 +254,9 @@ function Divider({ isSelected, isPreviewMode, style }) {
         </div>
     );
 }
-
 function Spacer({ height = "20px", onUpdate, isSelected, isPreviewMode, style }) {
     return <div style={{ height, ...style }} className={`w-full transition-all ${!isPreviewMode && isSelected ? "bg-green-200/50" : !isPreviewMode ? "bg-transparent hover:bg-slate-200/50" : ""}`}></div>;
 }
-
 function IconElement({ iconName = "Star", size = "32px", color = "currentColor", onUpdate, isSelected, isPreviewMode, style }) {
     const IconComponent = LucideIcons[iconName] || LucideIcons.HelpCircle;
     const ActualIconComponent = IconComponent || LucideIcons.HelpCircle;
@@ -275,7 +266,6 @@ function IconElement({ iconName = "Star", size = "32px", color = "currentColor",
         </div>
     );
 }
-
 function GoogleMapsPlaceholder({ address = "1600 Amphitheatre Parkway, Mountain View, CA", zoom = 14, onUpdate, isSelected, isPreviewMode, style }) {
     return (
         <div className={`p-3 rounded-xl ${!isPreviewMode ? `${isSelected ? "bg-green-500/5 ring-2 ring-green-500" : "bg-slate-100 border border-slate-200 hover:border-green-300"}` : "bg-slate-100 border border-slate-200"} aspect-video flex flex-col items-center justify-center text-center`} style={style}>
@@ -285,7 +275,6 @@ function GoogleMapsPlaceholder({ address = "1600 Amphitheatre Parkway, Mountain 
         </div>
     );
 }
-
 function VideoElement({ videoType = "mp4", src, width = "100%", height = "auto", controls = true, autoplay = false, loop = false, muted = true, isSelected, isPreviewMode, style }) {
     const getYouTubeEmbedUrl = (videoId) => `https://www.youtube.com/embed/${videoId}?autoplay=${autoplay ? 1 : 0}&loop=${loop ? 1 : 0}&mute=${muted ? 1 : 0}&controls=${controls ? 1 : 0}${loop ? `&playlist=${videoId}` : ""}`;
     const getVimeoEmbedUrl = (videoId) => `https://player.vimeo.com/video/${videoId}?autoplay=${autoplay ? 1 : 0}&loop=${loop ? 1 : 0}&muted=${muted ? 1 : 0}&controls=${controls ? 1 : 0}`;
@@ -305,11 +294,9 @@ function VideoElement({ videoType = "mp4", src, width = "100%", height = "auto",
         </div>
     );
 }
-
 function InnerSectionComponentDisplay({ sectionData, onOpenStructureModal, onSelect, isSelected, onUpdateProps, onDelete, selectedItemId, isPreviewMode, isDraggable, style }) {
   const hasColumns = sectionData.columns && sectionData.columns.length > 0;
   const ownPath = sectionData.path;
-
   if (!hasColumns) {
     return (
       <div onClick={(e) => { if (!isPreviewMode && isDraggable) { e.stopPropagation(); onSelect(sectionData.id, "element", ownPath); } }} className={`p-4 min-h-[80px] flex flex-col items-center justify-center ${!isPreviewMode ? `rounded-xl border-2 border-dashed ${isSelected ? "border-green-500 bg-green-50/80" : "border-slate-300 bg-slate-100/80 hover:border-green-400 hover:bg-green-50/50"} cursor-pointer transition-all` : ""}`} style={style}>
@@ -320,7 +307,6 @@ function InnerSectionComponentDisplay({ sectionData, onOpenStructureModal, onSel
       </div>
     );
   }
-
   return (
     <div onClick={(e) => { if (!isPreviewMode && isDraggable) { e.stopPropagation(); onSelect(sectionData.id, "element", ownPath); } }} className={`p-1 ${!isPreviewMode ? `border rounded-xl ${isSelected ? "border-green-500 bg-green-50/50" : "border-slate-200 hover:border-green-300/70"}` : ""}`} style={style}>
         <div className="flex flex-wrap -m-0.5">
@@ -331,7 +317,6 @@ function InnerSectionComponentDisplay({ sectionData, onOpenStructureModal, onSel
     </div>
   );
 }
-
 function CardSliderElement({ slides = [], slidesPerView = 3, spaceBetween = 16, speed = 500, autoplay = false, autoplayDelay = 3000, loop = false, showNavigation = true, showPagination = true, cardBorderRadius = "12px", onUpdate, isSelected, isPreviewMode, onNavigate, isEditable, style }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const timeoutRef = useRef(null);
@@ -407,7 +392,6 @@ function CardSliderElement({ slides = [], slidesPerView = 3, spaceBetween = 16, 
       </div>
   );
 }
-
 function NavbarElement({ logoType = "text", logoText = "MySite", logoSrc = img, links = [], rightContentType = "none", backgroundColor = "#ffffff", textColor = "#334155", linkColor = "#16a34a", isSelected, isPreviewMode, onUpdate, onNavigate, onSelect, onDelete, path, previewDevice, isDraggable, style }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const navStyle = { backgroundColor, ...style };
@@ -422,7 +406,6 @@ function NavbarElement({ logoType = "text", logoText = "MySite", logoSrc = img, 
     };
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
     const handleClick = (e) => { if (!isPreviewMode && onSelect && isDraggable) { e.stopPropagation(); onSelect(); } };
-
     return (
         <div onClick={handleClick} className={`p-1 relative group ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/5" : !isPreviewMode && path ? "hover:ring-2 hover:ring-green-400/20 rounded-xl" : ""}`}>
             <nav style={navStyle} className="relative px-4 sm:px-6 py-4 shadow-md rounded-xl">
@@ -468,7 +451,6 @@ function NavbarElement({ logoType = "text", logoText = "MySite", logoSrc = img, 
         </div>
     );
 }
-
 function FooterElement({ copyrightText = `© ${new Date().getFullYear()} MySite. All rights reserved.`, links = [], backgroundColor = "#f1f5f9", textColor = "#64748b", linkColor = "#16a34a", isSelected, isPreviewMode, onUpdate, onNavigate, onSelect, onDelete, path, isDraggable, style }) {
     const footerStyle = { backgroundColor, ...style };
     const textStyle = { color: textColor };
@@ -499,7 +481,7 @@ function FooterElement({ copyrightText = `© ${new Date().getFullYear()} MySite.
         </div>
     );
 }
-
+// --- UI & DATA MANAGERS (UNCHANGED) ---
 function LinkManager({ links, onUpdateLinks, elementId, pages, linkTypeLabel = "Link" }) {
   const [localLinks, setLocalLinks] = useState(links || []);
   useEffect(() => { setLocalLinks(links || []); }, [links]);
@@ -540,7 +522,6 @@ function LinkManager({ links, onUpdateLinks, elementId, pages, linkTypeLabel = "
     </div>
   );
 }
-
 function SlideManager({ slides, onUpdateSlides, elementId }) {
     const [localSlides, setLocalSlides] = useState(slides || []);
     const slideImgInputRefs = useRef([]);
@@ -572,7 +553,7 @@ function SlideManager({ slides, onUpdateSlides, elementId }) {
       </div>
     );
 }
-
+// --- CORE BUILDER COMPONENTS (UNCHANGED) ---
 const ALL_ELEMENT_TYPES = { Heading, TextBlock, ImageElement, ButtonElement, Divider, Spacer, IconElement, GoogleMapsPlaceholder, VideoElement, InnerSectionComponentDisplay, NavbarElement, FooterElement, CardSliderElement, AccordionElement };
 const getDefaultProps = (id) => ({ ...(AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === id)?.defaultProps || {}), style: {} })
 const AVAILABLE_ELEMENTS_CONFIG = [
@@ -591,23 +572,19 @@ const AVAILABLE_ELEMENTS_CONFIG = [
     { id: "footer", name: "Footer", component: "FooterElement", category: 'Global', isGlobalOnly: true, defaultProps: { copyrightText: `© ${new Date().getFullYear()} Your Company.`, links: [{ id: generateId(), text: "Privacy", url: "#" }], backgroundColor: "#0f172a", textColor: "#94a3b8", linkColor: "#ffffff" } },
 ];
 const elementIcons = { header: <LucideIcons.Heading1 />, textBlock: <LucideIcons.Baseline />, image: <LucideIcons.Image />, button: <LucideIcons.MousePointerClick />, divider: <LucideIcons.Minus />, spacer: <LucideIcons.StretchVertical />, icon: <LucideIcons.Star />, video: <LucideIcons.Youtube />, innerSection: <LucideIcons.LayoutPanelLeft />, accordion: <LucideIcons.ChevronsUpDown />, cardSlider: <LucideIcons.GalleryHorizontalEnd />, navbar: <LucideIcons.Navigation />, footer: <LucideIcons.PanelBottom />, default: <LucideIcons.Puzzle />, section: <LucideIcons.LayoutPanelTop />, column: <LucideIcons.View /> };
-
 function DraggableCanvasElement({ elementData, onUpdateProps, onDelete, onSelect, isSelected, onOpenStructureModal, parentColumnId, isPreviewMode, onNavigate, isDraggable, }) {
   const config = AVAILABLE_ELEMENTS_CONFIG.find((c) => c.id === elementData.type);
   if (!config) return null;
   const ComponentToRender = ALL_ELEMENT_TYPES[config.component];
   if (!ComponentToRender) return null;
-
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: elementData.id,
     data: { type: "canvasElement", elementId: elementData.id, parentColumnId, elementType: elementData.type, elementData, path: elementData.path },
     disabled: isPreviewMode || !isDraggable,
   });
-
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging && !isPreviewMode ? 0.5 : 1, zIndex: isDragging && !isPreviewMode ? 100 : "auto" };
   const handleUpdate = (newProps) => { if (!isPreviewMode) onUpdateProps(elementData.path, newProps); };
   const handleClick = (e) => { e.stopPropagation(); if (!isPreviewMode && isDraggable) onSelect(elementData.id, "element", elementData.path, elementData); };
-  
   return (
     <div ref={setNodeRef} style={style} onClick={handleClick} className={`relative group my-2 transition-all duration-150 ease-in-out ${!isPreviewMode && isDragging ? "bg-green-50/80 shadow-2xl ring-2 ring-green-400 scale-[1.01] rounded-lg" : ""}`}>
         {isDraggable && !isPreviewMode && (
@@ -638,7 +615,6 @@ function DraggableCanvasElement({ elementData, onUpdateProps, onDelete, onSelect
     </div>
   );
 };
-
 function ColumnComponent({ parentPath, columnData, columnIndex, onUpdateProps, onDelete, onSelect, selectedItemId, onOpenStructureModal, isInner = false, isPreviewMode, onNavigate, isDraggable, }) {
   const columnPath = `${parentPath}.columns[${columnIndex}]`;
   const isSelected = selectedItemId === columnData.id;
@@ -646,7 +622,6 @@ function ColumnComponent({ parentPath, columnData, columnIndex, onUpdateProps, o
   const { setNodeRef: setDroppableRef, isOver } = useDroppable({ id: `col-${columnData.id}`, data: { type: "column", columnId: columnData.id, path: columnPath, accepts: ["paletteItem", "canvasElement"] }, disabled: isPreviewMode || !isDraggable });
   const elementIds = useMemo(() => columnData.elements.map((el) => el.id), [columnData.elements]);
   const columnStyle = { ...columnData.props?.style, flexBasis: columnData.props.width || "100%" };
-
   return (
     <div onClick={handleClick} style={columnStyle} className={`p-2 flex-shrink-0 transition-all ${!isPreviewMode && isDraggable ? 'cursor-pointer' : ''} ${!isPreviewMode && isSelected ? "selected-outline" : !isPreviewMode ? "hover:outline hover:outline-1 hover:outline-offset-1 hover:outline-green-300/70 rounded-2xl" : ""}`}>
         <SortableContext items={elementIds} strategy={verticalListSortingStrategy} disabled={isPreviewMode || !isDraggable}>
@@ -672,7 +647,6 @@ function ColumnComponent({ parentPath, columnData, columnIndex, onUpdateProps, o
     </div>
   );
 };
-
 function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, onSelect, selectedItemId, onOpenStructureModal, isPreviewMode, onNavigate, pageId, isDraggable, }) {
   const sectionPath = `pages[${pageId}].layout[${sectionIndex}]`;
   const isSelected = selectedItemId === sectionData.id;
@@ -682,12 +656,10 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
       data: { type: "section", sectionId: sectionData.id, path: sectionPath, sectionData, pageId },
       disabled: isPreviewMode || !isDraggable
   });
-
   const sortableStyle = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging && !isPreviewMode ? 0.75 : 1, zIndex: isDragging && !isPreviewMode ? 200 : "auto" };
   const sectionProps = sectionData.props || {};
   const effectiveBgStyle = { ...sortableStyle, ...sectionProps.style };
   if (sectionProps.backgroundType === "color" && sectionProps.backgroundColor) { effectiveBgStyle.backgroundColor = sectionProps.backgroundColor; }
-
   const getSectionBaseBgClass = () => {
       if (isPreviewMode) return sectionProps.backgroundType === "image" || sectionProps.backgroundType === "video" ? "" : "bg-transparent";
       const editModeBase = "";
@@ -696,7 +668,6 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
   };
   const sectionRootClasses = ["relative", "group", "transition-all", "duration-200", "ease-in-out", getSectionBaseBgClass(), !isPreviewMode && isSelected ? "selected-outline" : "", !isPreviewMode && !isSelected ? "hover:ring-2 hover:ring-green-300/80 cursor-pointer" : ""].join(" ").replace(/\s+/g, " ").trim();
   const sectionPaddingStyle = { paddingTop: sectionProps.paddingTop, paddingBottom: sectionProps.paddingBottom, paddingLeft: sectionProps.paddingLeft, paddingRight: sectionProps.paddingRight };
-
   return (
       <div ref={setNodeRef} style={effectiveBgStyle} className={sectionRootClasses} onClick={handleClick}>
           {!isPreviewMode && isDraggable && (
@@ -722,14 +693,12 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
       </div>
   );
 }
-
+// --- HIGH-LEVEL BUILDER COMPONENTS (Panels, Toolbars, etc. UNCHANGED) ---
 const DEVICE_FRAMES_CONFIG = [ { name: "Desktop", width: 1440, icon: LucideIcons.Monitor }, { name: "Tablet", width: 820, icon: LucideIcons.Tablet }, { name: "Mobile", width: 414, icon: LucideIcons.Smartphone }, ];
-
 function DeviceFrame({ device, page, globalNavbar, globalFooter, onUpdateProps, onDelete, onSelect, selectedItemId, onOpenStructureModal, isPreviewMode, onNavigate, onDeleteGlobalElement, isDraggable, comments, onAddComment, activeTool, }) {
     const { setNodeRef: setPageDroppableRef, isOver } = useDroppable({ id: `page-droppable-${page.id}-${device.name}`, data: { type: "page", accepts: ["paletteItem", "section"], pageId: page.id }, disabled: isPreviewMode || !isDraggable, });
     const sectionIds = useMemo(() => page.layout.map((sec) => sec.id), [page.layout]);
     const handleCommentOverlayClick = (e) => { e.stopPropagation(); onAddComment(page.id, device.name, { x: e.clientX, y: e.clientY }); };
-
     return (
         <div className="flex flex-col gap-4 items-center flex-shrink-0">
             <h3 className="text-white/90 font-semibold px-4 py-1.5 bg-black/20 rounded-lg flex items-center gap-2 text-sm"> <device.icon className="w-4 h-4" /> {device.name} </h3>
@@ -770,7 +739,6 @@ function DeviceFrame({ device, page, globalNavbar, globalFooter, onUpdateProps, 
         </div>
     );
 }
-
 function StructureSelectorModal({ isOpen, onClose, onSelectStructure, context }) {
     if (!isOpen) return null;
     return (
@@ -790,7 +758,6 @@ function StructureSelectorModal({ isOpen, onClose, onSelectStructure, context })
         </GeneralModal>
     );
 }
-
 function ElementPaletteItem({ config }) {
     const { attributes, listeners, setNodeRef, isDragging, transform } = useDraggable({ id: `palette-${config.id}`, data: { type: "paletteItem", config } });
     const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 9999, opacity: isDragging ? 0.95 : 1 } : {};
@@ -812,7 +779,6 @@ function ElementPaletteItem({ config }) {
         </div>
     );
 }
-
 function PaletteItemDragOverlay({ config }) {
     let IconToShow = React.cloneElement(elementIcons[config.id] || elementIcons.default, { className: "w-6 h-6" });
     return (
@@ -822,7 +788,6 @@ function PaletteItemDragOverlay({ config }) {
         </div>
     );
 }
-
 function AiLoader() {
     return (
         <div className="flex space-x-2 justify-center items-center">
@@ -833,7 +798,6 @@ function AiLoader() {
         </div>
     );
 }
-
 function AiModeView({ onBack, onAiSubmit, isAiLoading, aiChatHistory, aiSuggestions, handleUndo, handleRedo }) {
     const handleKeyDown = (e) => {
         if(e.key === 'Enter' && !e.shiftKey) {
@@ -886,7 +850,6 @@ function AiModeView({ onBack, onAiSubmit, isAiLoading, aiChatHistory, aiSuggesti
         </div>
     );
 }
-
 function LayerNode({ node, type, path, depth, onSelect, selectedItemId }) {
     const [isOpen, setIsOpen] = useState(depth < 2);
     const isSelected = selectedItemId === node.id;
@@ -928,7 +891,6 @@ function LayerNode({ node, type, path, depth, onSelect, selectedItemId }) {
         </div>
     );
 }
-
 function LayersTreeView({ page, pagePath, onSelect, selectedItemId }) {
     if (!page) return <div className="p-4 text-sm text-slate-500">No page selected.</div>;
     return (
@@ -939,7 +901,6 @@ function LayersTreeView({ page, pagePath, onSelect, selectedItemId }) {
         </div>
     );
 }
-
 const ElementAccordion = ({ title, children, defaultOpen = true }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
     return (
@@ -956,12 +917,10 @@ const ElementAccordion = ({ title, children, defaultOpen = true }) => {
         </div>
     );
 };
-
 function LeftPanel({ isOpen, onClose, onAddTopLevelSection, pages, activePageId, onAddPage, onSelectPage, onRenamePage, onDeletePage, onAiSubmit, isAiLoading, aiChatHistory, onSwitchToAiMode, onSelect, selectedItem, aiSuggestions, handleUndo, handleRedo }) {
   const [activeTab, setActiveTab] = useState("insert");
   const [searchTerm, setSearchTerm] = useState("");
   const [isAiMode, setIsAiMode] = useState(false);
-
   const categorizedElements = useMemo(() => {
     const filtered = AVAILABLE_ELEMENTS_CONFIG.filter(el => !el.isGlobalOnly && el.name.toLowerCase().includes(searchTerm.toLowerCase()));
     return filtered.reduce((acc, element) => {
@@ -971,11 +930,9 @@ function LeftPanel({ isOpen, onClose, onAddTopLevelSection, pages, activePageId,
         return acc;
     }, {});
   }, [searchTerm]);
-
   const globalElements = useMemo(() => {
     return AVAILABLE_ELEMENTS_CONFIG.filter(el => el.isGlobalOnly && el.name.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [searchTerm]);
-
   const TabButton = ({ tabName, icon, label }) => (
     <button onClick={() => setActiveTab(tabName)} className={`w-full flex-1 flex flex-col items-center justify-center gap-1.5 py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === tabName ? 'border-green-500 text-green-600 bg-green-50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100'}`}>
         {icon}
@@ -1052,7 +1009,6 @@ function LeftPanel({ isOpen, onClose, onAddTopLevelSection, pages, activePageId,
     </aside>
   );
 }
-
 function DebouncedTextInput({ label, type, initialValue, onCommit, ...props }) {
   const [value, setValue] = useState(initialValue);
   useEffect(() => { setValue(initialValue); }, [initialValue]);
@@ -1065,10 +1021,8 @@ function DebouncedTextInput({ label, type, initialValue, onCommit, ...props }) {
     </div>
   );
 }
-
 function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePageId, onRenamePage, onAddGlobalElement, comments, onUpdateComment, onDeleteComment }) {
   const [activeTab, setActiveTab] = useState('properties');
-  
   const PropertyGroup = ({ title, children, defaultOpen = true }) => {
       const [isOpen, setIsOpen] = useState(defaultOpen);
       return (
@@ -1081,7 +1035,6 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
         </div>
       );
   };
-
   const ColorInput = ({ label, value, onChange }) => (
     <div className="flex justify-between items-center">
         <label className="text-sm font-medium text-slate-700">{label}</label>
@@ -1094,7 +1047,6 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
         </div>
     </div>
   );
-  
   const StyledSlider = ({ label, value, onChange, min = 0, max = 200, step = 1, unit = "px" }) => {
       const displayValue = parseInt(value, 10) || 0;
       return (
@@ -1104,28 +1056,24 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
         </div>
       );
   };
-  
   const ToggleSwitch = ({ label, checked, onChange }) => (
     <div className="flex justify-between items-center">
         <label className="text-sm font-medium text-slate-700">{label}</label>
         <button onClick={() => onChange(!checked)} className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${checked ? 'bg-green-600' : 'bg-slate-300'}`}><span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} /></button>
     </div>
   );
-  
   const AlignmentButtons = ({ value, onChange }) => (
     <div>
         <label className="block text-xs font-medium text-slate-600 mb-1.5">Alignment</label>
         <div className="flex items-center bg-slate-100 rounded-lg p-1">{textAlignOptions.map(opt => (<button key={opt.value} onClick={() => onChange(opt.value)} title={opt.label} className={`flex-1 p-2 rounded-md transition-all text-slate-600 ${value === opt.value ? 'bg-white text-green-700 shadow-sm' : 'hover:bg-slate-200/50'}`}>{opt.icon}</button>))}</div>
     </div>
   );
-
   const TabButton = ({ tabName, icon, label }) => (
     <button onClick={() => setActiveTab(tabName)} className={`w-full flex-1 flex flex-col items-center justify-center gap-1.5 py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === tabName ? 'border-green-500 text-green-600 bg-white' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100'}`}>
         {icon}
         <span>{label}</span>
     </button>
   );
-
   const renderPropertiesPanel = () => {
     if (!selectedItemData || !selectedItemData.itemType) {
         return ( <div className="flex flex-col items-center justify-center h-full text-center p-4 bg-white"><LucideIcons.Pointer className="w-16 h-16 text-slate-300 mb-4"/><h3 className="font-semibold text-slate-700">Nothing Selected</h3><p className="text-sm text-slate-500 mt-1">Click an element on the canvas to edit.</p></div> );
@@ -1147,7 +1095,6 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
         </PropertyGroup>
         </>
     );
-
     return (<> <div className="flex justify-between items-center px-4 py-3.5 border-b border-slate-200/80 h-[60px] bg-white"><h2 className="text-lg font-bold text-slate-800 capitalize">{config?.name || itemType || 'Properties'}</h2></div><div className="overflow-y-auto flex-grow text-sm p-4 bg-slate-50"> {(() => {
         switch(itemType) {
             case 'header': case 'textBlock': return <><PropertyGroup title="Content"><DebouncedTextInput label="Text" type="textarea" rows={5} initialValue={props.text} onCommit={val => onUpdate({ text: val })} key={id}/></PropertyGroup><PropertyGroup title="Typography"><CustomDropdown label="Size" options={textSizeOptions} value={props.sizeClass} onChange={val => onUpdate({ sizeClass: val })} /><CustomDropdown label="Weight" options={fontWeightOptions} value={props.fontWeight} onChange={val => onUpdate({ fontWeight: val })} /><ColorInput label="Color" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><AlignmentButtons value={props.textAlign} onChange={val => onUpdate({ textAlign: val })} /></PropertyGroup><GeneralStyling/></>;
@@ -1169,7 +1116,6 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
     const IconForFrame = ({frame}) => { const DeviceIcon = DEVICE_FRAMES_CONFIG.find(d => d.name === frame)?.icon || LucideIcons.HelpCircle; return <DeviceIcon className="w-4 h-4 text-slate-500"/> };
     return ( <> <div className="flex justify-between items-center px-4 py-3.5 border-b border-slate-200 h-[60px] bg-white"><h2 className="text-lg font-bold text-slate-800">Comments</h2></div> <div className="overflow-y-auto flex-grow text-sm p-4 space-y-3 bg-slate-50"> {pageComments.length === 0 ? ( <div className="text-center py-10 text-slate-500"><LucideIcons.MessageSquarePlus className="mx-auto w-12 h-12 text-slate-300 mb-2"/><p>No comments on this page.</p><p className="text-xs">Use the Comment tool to add notes.</p></div> ) : ( pageComments.map(comment => ( <div key={comment.id} className="p-3 bg-white border border-slate-200 rounded-lg"><div className="flex justify-between items-start"><textarea value={comment.text} onChange={(e) => onUpdateComment(activePageId, comment.id, e.target.value)} className="w-full bg-transparent border-0 focus:ring-0 p-0 text-sm text-slate-800 resize-none" rows={2}/> <button onClick={() => onDeleteComment(activePageId, comment.id)} className="ml-2 p-1 text-red-500 hover:bg-red-100 rounded-full"><LucideIcons.Trash2 className="w-4 h-4"/></button> </div> <div className="text-xs text-slate-500 mt-2 flex items-center gap-2"> <IconForFrame frame={comment.frame} /> <span>on {comment.frame} view</span> </div></div> )) )} </div> </> )
   }
-
   return (
     <aside className="h-full w-80 bg-slate-50 border-l border-slate-200 shadow-xl flex flex-col print-hidden">
         <div className="flex border-b border-slate-200">
@@ -1182,7 +1128,6 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
     </aside>
   );
 }
-
 function AiCanvasLoader() {
     return (
         <div className="absolute inset-0 bg-gradient-to-br from-green-50/70 via-white to-green-100/80 flex flex-col items-center justify-center z-[1000] overflow-hidden">
@@ -1206,7 +1151,6 @@ function AiCanvasLoader() {
         </div>
     );
 }
-
 export function PagePreviewRenderer({ pageLayout, globalNavbar, globalFooter, onNavigate, activePageId }) {
     const [device, setDevice] = useState(PREVIEW_DEVICES[2]);
     return (
@@ -1226,7 +1170,6 @@ export function PagePreviewRenderer({ pageLayout, globalNavbar, globalFooter, on
         </div>
     );
 }
-
 function CanvasToolbar({ selectedItem, zoom, onZoomChange, onSelect, pages, activeTool, onToolChange }) {
     const getBreadcrumb = () => {
         if (!selectedItem || !pages || !selectedItem.path) { const pageName = pages[selectedItem?.pageId]?.name || "Page"; return [{ name: pageName, path: null, id: selectedItem?.pageId, type: 'page' }]; }
@@ -1263,7 +1206,6 @@ function CanvasToolbar({ selectedItem, zoom, onZoomChange, onSelect, pages, acti
         </div>
     );
 }
-
 function TopBar({ onSave, onTogglePreview, isPreviewMode, onToggleLeftPanel, onToggleFullscreen, isFullscreen }) {
     return (
         <header className="bg-white h-[60px] p-2.5 border-b border-slate-200/80 shadow-sm print-hidden flex justify-between items-center px-4 z-[50] relative">
@@ -1308,7 +1250,7 @@ function TopBar({ onSave, onTogglePreview, isPreviewMode, onToggleLeftPanel, onT
         </header>
     );
 }
-
+// --- AI DATA PARSERS ---
 function htmlToBuilderJson(htmlString) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
@@ -1318,18 +1260,15 @@ function htmlToBuilderJson(htmlString) {
         'font-bold': { fontWeight: 'font-bold' }, 'font-extrabold': { fontWeight: 'font-bold' }, 'font-semibold': { fontWeight: 'font-semibold' }, 'font-medium': { fontWeight: 'font-medium' }, 'font-normal': { fontWeight: 'font-normal' }, 'font-light': { fontWeight: 'font-light' },
         'text-xs': { sizeClass: 'text-xs' }, 'text-sm': { sizeClass: 'text-sm' }, 'text-base': { sizeClass: 'text-base' }, 'text-lg': { sizeClass: 'text-lg' }, 'text-xl': { sizeClass: 'text-xl' }, 'text-2xl': { sizeClass: 'text-2xl' }, 'text-3xl': { sizeClass: 'text-3xl' }, 'text-4xl': { sizeClass: 'text-4xl' }, 'text-5xl': { sizeClass: 'text-5xl' }
     };
-
     function parseNode(node) {
         if (node.nodeType !== Node.ELEMENT_NODE) return null;
         let element = null;
-
-        const isAccordionWrapper = node.tagName === 'DIV' && node.querySelector('button.accordion-toggle') && node.querySelector('div.accordion-content');
 
         if (node.tagName.match(/^H[1-6]$/)) {
             element = { type: 'header', props: { text: node.innerHTML.trim() } };
         } else if (node.tagName === 'P') {
             element = { type: 'textBlock', props: { text: node.innerHTML.trim() } };
-        } else if (node.tagName === 'BUTTON' && !node.classList.contains('accordion-toggle')) {
+        } else if (node.tagName === 'BUTTON') { 
              element = { type: 'button', props: { buttonText: node.innerHTML.trim() } };
         } else if (node.tagName === 'A' && node.classList.contains('button')) {
             element = { type: 'button', props: { buttonText: node.innerHTML.trim(), link: node.getAttribute('href') || '#' } };
@@ -1337,25 +1276,13 @@ function htmlToBuilderJson(htmlString) {
             element = { type: 'image', props: { src: node.src, alt: node.alt } };
         } else if (node.tagName === 'HR') {
             element = { type: 'divider', props: {} };
-        } else if (isAccordionWrapper) {
-            const titleEl = node.querySelector('.accordion-toggle span');
-            const contentEl = node.querySelector('.accordion-content');
-            if (titleEl && contentEl) {
-                element = {
-                    type: 'accordion',
-                    props: {
-                        title: titleEl.innerHTML.trim(),
-                        content: contentEl.innerHTML.trim(),
-                    }
-                };
-            }
         }
         
         if (element) {
             element.id = generateId(element.type);
             const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === element.type);
             if (config) {
-                element.props = { ...config.defaultProps, ...element.props };
+                element.props = { ...getDefaultProps(element.type), ...element.props };
             }
             node.classList.forEach(cls => {
                 if (classToPropMap[cls]) {
@@ -1373,7 +1300,6 @@ function htmlToBuilderJson(htmlString) {
         }
         return null;
     }
-
     function parseContainer(containerEl) {
         const elements = [];
         containerEl.childNodes.forEach(childNode => {
@@ -1389,47 +1315,103 @@ function htmlToBuilderJson(htmlString) {
         });
         return elements;
     }
-
     const body = doc.querySelector('body');
     const main = doc.querySelector('main');
     const contentRoot = main || body;
 
     if (contentRoot) {
         contentRoot.querySelectorAll(':scope > section').forEach(sectionEl => {
+            if (sectionEl.classList.contains('faq-section')) {
+                const faqBuilderSection = {
+                    id: generateId('section'),
+                    type: 'section',
+                    props: { paddingTop: "48px", paddingBottom: "48px", style: {} },
+                    columns: [{ id: generateId('col'), type: 'column', props: { width: '100%' }, elements: [] }]
+                };
+                const mainHeading = sectionEl.querySelector('h2');
+                if (mainHeading) {
+                    const headingElement = parseNode(mainHeading);
+                    if (headingElement) {
+                        faqBuilderSection.columns[0].elements.push(headingElement);
+                    }
+                }
+                sectionEl.querySelectorAll('.faq-question').forEach(questionButton => {
+                    const title = questionButton.querySelector('span')?.innerText.trim();
+                    const answerDiv = questionButton.nextElementSibling;
+                    const content = answerDiv && answerDiv.classList.contains('faq-answer') ? answerDiv.innerText.trim() : '';
+
+                    if (title && content) {
+                        const accordionEl = {
+                            type: 'accordion',
+                            id: generateId('accordion'),
+                            props: { ...getDefaultProps('accordion'), title, content, }
+                        };
+                        faqBuilderSection.columns[0].elements.push(accordionEl);
+                    }
+                });
+                if (faqBuilderSection.columns[0].elements.length > 0) sections.push(faqBuilderSection);
+                return;
+            }
+            
             const newSection = { id: generateId('section'), type: 'section', props: {}, columns: [] };
             const layoutContainers = sectionEl.querySelectorAll('.grid, .flex');
+            
             if (layoutContainers.length > 0 && Array.from(layoutContainers[0].children).length > 1 && Array.from(layoutContainers[0].children).every(child => child.tagName === 'DIV' || child.tagName === 'ARTICLE')) {
                 const container = layoutContainers[0];
                 const cols = Array.from(container.children);
                 const colWidth = 100 / (cols.length || 1);
                 cols.forEach(colEl => {
-                    const newCol = {
-                        id: generateId('col'),
-                        type: 'column',
-                        props: { width: `${colWidth}%` },
-                        elements: parseContainer(colEl)
-                    };
+                    const newCol = { id: generateId('col'), type: 'column', props: { width: `${colWidth}%` }, elements: parseContainer(colEl) };
                     newSection.columns.push(newCol);
                 });
             } else {
-                const newColumn = {
-                    id: generateId('col'),
-                    type: 'column',
-                    props: { width: '100%' },
-                    elements: parseContainer(sectionEl)
-                };
+                const newColumn = { id: generateId('col'), type: 'column', props: { width: '100%' }, elements: parseContainer(sectionEl) };
                 newSection.columns.push(newColumn);
             }
-
-            if (newSection.columns.some(col => col.elements.length > 0)) {
-                sections.push(newSection);
-            }
+            if (newSection.columns.some(col => col.elements.length > 0)) sections.push(newSection);
         });
     }
 
     return sections;
 }
+function apiStateToBuilderJson(apiResponse, currentLayout) {
+    const { sections: sectionsHtml, section_order } = apiResponse;
+    if (!sectionsHtml || !section_order) return currentLayout || [];
 
+    const newLayoutMap = new Map(currentLayout.map(s => [s.id, s]));
+
+    for (const sectionId of section_order) {
+        if (sectionId.includes('navbar') || sectionId.includes('navigation_bar') || sectionId.includes('footer')) continue;
+        
+        const sectionHtml = sectionsHtml[sectionId];
+        if (!sectionHtml || sectionHtml.trim() === "") {
+             if (!newLayoutMap.has(sectionId)) {
+                newLayoutMap.set(sectionId, {
+                    id: sectionId, type: 'section', props: { paddingTop: "48px", paddingBottom: "48px", style: {} },
+                    columns: [{ id: generateId("col"), type: "column", props: { width: "100%" }, elements: [] }]
+                });
+             }
+            continue;
+        }
+
+        const parsedSectionsFromHtml = htmlToBuilderJson(sectionHtml);
+        if (parsedSectionsFromHtml.length > 0) {
+             parsedSectionsFromHtml.forEach(parsedSection => {
+                parsedSection.id = sectionId; 
+                newLayoutMap.set(sectionId, parsedSection); 
+            });
+        }
+    }
+    
+    // Create the final layout array, ordered by section_order
+    const finalLayout = section_order
+        .map(id => newLayoutMap.get(id))
+        .filter(Boolean); // Filter out any undefined (e.g., navbar/footer)
+
+    return finalLayout;
+}
+
+// --- MAIN PAGE COMPONENT ---
 export default function ElementBuilderPage({ onExternalSave, initialBuilderState }) {
   const [newlyAddedElementId, setNewlyAddedElementId] = useState(null);
   const initialPageId = useMemo(() => generateId("page-home"), []);
@@ -1458,6 +1440,66 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   const [modalStates, setModalStates] = useState({ addPage: { isOpen: false }, renamePage: { isOpen: false, pageId: null, currentName: "" }, deletePage: { isOpen: false, pageId: null, pageName: "" }, alert: { isOpen: false, title: "", message: "" }, saveConfirm: { isOpen: false, title: "", message: "" } });
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  const updateLayoutForPage = (pageId, callback) => setPages((p) => { const targetPage = p[pageId]; if (!targetPage) return p; return { ...p, [pageId]: { ...targetPage, layout: callback(targetPage.layout || []) } }; });
+
+  const syncPageWithAI = useCallback(async () => {
+      if (!aiSessionId.current || !activePageId) return;
+      setIsAiLoading(true);
+      try {
+          const pageStateResponse = await apiRequest('get', '/get-page', { session_id: aiSessionId.current });
+          const apiResult = pageStateResponse.data;
+          
+          if (apiResult && apiResult.sections && apiResult.section_order) {
+              const currentLayout = pages[activePageId]?.layout || [];
+              const newLayout = apiStateToBuilderJson(apiResult, currentLayout);
+              updateLayoutForPage(activePageId, () => newLayout);
+
+              if (apiResult.suggestions && apiResult.suggestions.length > 0) {
+                  setAiSuggestions(apiResult.suggestions);
+              }
+          } else {
+              throw new Error("Could not retrieve a valid page state from AI.");
+          }
+      } catch (error) {
+          console.error("AI Sync Error:", error);
+          setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Sync Error", message: error.message || `Failed to sync page state with AI.` } }));
+      } finally {
+        setIsAiLoading(false);
+      }
+  }, [activePageId, pages]);
+
+  const getAiSuggestions = useCallback(async () => {
+    if (!aiSessionId.current) return;
+    try {
+        const response = await apiRequest('get', '/suggestions', { session_id: aiSessionId.current });
+        if (response.data && response.data.suggestions) {
+            setAiSuggestions(response.data.suggestions);
+        } else {
+            setAiSuggestions([]);
+        }
+    } catch (error) {
+        console.error("Failed to fetch AI suggestions:", error);
+    }
+  }, []);
+
+  const startAiSession = useCallback(async () => {
+    if (aiSessionId.current) {
+        await getAiSuggestions();
+        return;
+    }
+    try {
+        const sessionResponse = await apiRequest('post', '/start-session');
+        if (sessionResponse.data.session_id) {
+            aiSessionId.current = sessionResponse.data.session_id;
+            await getAiSuggestions();
+        } else {
+            throw new Error("Received an empty session ID from the API.");
+        }
+    } catch (error) {
+        setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Error", message: "Could not connect to the AI service." } }));
+    }
+  }, [getAiSuggestions]);
+  
   const handleToggleFullscreen = () => {
     if (!document.fullscreenElement) {
         builderRef.current?.requestFullscreen().catch(err => {
@@ -1467,51 +1509,13 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
         document.exitFullscreen();
     }
   };
-
-  const getAiSuggestions = useCallback(async () => {
-    if (!aiSessionId.current) return;
-    try {
-        const response = await apiRequest('get', '/suggestions', { session_id: aiSessionId.current });
-        if (response.data && response.data.suggestions) {
-            setAiSuggestions(response.data.suggestions);
-        } else {
-            setAiSuggestions([]); 
-        }
-    } catch (error) {
-        console.error("Failed to fetch AI suggestions:", error);
-    }
-  }, []);
-
-  const startAiSession = useCallback(async () => {
-    if(aiSessionId.current) {
-        await getAiSuggestions();
-        return;
-    }
-    try {
-      const sessionResponse = await apiRequest('post', '/start-session');
-      const sessionData = sessionResponse.data;
-      if (sessionData.session_id) { 
-          aiSessionId.current = sessionData.session_id; 
-          await getAiSuggestions();
-      } else { 
-          throw new Error("Received an empty session ID from the API."); 
-      }
-    } catch (error) { 
-        setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: "Could not connect to the AI service."}})); 
-    }
-  }, [getAiSuggestions]);
   
   useEffect(() => {
     startAiSession();
-  }, [startAiSession]);
-
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-        setIsFullscreen(!!document.fullscreenElement);
-    };
+    const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, []);
+  }, [startAiSession]);
 
   useEffect(() => {
     if (newlyAddedElementId && pages) {
@@ -1535,7 +1539,6 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
 
   const closeModal = (modalName) => setModalStates((prev) => ({ ...prev, [modalName]: { ...prev[modalName], isOpen: false } }));
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }), useSensor(KeyboardSensor));
-  const updateLayoutForPage = (pageId, callback) => setPages((p) => { const targetPage = p[pageId]; if (!targetPage) return p; return { ...p, [pageId]: { ...targetPage, layout: callback(targetPage.layout || []) } }; });
 
   const handleAddPage = () => { setModalStates((prev) => ({ ...prev, addPage: { isOpen: true } })); };
   const submitAddPage = (newPageName) => {
@@ -1555,38 +1558,38 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
 
   const handleOpenStructureModal = (path, type, pageId) => { setStructureModalContext({ path, elementType: type, pageId: pageId }); setIsStructureModalOpen(true); };
   
-  const handleSetStructure = (columnLayouts, context) => {
+  const handleSetStructure = async (columnLayouts, context) => {
     const newColumns = columnLayouts.map(layout => ({ id: generateId("col"), type: "column", props: { width: layout.width, style: {} }, elements: [] }));
     const targetPageId = context.pageId || activePageId;
-  
-    updateLayoutForPage(targetPageId, layout => {
-        const newLayout = JSON.parse(JSON.stringify(layout));
-        if (context.path === null) { 
-            const newSection = { id: generateId("section"), type: "section", props: { paddingTop: "48px", paddingBottom: "48px", style: {} }, columns: newColumns };
-            newLayout.push(newSection);
+    let newSectionId = null;
 
-            if (aiSessionId.current) {
-                const numSections = newLayout.length;
-                const position = (numSections === 1) ? 'at_beginning' : 'after';
-                const ref_section = (numSections > 1) ? newLayout[numSections - 2].id : null;
-                
-                apiRequest('post', '/add-section', {
-                  session_id: aiSessionId.current,
-                  section_name: newSection.id,
-                  html: "", 
-                  position: position,
-                  ref_section: ref_section
-                }).then(getAiSuggestions).catch(err => console.error("AI: Failed to add section.", err));
-            }
+    if (context.path === null) {
+        const newSection = { id: generateId("section"), type: "section", props: { paddingTop: "48px", paddingBottom: "48px", style: {} }, columns: newColumns };
+        newSectionId = newSection.id;
+        updateLayoutForPage(targetPageId, layout => [...layout, newSection]);
+    } else {
+        updateLayoutForPage(targetPageId, layout => {
+            const newLayout = JSON.parse(JSON.stringify(layout));
+            const item = getItemByPath({ layout: newLayout }, context.path.replace(`pages[${targetPageId}].`, ''));
+            if (item) item.columns = newColumns;
+            return newLayout;
+        });
+    }
+
+    if (newSectionId && aiSessionId.current) {
+        const currentLayout = pages[targetPageId]?.layout || [];
+        const numSections = currentLayout.length + 1;
+        const position = (numSections === 1) ? 'at_beginning' : 'after';
+        const ref_section = (numSections > 1) ? currentLayout[numSections - 2].id : null;
+
+        try {
+            await apiRequest('post', '/add-section', { session_id: aiSessionId.current, section_name: newSectionId, html: "", position, ref_section });
+            await syncPageWithAI();
+        } catch (err) {
+            console.error("AI: Failed to add and sync section.", err);
         }
-        else { 
-            const item = getItemByPath({ layout: newLayout }, context.path.replace(`pages[${targetPageId}].`, '')); 
-            if (item) {
-                 item.columns = newColumns;
-            }
-        }
-        return newLayout;
-    });
+    }
+    
     setIsLeftPanelOpen(false);
   };
   
@@ -1601,45 +1604,33 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     if (itemData) {
         const pageIdMatch = path.match(/pages\[([\w-]+)\]/);
         const pageId = pageIdMatch ? pageIdMatch[1] : activePageId;
-        const newSelectedItem = { pageId, id: itemData.id, type: type, itemType: itemData.type || type, path, props: itemData.props || {} };
-        setSelectedItem(newSelectedItem);
+        setSelectedItem({ pageId, id: itemData.id, type: type, itemType: itemData.type || type, path, props: itemData.props || {} });
     }
   };
 
   const handleUpdateProps = (path, newProps) => {
     const isGlobal = path.startsWith('global');
-
     if (isGlobal) {
         const updater = path === 'globalNavbar' ? setGlobalNavbar : setGlobalFooter;
-        updater(prev => {
-            const newState = JSON.parse(JSON.stringify(prev));
-            newState.props = mergeDeep({}, newState.props || {}, newProps);
-            return newState;
-        });
+        updater(prev => ({...prev, props: mergeDeep({}, prev.props || {}, newProps)}));
     } else {
         setPages(currentPages => {
             const stateWrapper = { pages: JSON.parse(JSON.stringify(currentPages)) };
             const itemToUpdate = getItemByPath(stateWrapper, path);
-            if (itemToUpdate) {
-                itemToUpdate.props = mergeDeep({}, itemToUpdate.props || {}, newProps);
-            }
+            if (itemToUpdate) itemToUpdate.props = mergeDeep({}, itemToUpdate.props || {}, newProps);
             return stateWrapper.pages;
         });
     }
-
     if (selectedItem?.path === path) {
-        setSelectedItem(prev => {
-            if(!prev) return null;
-            const newState = JSON.parse(JSON.stringify(prev));
-            newState.props = mergeDeep({}, newState.props || {}, newProps);
-            return newState;
-        });
+        setSelectedItem(prev => prev ? ({ ...prev, props: mergeDeep({}, prev.props || {}, newProps) }) : null);
     }
   };
 
   const handleDelete = (path) => {
     const itemToDelete = getItemByPath({ pages }, path);
-    const isSection = itemToDelete && itemToDelete.type === 'section';
+    if (!itemToDelete) return;
+
+    const isSection = itemToDelete.type === 'section';
 
     setPages(currentPages => {
         const stateWrapper = { pages: JSON.parse(JSON.stringify(currentPages)) };
@@ -1653,15 +1644,12 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     });
 
     if (isSection && aiSessionId.current) {
-        apiRequest('post', '/remove-section', {
-            session_id: aiSessionId.current,
-            section_name: itemToDelete.id
-        })
-        .then(getAiSuggestions)
-        .catch(err => {
-            console.error("AI Section Delete Error:", err);
-            setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Sync Error", message: "Failed to delete section via AI. The action was performed locally."}}));
-        });
+        apiRequest('post', '/remove-section', { session_id: aiSessionId.current, section_name: itemToDelete.id })
+            .then(() => syncPageWithAI())
+            .catch(err => {
+                console.error("AI Section Delete Error:", err);
+                setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Sync Error", message: "Failed to delete section via AI. The action was performed locally."}}));
+            });
     }
   };
 
@@ -1672,10 +1660,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
       for (let i = 0; i < items.length; i++) {
           const item = items[i];
           const currentPath = `${pathPrefix}[${i}]`;
-
-          if (item.id === id) {
-              return { container: items, index: i, item: item, path: currentPath };
-          }
+          if (item.id === id) return { container: items, index: i, item: item, path: currentPath };
           if (item.type === 'column' && `col-${item.id}` === id) {
               if (!item.elements) item.elements = [];
               return { container: item.elements, index: item.elements.length, item: item, path: `${currentPath}.elements` };
@@ -1697,9 +1682,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     const { active } = e; const itemData = active.data.current;
     const elementOrSectionData = itemData?.elementData || itemData?.sectionData;
     if (itemData?.path && elementOrSectionData) {
-        let type = null;
-        if (itemData.type === 'section') type = 'section';
-        else if (itemData.type === 'canvasElement') type = 'element';
+        let type = itemData.type === 'section' ? 'section' : itemData.type === 'canvasElement' ? 'element' : null;
         if (type) handleSelect(active.id, type, itemData.path, elementOrSectionData);
     }
   };
@@ -1721,9 +1704,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
         }
 
         const newElement = {
-            id: generateId(config.id),
-            type: config.id,
-            props: getDefaultProps(config.id),
+            id: generateId(config.id), type: config.id, props: getDefaultProps(config.id),
             ...(config.hasOwnColumns && { columns: [] })
         };
         setNewlyAddedElementId(newElement.id);
@@ -1736,26 +1717,15 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
                 dropTarget.container.splice(dropTarget.index, 0, newElement);
             } else if (overData?.type === 'section' && dropTarget === null) {
                 const sectionContainer = findContainerById(newLayout, overId);
-                if (sectionContainer && sectionContainer.item.columns && sectionContainer.item.columns[0]) {
+                if (sectionContainer?.item.columns[0]) {
                      sectionContainer.item.columns[0].elements.push(newElement);
                 }
             } else {
                 const newSection = {
-                    id: generateId("section"),
-                    type: "section",
-                    props: { ...getDefaultProps('section'), paddingTop: "48px", paddingBottom: "48px" },
-                    columns: [{
-                        id: generateId("col"),
-                        type: "column",
-                        props: { ...getDefaultProps('column'), width: "100%" },
-                        elements: [newElement]
-                    }]
+                    id: generateId("section"), type: "section", props: { ...getDefaultProps('section'), paddingTop: "48px", paddingBottom: "48px" },
+                    columns: [{ id: generateId("col"), type: "column", props: { ...getDefaultProps('column'), width: "100%" }, elements: [newElement] }]
                 };
-
-                const overSectionIndex = overData.type === 'section'
-                    ? newLayout.findIndex(s => s.id === overId)
-                    : -1;
-
+                const overSectionIndex = overData.type === 'section' ? newLayout.findIndex(s => s.id === overId) : -1;
                 newLayout.splice(overSectionIndex !== -1 ? overSectionIndex + 1 : newLayout.length, 0, newSection);
             }
             return newLayout;
@@ -1768,10 +1738,8 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
             const newLayout = JSON.parse(JSON.stringify(layout));
             const sourceInfo = findContainerById(newLayout, active.id);
             if (!sourceInfo) return layout;
-
             const [movedElement] = sourceInfo.container.splice(sourceInfo.index, 1);
             const destInfo = findContainerById(newLayout, over.id);
-
             if (destInfo?.container) {
                  destInfo.container.splice(destInfo.index, 0, movedElement);
             } else {
@@ -1786,35 +1754,22 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
             if (!layout) return [];
             const activeIndex = layout.findIndex(s => s.id === active.id);
             const overIndex = layout.findIndex(s => s.id === overId);
-
-            if (activeIndex !== -1 && overIndex !== -1) {
-                const newLayout = arrayMove(layout, activeIndex, overIndex);
+            if (activeIndex === -1 || overIndex === -1) return layout;
+            
+            const newLayout = arrayMove(layout, activeIndex, overIndex);
+            
+            if (aiSessionId.current) {
+                const position = (overIndex === 0) ? 'at_beginning' : 'after';
+                const ref_section = (overIndex > 0) ? newLayout[overIndex - 1].id : null;
                 
-                if (aiSessionId.current) {
-                    let position, ref_section;
-                    if (overIndex === 0) {
-                        position = 'at_beginning';
-                        ref_section = null;
-                    } else {
-                        position = 'after';
-                        ref_section = newLayout[overIndex - 1].id;
-                    }
-                    
-                    apiRequest('post', '/move-section', {
-                        session_id: aiSessionId.current,
-                        section_name: active.id,
-                        new_position: position,
-                        ref_section: ref_section,
-                    })
-                    .then(getAiSuggestions)
+                apiRequest('post', '/move-section', { session_id: aiSessionId.current, section_name: active.id, new_position: position, ref_section: ref_section })
+                    .then(() => syncPageWithAI())
                     .catch(err => {
                         console.error("AI Section Move Error:", err);
                         setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Sync Error", message: "Failed to move section with AI. The action was performed locally."}}));
                     });
-                }
-                return newLayout;
             }
-            return layout;
+            return newLayout;
         });
     }
   };
@@ -1830,60 +1785,46 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     if (!aiSessionId.current) { setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: "AI session not started. Please try again."}})); startAiSession(); return; }
     setIsAiLoading(true);
     const historyId = generateId('history');
-    setAiChatHistory(prev => [...prev, { id: historyId, prompt, status: 'loading' }]);
+    setAiChatHistory(prev => [{ id: historyId, prompt, status: 'loading' }, ...prev]);
     try {
         const pageResponse = await apiRequest('post', '/generate-page', { session_id: aiSessionId.current, prompt: prompt, as_file: false });
         const apiResult = pageResponse.data;
         if (apiResult.html) { 
             const newLayout = htmlToBuilderJson(apiResult.html); 
             updateLayoutForPage(activePageId, () => newLayout); 
-            setAiChatHistory(prev => prev.map(entry => entry.id === historyId ? {...entry, status: 'success'} : entry)); 
-            
-            if (apiResult.follow_up_suggestions) {
-              const suggestions = apiResult.follow_up_suggestions.map(s => ({ prompt: s.prompt, shortText: s.label }));
-              setAiSuggestions(suggestions);
-            } else {
-              await getAiSuggestions();
-            }
-
+            setAiChatHistory(prev => prev.map(entry => entry.id === historyId ? {...entry, status: 'success'} : entry));
+            await syncPageWithAI();
+        } else if (apiResult.sections && apiResult.section_order) {
+            updateLayoutForPage(activePageId, currentLayout => apiStateToBuilderJson(apiResult, currentLayout));
+            setAiChatHistory(prev => prev.map(entry => entry.id === historyId ? {...entry, status: 'success'} : entry));
+            await syncPageWithAI();
         } else { 
-            throw new Error("Invalid response structure from AI. 'html' key not found."); 
+            throw new Error("Invalid response from AI. Expected 'html' or 'sections' data."); 
         }
     } catch (error) {
         setAiChatHistory(prev => prev.map(entry => entry.id === historyId ? {...entry, status: 'error'} : entry));
-        setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: "Failed to generate the page content."}}));
+        setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: `Failed to generate content: ${error.message}`}}));
     } finally { setIsAiLoading(false); }
   };
 
   const handleAiAction = useCallback(async (action) => {
     if (!aiSessionId.current) {
-      setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Error", message: "AI session not started. Please try again." } }));
-      return;
+        setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Error", message: "AI session not started. Please try again." } }));
+        return;
     }
     setIsAiLoading(true);
     try {
-      const actionResponse = await apiRequest('post', `/${action}`, { session_id: aiSessionId.current });
-      
-      if (!actionResponse.data.success) {
-        throw new Error(`The ${action} action failed on the server.`);
-      }
-
-      const pageStateResponse = await apiRequest('get', '/get-page', { session_id: aiSessionId.current });
-      
-      if (pageStateResponse.data && pageStateResponse.data.html) {
-        const newLayout = htmlToBuilderJson(pageStateResponse.data.html);
-        updateLayoutForPage(activePageId, () => newLayout);
-        await getAiSuggestions();
-      } else {
-        throw new Error("Could not retrieve the updated page state after the action.");
-      }
+        const actionResponse = await apiRequest('post', `/${action}`, { session_id: aiSessionId.current });
+        if (!actionResponse.data.success) {
+            throw new Error(`Nothing to ${action}. No action available to ${action}.`);
+        }
+        await syncPageWithAI();
     } catch (error) {
-      console.error(`AI Action Error (${action}):`, error);
-      setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Sync Error", message: error.message || `Failed to perform ${action} operation.` } }));
+        setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Sync Error", message: error.message || `Failed to perform ${action} operation.` } }));
     } finally {
-      setIsAiLoading(false);
+        setIsAiLoading(false);
     }
-  }, [activePageId, getAiSuggestions]);
+}, [syncPageWithAI]);
 
   const handleUndo = () => handleAiAction('undo');
   const handleRedo = () => handleAiAction('redo');
@@ -1901,7 +1842,6 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     const newComment = { id: generateId('comment'), text: 'New comment...', position: { x: finalX, y: finalY }, frame: frameName, author: 'User', createdAt: new Date().toISOString() };
     setComments(prev => ({...prev, [pageId]: [...(prev[pageId] || []), newComment]}));
   };
-
   const handleUpdateComment = (pageId, commentId, newText) => setComments(prev => ({ ...prev, [pageId]: prev[pageId].map(c => c.id === commentId ? { ...c, text: newText } : c) }));
   const handleDeleteComment = (pageId, commentId) => setComments(prev => ({ ...prev, [pageId]: prev[pageId].filter(c => c.id !== commentId) }));
 
@@ -1912,56 +1852,14 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   if (isPreviewMode) {
     return (<div className="flex flex-col h-screen bg-white antialiased"><TopBar onSave={handleSave} onTogglePreview={togglePreviewMode} isPreviewMode={true} onToggleLeftPanel={() => setIsLeftPanelOpen(p => !p)} onToggleFullscreen={handleToggleFullscreen} isFullscreen={isFullscreen} /><PagePreviewRenderer pageLayout={pages[activePageId]?.layout || []} globalNavbar={globalNavbar} globalFooter={globalFooter} onNavigate={handleNavigate} activePageId={activePageId} /></div>);
   }
-
+  
   return (
     <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragStart={handleDragStart} onDragEnd={handleDragEnd} disabled={isPreviewMode || activeTool !== 'select'}>
         <div ref={builderRef} className="h-screen bg-white antialiased flex flex-col relative">
-            <style>{`
-                .selected-outline { 
-                    box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #22c55e;
-                    border-radius: 1.25rem; 
-                } 
-                .custom-slider {
-                    -webkit-appearance: none; appearance: none;
-                    width: 100%; height: 6px; background: #e2e8f0; border-radius: 9999px;
-                    outline: none; opacity: 0.9; transition: opacity .2s;
-                }
-                .custom-slider:hover { opacity: 1; }
-                .custom-slider::-webkit-slider-thumb {
-                    -webkit-appearance: none; appearance: none;
-                    width: 18px; height: 18px; background: #16a34a; border-radius: 50%;
-                    cursor: pointer; border: 3px solid white;
-                    box-shadow: 0 0 5px rgba(0,0,0,0.2);
-                }
-                .custom-slider::-moz-range-thumb {
-                    width: 18px; height: 18px; background: #16a34a; border-radius: 50%;
-                    cursor: pointer; border: 3px solid white;
-                    box-shadow: 0 0 5px rgba(0,0,0,0.2);
-                }
-            `}</style>
+            <style>{`.selected-outline { box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #22c55e; border-radius: 1.25rem; } .custom-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: #e2e8f0; border-radius: 9999px; outline: none; opacity: 0.9; transition: opacity .2s; } .custom-slider:hover { opacity: 1; } .custom-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; background: #16a34a; border-radius: 50%; cursor: pointer; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); } .custom-slider::-moz-range-thumb { width: 18px; height: 18px; background: #16a34a; border-radius: 50%; cursor: pointer; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); }`}</style>
             <TopBar onSave={handleSave} onTogglePreview={togglePreviewMode} isPreviewMode={false} onToggleLeftPanel={() => setIsLeftPanelOpen(p => !p)} onToggleFullscreen={handleToggleFullscreen} isFullscreen={isFullscreen} />
             <div className="flex-1 flex flex-row relative overflow-hidden z-0">
-                <LeftPanel 
-                  isOpen={isLeftPanelOpen} 
-                  onClose={() => setIsLeftPanelOpen(false)} 
-                  onAddTopLevelSection={() => handleOpenStructureModal(null, "section", activePageId)} 
-                  pages={pages} 
-                  activePageId={activePageId} 
-                  onAddPage={handleAddPage} 
-                  onSelectPage={handleSelectPage} 
-                  onRenamePage={handleRenamePage} 
-                  onDeletePage={handleDeletePage} 
-                  onAiSubmit={handleAiSubmit} 
-                  isAiLoading={isAiLoading} 
-                  aiChatHistory={aiChatHistory} 
-                  onSwitchToAiMode={() => {}}
-                  onSelect={handleSelect} 
-                  selectedItem={selectedItem}
-                  aiSuggestions={aiSuggestions}
-                  handleUndo={handleUndo}
-                  handleRedo={handleRedo}
-                />
-                
+                <LeftPanel isOpen={isLeftPanelOpen} onClose={() => setIsLeftPanelOpen(false)} onAddTopLevelSection={() => handleOpenStructureModal(null, "section", activePageId)} pages={pages} activePageId={activePageId} onAddPage={handleAddPage} onSelectPage={handleSelectPage} onRenamePage={handleRenamePage} onDeletePage={handleDeletePage} onAiSubmit={handleAiSubmit} isAiLoading={isAiLoading} aiChatHistory={aiChatHistory} onSwitchToAiMode={() => {}} onSelect={handleSelect} selectedItem={selectedItem} aiSuggestions={aiSuggestions} handleUndo={handleUndo} handleRedo={handleRedo} />
                 <main ref={canvasRef} className={`flex-1 flex flex-col relative bg-dots ${isAiLoading ? '' : 'overflow-auto'}`} onMouseDown={handleCanvasMouseDown} onMouseMove={handleCanvasMouseMove} onMouseUp={handleCanvasMouseUpOrLeave} onMouseLeave={handleCanvasMouseUpOrLeave} style={{ cursor: getCanvasCursor(), backgroundSize: '40px 40px', backgroundImage: 'radial-gradient(circle, #d1d5db 1px, rgba(0, 0, 0, 0) 1px)' }}>
                 {isAiLoading ? ( <AiCanvasLoader /> ) : (
                     <>
@@ -1974,7 +1872,6 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
                     </>
                 )}
                 </main>
-                
                 <div className={`absolute top-0 right-0 h-full transition-transform duration-300 ease-in-out z-40 transform ${isRightPanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                   <RightSidebar selectedItemData={selectedItem} onUpdateSelectedProps={handleUpdateProps} pages={pages} activePageId={activePageId} onRenamePage={handleRenameActivePage} onAddGlobalElement={handleAddGlobalElement} comments={comments} onUpdateComment={handleUpdateComment} onDeleteComment={handleDeleteComment} />
                 </div>
