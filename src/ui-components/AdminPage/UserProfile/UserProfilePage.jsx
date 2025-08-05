@@ -27,11 +27,7 @@ export default function UserProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [passwordValidation, setPasswordValidation] = useState({
-    length: false,
-    uppercase: false,
-    lowercase: false,
-    number: false,
-    specialChar: false,
+    length: false, uppercase: false, lowercase: false, number: false, specialChar: false,
   });
 
   const [profileImage, setProfileImage] = useState(null);
@@ -134,7 +130,7 @@ export default function UserProfilePage() {
             <label htmlFor="bio" className={labelBase}>Your Bio</label>
             <textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows="3" className={inputBase} placeholder="Tell us a bit about yourself..." />
           </div>
-          <div className="mt-6 flex items-center space-x-4">
+          <div className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-4">
             <img className="h-20 w-20 rounded-full border-2 border-white object-cover shadow-md" src={profileImagePreview || `https://www.gravatar.com/avatar/0?d=mp&s=96`} alt="Profile" />
             <div>
               <p className="text-xs text-slate-600 mb-1">Profile Picture</p>
@@ -164,7 +160,7 @@ export default function UserProfilePage() {
             </div>
           </div>
           {newPassword && (
-            <div className="mt-3 space-y-1">
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
               <ValidationItem isValid={passwordValidation.length} text="At least 12 characters" />
               <ValidationItem isValid={passwordValidation.uppercase} text="An uppercase letter (A-Z)" />
               <ValidationItem isValid={passwordValidation.lowercase} text="A lowercase letter (a-z)" />
@@ -186,12 +182,12 @@ export default function UserProfilePage() {
                     { id: 'pitchFeedback', label: 'Pitch Feedback & Comments', desc: 'Instant notifications for feedback on pitches.' },
                     { id: 'accountSecurity', label: 'Account Security Alerts', desc: 'Notifications for important security events.' },
                 ].map(item => (
-                    <div key={item.id} className="flex items-center justify-between py-2">
-                        <div>
+                    <div key={item.id} className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="pr-4">
                             <label htmlFor={item.id} className="font-medium text-sm text-slate-800">{item.label}</label>
                             <p className="text-xs text-slate-500">{item.desc}</p>
                         </div>
-                        <button type="button" onClick={() => setNotifications(prev => ({...prev, [item.id]: !prev[item.id]}))} className={`${toggleBase} ${notifications[item.id] ? toggleChecked : toggleUnchecked}`}>
+                        <button type="button" onClick={() => setNotifications(prev => ({...prev, [item.id]: !prev[item.id]}))} className={`${toggleBase} flex-shrink-0 ${notifications[item.id] ? toggleChecked : toggleUnchecked}`}>
                             <span className={`${toggleKnob} ${notifications[item.id] ? 'translate-x-[18px]' : 'translate-x-0.5'}`} />
                         </button>
                     </div>

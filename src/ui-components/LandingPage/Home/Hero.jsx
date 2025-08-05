@@ -17,7 +17,7 @@ const Hero = () => {
     const [displayedText, setDisplayedText] = useState('');
     const [isDeleting, setIsDeleting] = useState(false);
     const [showCursor, setShowCursor] = useState(true);
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     useEffect(() => {
         const currentCommand = commands[commandIndex];
@@ -57,28 +57,28 @@ const Hero = () => {
     const placeholderText = `${displayedText}${showCursor ? '|' : ''}`;
 
     return (
-        <div className="relative bg-section-glow min-h-screen flex items-center p-12">
+        <div className="relative bg-section-glow min-h-screen flex items-center py-16 sm:p-12">
             <AnimatedSection id="home">
-                <div className="grid lg:grid-cols-12 gap-16 items-center">
+                <div className="grid lg:grid-cols-12 gap-y-12 md:gap-16 items-center">
                     <div className="text-center lg:text-left lg:col-span-6">
-                        <h1 className="text-4xl md:text-6xl font-extrabold text-dark-text leading-tight">Make a beautiful<br />page <span className="text-brand-green">in seconds</span></h1>
+                        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-dark-text leading-tight">Make a beautiful<br />page <span className="text-brand-green">in seconds</span></h1>
                         <p className="mt-4 inline-block bg-light-bg px-3 py-1 rounded-md font-semibold text-sm">The #1 AI Landing Page Generator</p>
-                        <p className="mt-6 text-lg text-medium-text max-w-md mx-auto lg:mx-0">Our Artificial Intelligence creates your perfect landing page. No designer or developer needed!</p>
+                        <p className="mt-6 text-base md:text-lg text-medium-text max-w-md mx-auto lg:mx-0">Our Artificial Intelligence creates your perfect landing page. No designer or developer needed!</p>
                         
-                        <div className="mt-10 relative max-w-lg mx-auto lg:mx-0 p-1.5 rounded-full bg-white shadow-xl border border-gray-200">
+                        <div className="mt-10 relative max-w-lg mx-auto lg:mx-0 p-1 sm:p-1.5 rounded-full bg-white shadow-xl border border-gray-200">
                             <input
                                 type="text"
                                 placeholder={placeholderText}
-                                className="w-full pl-6 pr-36 py-3 rounded-full outline-none text-medium-text bg-transparent 
+                                className="w-full pl-5 pr-28 text-sm sm:text-base sm:pl-6 sm:pr-36 py-3 rounded-full outline-none text-medium-text bg-transparent 
                                            placeholder:text-gray-400 
                                            transition-shadow duration-300
                                            hover:shadow-lg hover:shadow-green-400/40
                                            focus:shadow-lg focus:shadow-green-400/40"
                             />
-                            <button onClick={()=>{navigate('/login')}} className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2.5 rounded-full font-semibold text-white bg-gradient-primary hover:opacity-90 transition-opacity">Get Started</button>
+                            <button onClick={() => navigate('/login')} className="absolute right-1 top-1/2 -translate-y-1/2 px-4 py-2 text-sm sm:right-2 sm:px-6 sm:py-2.5 sm:text-base rounded-full font-semibold text-white bg-gradient-primary hover:opacity-90 transition-opacity">Get Started</button>
                         </div>
 
-                        <div className="mt-8 flex items-center gap-4 justify-center lg:justify-start">
+                        <div className="mt-8 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 justify-center lg:justify-start">
                             <div className="flex items-center gap-0.5">
                                 <Star size={20} className="fill-yellow-400 text-yellow-500" />
                                 <Star size={20} className="fill-yellow-400 text-yellow-500" />

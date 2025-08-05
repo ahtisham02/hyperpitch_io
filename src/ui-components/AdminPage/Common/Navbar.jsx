@@ -47,7 +47,7 @@ export default function AppSidebarHeader() {
                        border-b border-gray-200/70 px-4 shadow-sm
                        sm:px-6 md:pl-[calc(theme(spacing.4)+theme(spacing.20))] lg:px-6`}
         >
-            <div className="flex flex-col">
+            <div className="flex flex-col ml-14 md:ml-0">
                 <h2 className="text-lg font-semibold text-gray-800">
                     Hello, {user?.name || 'Guest'}
                 </h2>

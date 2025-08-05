@@ -150,7 +150,7 @@ export default function Sidebar() {
                            ${mobileSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full'}
                            md:translate-x-0`}
             >
-                <div className={`flex -mt-2.5 items-center pr-1 h-14 mb-4 ${collapsed && !mobileSidebarOpen ? 'justify-center' : 'justify-between'}`}>
+                <div className={`flex -mt-2.5 items-center ml-14 md:ml-1 pr-1 h-14 mb-4 ${collapsed && !mobileSidebarOpen ? 'justify-center' : 'justify-between'}`}>
                     <Link to="/" onClick={handleFooterLinkClick} className={`flex items-center group ${collapsed && !mobileSidebarOpen ? 'justify-center w-full' : ''}`}>
                         <SiteIcon size={collapsed && !mobileSidebarOpen ? 0 : 24} className={`${collapsed && !mobileSidebarOpen ? '' : 'mr-2'} ${defaultIconColor} group-hover:text-green-700 transition-colors`} />
                         {(!collapsed || mobileSidebarOpen) && (<span className={`text-xl font-bold ${defaultTextColor} group-hover:text-green-700 transition-colors`}>{siteName}</span>)}

@@ -168,7 +168,7 @@ const TopStepperNav = ({ currentStep, steps, setCurrentStep, canProceed }) => (
                 )}
               </span>
               <span
-                className={`mt-2 text-xs font-semibold max-w-[80px] md:max-w-xs truncate transition-colors duration-200 ${
+                className={`mt-2 text-xs font-semibold max-w-[60px] sm:max-w-[80px] md:max-w-xs truncate transition-colors duration-200 ${
                   currentStep === step.id ? "text-green-700" : ""
                 } ${currentStep > step.id ? "text-slate-700" : ""} ${
                   currentStep < step.id ? "text-slate-500" : ""
@@ -458,7 +458,7 @@ const PublishSuccessModal = ({ isOpen, onAddDomain, onClose }) => {
             Build your brand recognition and help your audience find you by
             adding a custom domain to your website.
           </p>
-          <div className="flex justify-center space-x-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-center sm:gap-3">
             <StyledButton onClick={onAddDomain} variant="primary">
               Add domain
             </StyledButton>
@@ -2092,10 +2092,7 @@ export default function CampaignCreatorPage() {
                   icon={<LucideIcons.LayoutGrid />}
                 />
               </div>
-              {/* <OptionCard title="Build with AI" description="Describe your page and let AI build it." selected={templateConfig.type === "ai"} onClick={() => handleTemplateOptionClick('ai')} icon={<LucideIcons.Sparkles />} /> */}
             </div>
-
-            {/* {templateConfig.type === "ai" && <AICommandInput onCommand={handleAICommand} currentBuilderData={templateConfig.templateData} fullTemplates={mockTemplates} />} */}
 
             {templateConfig.type === "select" && (
               <div className="mt-5 p-4 border border-slate-200 rounded-xl bg-slate-50/70">
@@ -2107,7 +2104,7 @@ export default function CampaignCreatorPage() {
                     {mockTemplates.map((template) => (
                       <li
                         key={template.id}
-                        className="p-2.5 pr-3 border border-slate-300/80 rounded-lg hover:shadow-sm transition-shadow flex justify-between items-center bg-white hover:bg-slate-50"
+                        className="p-2.5 pr-3 border border-slate-300/80 rounded-lg hover:shadow-sm transition-shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 bg-white hover:bg-slate-50"
                       >
                         <span className="text-xs font-medium text-slate-600">
                           {template.name}
@@ -2115,7 +2112,7 @@ export default function CampaignCreatorPage() {
                         <StyledButton
                           onClick={() => selectTemplateToEdit(template.id)}
                           variant="secondary"
-                          className="py-1 px-2.5 text-xs"
+                          className="py-1 px-2.5 text-xs self-start sm:self-center"
                           iconLeft={<LucideIcons.Edit3 size={12} />}
                         >
                           Edit
@@ -2148,13 +2145,7 @@ export default function CampaignCreatorPage() {
                   Use "Save All Pages" in builder, then "Next" below.
                 </p>
                 {ElementBuilderPage ? (
-                  <div
-                    className="border-2 border-slate-300 rounded-xl overflow-hidden shadow-lg bg-slate-100"
-                    style={{
-                      height: "calc(100vh - 420px)",
-                      minHeight: "600px",
-                    }}
-                  >
+                  <div className="border-2 border-slate-300 rounded-xl shadow-lg bg-slate-100 h-[70vh] min-h-[500px] lg:h-[calc(100vh_-_450px)] overflow-auto">
                     <ElementBuilderPage
                       onExternalSave={handleTemplateDataFromBuilder}
                       initialBuilderState={templateConfig.templateData}
@@ -2273,37 +2264,38 @@ export default function CampaignCreatorPage() {
                   )}
                 </SummaryCard>
               </div>
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-2 min-w-0">
                 <SummaryCard
                   title="Template Preview"
                   icon={<LucideIcons.MonitorPlay />}
                 >
-                  <p className="mb-2 text-xs">
+                  <p className="mb-3 text-xs">
                     <strong>Using:</strong> {templateName}
                   </p>
-                  {/* <div className="mb-2.5 flex justify-center space-x-1 p-0.5 bg-slate-100 rounded-lg">
-                    {["desktop", "tablet", "mobile"].map((device) => (
+                  {/* <div className="mb-3 flex flex-wrap justify-center gap-1 p-0.5 bg-slate-100 rounded-lg">
+                    {["mobile", "tablet", "desktop"].map((device) => (
                       <button
                         key={device}
                         onClick={() => setPreviewDevice(device)}
                         title={`${
                           device.charAt(0).toUpperCase() + device.slice(1)
                         } View`}
-                        className={`p-1.5 rounded-md transition-all ${
+                        className={`p-1.5 px-3 rounded-md transition-all text-xs font-medium flex items-center gap-1.5 flex-grow sm:flex-grow-0 justify-center ${
                           previewDevice === device
                             ? "bg-[#2e8b57] text-white shadow-sm"
                             : "text-slate-500 hover:bg-slate-200 hover:text-slate-700"
                         }`}
                       >
-                        {device === "desktop" && (
-                          <LucideIcons.Monitor className="w-3.5 h-3.5" />
+                        {device === "mobile" && (
+                          <LucideIcons.Smartphone className="w-3.5 h-3.5" />
                         )}
                         {device === "tablet" && (
                           <LucideIcons.Tablet className="w-3.5 h-3.5" />
                         )}
-                        {device === "mobile" && (
-                          <LucideIcons.Smartphone className="w-3.5 h-3.5" />
+                        {device === "desktop" && (
+                          <LucideIcons.Monitor className="w-3.5 h-3.5" />
                         )}
+                        <span className="capitalize">{device}</span>
                       </button>
                     ))}
                   </div> */}
@@ -2311,10 +2303,7 @@ export default function CampaignCreatorPage() {
                   currentTemplateData.pages &&
                   currentTemplateData.activePageId &&
                   PagePreviewRenderer ? (
-                    <div
-                      className="border-2 border-slate-200 rounded-lg overflow-hidden shadow-lg bg-white"
-                      style={{ minHeight: "400px" }}
-                    >
+                    <div className="border-2 border-slate-200 rounded-lg shadow-inner bg-white min-h-[400px] overflow-x-auto">
                       <PagePreviewRenderer
                         pageLayout={
                           currentTemplateData.pages[
@@ -2333,8 +2322,6 @@ export default function CampaignCreatorPage() {
                       <LucideIcons.ImageOff className="w-6 h-6 mb-1.5 text-slate-400" />
                       <p className="font-medium text-xs">
                         No template preview available.
-                        {(!ElementBuilderPage || !PagePreviewRenderer) &&
-                          "Preview components not loaded."}
                       </p>
                       <p className="text-[11px]">
                         Please complete the template design step.
@@ -2395,7 +2382,7 @@ export default function CampaignCreatorPage() {
       <div className="min-h-screen bg-slate-100 text-slate-800">
         <main className="w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
           <div className="flex items-center mb-6 md:mb-8">
-            <div className="p-3 bg-green-100 rounded-xl mr-4">
+            <div className="p-3 bg-green-100 rounded-xl mr-4 shrink-0">
               <LucideIcons.ClipboardCheck
                 className="w-8 h-8 text-green-600"
                 strokeWidth={1.5}

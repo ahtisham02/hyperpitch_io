@@ -20,7 +20,7 @@ const HowItWorks = () => {
       <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-16">
         Get your business online today
       </h2>
-      <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center space-y-12 md:space-y-0">
+      <div className="relative flex flex-col md:flex-row justify-between md:items-center space-y-12 md:space-y-0">
         <div className="hidden md:block absolute top-6 left-0 w-full h-0.5 dotted-line"></div>
         <Step
           number="1"
