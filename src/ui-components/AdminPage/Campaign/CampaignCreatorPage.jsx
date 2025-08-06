@@ -9,6 +9,7 @@ import {
   addOrUpdateCampaign,
   getCampaignById,
 } from "../../../utils/localStorageHelper";
+import { useCredits } from "../../../utils/creditHelper";
 import ElementBuilderPage, { PagePreviewRenderer } from "./Header";
 
 const generateInitialAnalyticsData = (campaignId) => {
@@ -841,6 +842,8 @@ const initialTemplateConfig = {
 export default function CampaignCreatorPage() {
   const { campaignId } = useParams();
   const navigate = useNavigate();
+  const { credits, deductCredits, CAMPAIGN_COST } = useCredits();
+
   const [isEditing, setIsEditing] = useState(false);
   const [currentLoadedCampaignId, setCurrentLoadedCampaignId] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
@@ -1701,6 +1704,16 @@ export default function CampaignCreatorPage() {
       setCurrentStep(1);
       return;
     }
+
+    if (!isEditing) {
+      if (credits < CAMPAIGN_COST) {
+        toast.error(`You need at least ${CAMPAIGN_COST} credits to create a new campaign. Your balance is ${credits}.`);
+        return;
+      }
+      deductCredits(CAMPAIGN_COST);
+      toast.success(`${CAMPAIGN_COST} credits deducted for the new campaign.`);
+    }
+
     const campaignIdToSave = isEditing
       ? campaignId
       : `camp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -1725,6 +1738,7 @@ export default function CampaignCreatorPage() {
   const handleCloseModalAndReset = () => {
     setShowPublishModal(false);
     resetCampaignStates();
+    navigate("/campaigns");
   };
 
   const handleTemplateDataFromBuilder = (builderData) => {
@@ -2272,33 +2286,7 @@ export default function CampaignCreatorPage() {
                   <p className="mb-3 text-xs">
                     <strong>Using:</strong> {templateName}
                   </p>
-                  {/* <div className="mb-3 flex flex-wrap justify-center gap-1 p-0.5 bg-slate-100 rounded-lg">
-                    {["mobile", "tablet", "desktop"].map((device) => (
-                      <button
-                        key={device}
-                        onClick={() => setPreviewDevice(device)}
-                        title={`${
-                          device.charAt(0).toUpperCase() + device.slice(1)
-                        } View`}
-                        className={`p-1.5 px-3 rounded-md transition-all text-xs font-medium flex items-center gap-1.5 flex-grow sm:flex-grow-0 justify-center ${
-                          previewDevice === device
-                            ? "bg-[#2e8b57] text-white shadow-sm"
-                            : "text-slate-500 hover:bg-slate-200 hover:text-slate-700"
-                        }`}
-                      >
-                        {device === "mobile" && (
-                          <LucideIcons.Smartphone className="w-3.5 h-3.5" />
-                        )}
-                        {device === "tablet" && (
-                          <LucideIcons.Tablet className="w-3.5 h-3.5" />
-                        )}
-                        {device === "desktop" && (
-                          <LucideIcons.Monitor className="w-3.5 h-3.5" />
-                        )}
-                        <span className="capitalize">{device}</span>
-                      </button>
-                    ))}
-                  </div> */}
+
                   {currentTemplateData &&
                   currentTemplateData.pages &&
                   currentTemplateData.activePageId &&
