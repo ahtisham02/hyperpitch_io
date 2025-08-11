@@ -8,7 +8,7 @@ import axios from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
 import { LoaderCircle, Eye, EyeOff } from 'lucide-react';
 
-import apiRequest from "../../utils/apiRequest"; // This import is kept for Google login
+import apiRequest from "../../utils/apiRequest";
 import { setUserInfo } from "../../auth/authSlice";
 
 function LoginPage() {
@@ -25,13 +25,12 @@ function LoginPage() {
     }
     const { token } = loginResponseData;
 
-    // As requested, the profile API call is commented out.
-    // This allows the app to work without a /user/profile endpoint.
+    // As requested, the profile API call remains commented out.
+    // This assumes the login response itself contains all necessary user data.
     // const profileResponse = await apiRequest("get", "/user/profile", null, token);
     // const userData = profileResponse.data;
 
-    // Dispatch `setUserInfo` using the data from the login response itself.
-    // In our simulation, this will be the dummy data we create.
+    // Dispatch `setUserInfo` using the data directly from the login response.
     dispatch(setUserInfo({ token, data: loginResponseData }));
 
     toast.success("Login successful! Redirecting...");
@@ -81,67 +80,18 @@ function LoginPage() {
       password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
     }),
     
-    // ========================================================================
-    //   ↓↓↓ THIS IS THE MODIFIED SECTION AS PER YOUR REQUEST ↓↓↓
-    // ========================================================================
+    // The form now submits to the live API endpoint.
     onSubmit: async (values, { setSubmitting }) => {
-      console.log("SIMULATING LOGIN. Bypassing actual API call.");
-      
-      // 1. Simulate a network delay for a realistic UX
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      try {
-        // 2. Create a dummy user data object.
-        // This mimics the data your real API would return upon successful login.
-        const dummyUserData = {
-          id: 'user-abc-123',
-          name: 'Dummy User',
-          email: values.email, // Use the email from the form
-          role: 'admin',
-        };
-        
-        // 3. Generate a dummy JWT-like token.
-        // This is NOT a secure token. It's just for frontend development.
-        const dummyHeader = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-        const dummyPayload = btoa(JSON.stringify(dummyUserData));
-        const dummySignature = btoa('dummy-secret-signature-for-dev-only');
-        const dummyToken = `${dummyHeader}.${dummyPayload}.${dummySignature}`;
-
-        // 4. Create the fake response object that `handleAuthSuccess` expects.
-        const fakeApiResponseData = {
-          message: "Login successful (SIMULATED)",
-          token: dummyToken,
-          ...dummyUserData // Spread the user data into the response
-        };
-
-        // 5. Call the success handler with the fake data.
-        // This will dispatch to Redux and navigate to the dashboard.
-        await handleAuthSuccess(fakeApiResponseData);
-
-      } catch (error) {
-        // This catch block is just a fallback in case handleAuthSuccess fails
-        toast.error("An unexpected error occurred during the simulated login.");
-        console.error("Simulated login error:", error);
-      } finally {
-        // 6. Ensure the form is no longer in a "submitting" state.
-        setSubmitting(false);
-      }
-      
-      /* 
-      // --- ORIGINAL API CALL (NOW COMMENTED OUT) ---
       try {
         const response = await apiRequest("post", "/auth/login", values);
+        // The success handler will use the response data directly.
         await handleAuthSuccess(response.data);
       } catch (error) {
         toast.error(error?.response?.data?.message || "Login failed. Please check your credentials.");
       } finally {
         setSubmitting(false);
       }
-      */
     },
-    // ========================================================================
-    //   ↑↑↑ END OF MODIFIED SECTION ↑↑↑
-    // ========================================================================
   });
 
   return (
