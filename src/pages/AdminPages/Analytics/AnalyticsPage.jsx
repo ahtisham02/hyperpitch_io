@@ -1,33 +1,12 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 import { ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import * as LucideIcons from 'lucide-react';
+import getapiRequest from '../../../utils/getapiRequest';
 
 const { Users, Target, Eye, ArrowUpRight, ArrowDownRight, ChevronLeft, Filter, TrendingUp, Calendar, FileCog, ServerCrash, Smartphone, Monitor, Tablet, Share2, ChevronDown, MousePointerClick, ChevronFirst, ChevronLast, ChevronRight, Mail, HelpCircle } = LucideIcons;
-
-const getCampaignById = (id) => {
-    return {
-        id,
-        campaignDetails: { campaignName: 'Summer Sale 2023', startTime: '2023-07-01T00:00:00Z', endTime: '2023-07-31T00:00:00Z' },
-        analyticsData: {
-            kpi: {
-                totalViews: { value: 25830, change: 12.5 },
-                uniqueVisitors: { value: 19210, change: 8.2 },
-                conversions: { value: 1245, change: 15.1 },
-            },
-            performanceChart: Array.from({ length: 30 }, (_, i) => ({ date: `Day ${i + 1}`, views: 1000 + Math.random() * 1500, clicks: 100 + Math.random() * 150 })),
-            conversionFunnel: [
-                { stage: 'Emails Sent', value: 50000, iconName: 'Mail' },
-                { stage: 'Pitch Viewed', value: 25830, iconName: 'Eye' },
-                { stage: 'Clicked CTA', value: 8750, iconName: 'MousePointerClick' },
-                { stage: 'Converted', value: 1245, iconName: 'Target' },
-            ],
-            topReferrers: [{ source: 'Organic Search', value: 45 }, { source: 'Social Media', value: 30 }, { source: 'Paid Ads', value: 15 }, { source: 'Direct', value: 10 }],
-            deviceData: [{ name: 'Desktop', value: 65, color: '#10b981' }, { name: 'Mobile', value: 28, color: '#3b82f6' }, { name: 'Tablet', value: 7, color: '#f97316' }],
-            detailedAudience: Array.from({ length: 50 }, (_, i) => ({ id: `user-${i}`, name: `User ${i + 1}`, status: ['Converted', 'Clicked', 'Viewed', 'Sent'][i % 4], lastActivity: `${i % 24} hours ago` })),
-        },
-    };
-};
 
 const CampaignAnalyticsLoader = () => (
     <div className="fixed inset-0 bg-slate-100/80 backdrop-blur-sm flex flex-col items-center justify-center z-50 p-4 text-center">
@@ -105,31 +84,46 @@ const StatusChip = ({ status }) => {
 
 export default function CampaignAnalyticsPage() {
     const { campaignId } = useParams();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [campaign, setCampaign] = useState(null);
+    const [analyticsData, setAnalyticsData] = useState(null);
     const [timeframe, setTimeframe] = useState('14d');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 7;
+    const { token } = useSelector((state) => state.auth.userInfo);
+
+    const fetchCampaignData = useCallback(async () => {
+        if (!campaignId || !token) return;
+        setLoading(true);
+        try {
+            const response = await getapiRequest('get', `/campaigns/${campaignId}/analytics`, {}, token);
+            setAnalyticsData(response.data);
+            setCampaign(response.data.campaign); 
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to load campaign data.");
+            navigate('/campaigns');
+        } finally {
+            setLoading(false);
+        }
+    }, [campaignId, token, navigate]);
 
     useEffect(() => {
-        setLoading(true);
-        const timer = setTimeout(() => { setCampaign(getCampaignById(campaignId)); setLoading(false); }, 800);
-        return () => clearTimeout(timer);
-    }, [campaignId]);
+        fetchCampaignData();
+    }, [fetchCampaignData]);
 
-    const analyticsData = useMemo(() => campaign?.analyticsData, [campaign]);
     const chartData = useMemo(() => {
-        if (!analyticsData) return [];
-        return analyticsData.performanceChart.slice(-parseInt(timeframe.replace('d', ''))).map(d => ({ ...d, conversions: Math.floor(d.clicks * 0.15) }));
+        if (!analyticsData || !analyticsData.performanceChart) return [];
+        return (analyticsData.performanceChart || []).slice(-parseInt(timeframe.replace('d', ''))).map(d => ({ ...d, conversions: Math.floor(d.clicks * 0.15) }));
     }, [analyticsData, timeframe]);
 
     const paginatedAudience = useMemo(() => {
-        if (!analyticsData) return [];
+        if (!analyticsData || !analyticsData.detailedAudience) return [];
         const startIndex = (currentPage - 1) * itemsPerPage;
-        return analyticsData.detailedAudience.slice(startIndex, startIndex + itemsPerPage);
+        return (analyticsData.detailedAudience || []).slice(startIndex, startIndex + itemsPerPage);
     }, [analyticsData, currentPage]);
     
-    const totalPages = useMemo(() => Math.ceil((analyticsData?.detailedAudience.length || 0) / itemsPerPage), [analyticsData]);
+    const totalPages = useMemo(() => Math.ceil((analyticsData?.detailedAudience?.length || 0) / itemsPerPage), [analyticsData]);
 
     if (loading) return <CampaignAnalyticsLoader />;
 
@@ -154,18 +148,18 @@ export default function CampaignAnalyticsPage() {
                             <ChevronLeft className="w-4 h-4 mr-1.5 transition-transform group-hover:-translate-x-1" />
                             Back to Campaigns
                         </Link>
-                        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">{campaign.campaignDetails.campaignName}</h1>
+                        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">{campaign.campaignName}</h1>
                         <div className="flex items-center space-x-4 mt-2 text-sm text-slate-500">
-                            <div className="flex items-center"><Calendar size={14} className="mr-1.5"/><span>{new Date(campaign.campaignDetails.startTime).toLocaleDateString()} - {new Date(campaign.campaignDetails.endTime).toLocaleDateString()}</span></div>
+                            <div className="flex items-center"><Calendar size={14} className="mr-1.5"/><span>{new Date(campaign.startTime).toLocaleDateString()} - {new Date(campaign.endTime).toLocaleDateString()}</span></div>
                         </div>
                     </div>
                     <div className="self-end sm:self-auto"><TimeframeFilter timeframe={timeframe} setTimeframe={setTimeframe} /></div>
                 </header>
 
                 <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mb-8">
-                    <StatCard title="Total Views" value={analyticsData.kpi.totalViews.value} change={analyticsData.kpi.totalViews.change} icon={Eye}/>
-                    <StatCard title="Unique Visitors" value={analyticsData.kpi.uniqueVisitors.value} change={analyticsData.kpi.uniqueVisitors.change} icon={Users}/>
-                    <StatCard title="Total Conversions" value={analyticsData.kpi.conversions.value} change={analyticsData.kpi.conversions.change} icon={Target}/>
+                    <StatCard title="Total Views" value={analyticsData.totalViews || 0} change={0} icon={Eye}/>
+                    <StatCard title="Unique Visitors" value={analyticsData.uniqueVisitors || 0} change={0} icon={Users}/>
+                    <StatCard title="Total Conversions" value={analyticsData.conversions || 0} change={0} icon={Target}/>
                 </section>
                 
                 <section className="bg-white p-4 sm:p-6 rounded-2xl shadow-xl border border-slate-200/80 mb-8">
@@ -189,7 +183,7 @@ export default function CampaignAnalyticsPage() {
                     <div className="lg:col-span-2 bg-white p-4 sm:p-6 rounded-2xl shadow-xl border border-slate-200/80">
                         <h3 className="text-lg font-bold text-slate-800 mb-6">Conversion Funnel</h3>
                         <div className="space-y-4">
-                            {analyticsData.conversionFunnel.map((stage, index) => {
+                            {(analyticsData.conversionFunnel || []).map((stage, index) => {
                                 const IconComponent = LucideIcons[stage.iconName] || HelpCircle;
                                 const nextValue = analyticsData.conversionFunnel[index + 1]?.value || 0;
                                 const conversionRate = stage.value > 0 ? (nextValue / stage.value) * 100 : 0;
@@ -235,12 +229,12 @@ export default function CampaignAnalyticsPage() {
                 <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-xl border border-slate-200/80">
                         <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center"><Share2 className="w-5 h-5 mr-2 text-emerald-600"/>Top Referrers</h3>
-                        <div className="space-y-4 mt-6">{analyticsData.topReferrers.map(ref => (<div key={ref.source}><div className="flex items-center justify-between text-sm mb-1.5"><p className="font-semibold text-slate-700">{ref.source}</p><p className="font-semibold text-slate-800">{ref.value}%</p></div><div className="w-full bg-slate-200 rounded-full h-2.5"><div className="bg-gradient-to-r from-emerald-400 to-teal-500 h-2.5 rounded-full" style={{width:`${ref.value}%`}}></div></div></div>))}</div>
+                        <div className="space-y-4 mt-6">{(analyticsData.topReferrers || []).map(ref => (<div key={ref.source}><div className="flex items-center justify-between text-sm mb-1.5"><p className="font-semibold text-slate-700">{ref.source}</p><p className="font-semibold text-slate-800">{ref.value}%</p></div><div className="w-full bg-slate-200 rounded-full h-2.5"><div className="bg-gradient-to-r from-emerald-400 to-teal-500 h-2.5 rounded-full" style={{width:`${ref.value}%`}}></div></div></div>))}</div>
                     </div>
                     <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-xl border border-slate-200/80">
                         <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center"><Monitor className="w-5 h-5 mr-2 text-emerald-600"/>Audience by Device</h3>
                         <div className="h-[220px] sm:h-[250px] flex items-center justify-center">
-                            <ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={analyticsData.deviceData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius="60%" outerRadius="85%" fill="#8884d8" paddingAngle={5} cornerRadius={8}>{analyticsData.deviceData.map((entry) => <Cell key={`cell-${entry.name}`} fill={entry.color} stroke={entry.color} />)}</Pie><Tooltip /><Legend iconType="circle" iconSize={8}/></PieChart></ResponsiveContainer>
+                            <ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={analyticsData.deviceData || []} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius="60%" outerRadius="85%" fill="#8884d8" paddingAngle={5} cornerRadius={8}>{(analyticsData.deviceData || []).map((entry) => <Cell key={`cell-${entry.name}`} fill={entry.color} stroke={entry.color} />)}</Pie><Tooltip /><Legend iconType="circle" iconSize={8}/></PieChart></ResponsiveContainer>
                         </div>
                     </div>
                 </section>

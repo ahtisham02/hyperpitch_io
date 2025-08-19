@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import * as LucideIcons from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
@@ -16,6 +17,8 @@ import {
     AreaChart,
     Area
 } from 'recharts';
+import getapiRequest from '../../../utils/getapiRequest';
+import { useSelector } from 'react-redux';
 
 const StatCard = ({ title, value, icon, color = 'emerald', description, trend }) => {
     const IconComponent = icon || LucideIcons.Activity;
@@ -271,8 +274,35 @@ const UpcomingTasks = ({ tasks }) => {
     );
 };
 
-
 export default function Dashboard() {
+    const [dashboardData, setDashboardData] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const token = useSelector((state) => state.auth.userToken);
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            if (!token) {
+                return;
+            }
+            setIsLoading(true);
+            setError(null);
+            try {
+                const response = await getapiRequest("get", "/dashboard", null, token);
+                setDashboardData(response.data);
+                console.log("Dashboard data fetched:", response.data);
+            } catch (err) {
+                const errorMessage = err?.response?.data?.message || "Could not load dashboard data.";
+                setError(errorMessage);
+                toast.error(errorMessage);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, [token]);
+
     const mockUser = { name: "Jane Doe" };
 
     const getGreeting = () => {

@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import * as LucideIcons from 'lucide-react';
 import { toast } from 'react-toastify';
-import { getCampaignById, getContactLists } from '../../../utils/localStorageHelper';
+import { useSelector } from 'react-redux';
+import { getContactLists } from '../../../utils/localStorageHelper';
+import getapiRequest from '../../../utils/getapiRequest';
 import { PagePreviewRenderer } from '../../../ui-components/AdminPage/Campaign/Header';
 
 const mockTemplates = [
-    { id: 'tpl_corporate_sleek', name: 'Sleek Corporate Testimonial', builderData: { /* ... actual builder data ... */ } },
-    { id: 'tpl_creative_vibrant', name: 'Vibrant Creative Showcase', builderData: { /* ... actual builder data ... */ } },
+    { id: 'tpl_corporate_sleek', name: 'Sleek Corporate Testimonial', builderData: { } },
+    { id: 'tpl_creative_vibrant', name: 'Vibrant Creative Showcase', builderData: { } },
 ];
-
 
 const InfoCard = ({ title, icon, children, className = "", gradientFrom = "from-green-50", gradientTo = "to-emerald-50" }) => {
     const IconComponent = icon || LucideIcons.Info;
@@ -37,49 +38,30 @@ const DetailItem = ({ label, value, icon }) => {
     );
 };
 
-const AudienceContactPill = ({ contact }) => (
-    <div className="flex items-center p-2 pr-3 bg-white border border-slate-200 rounded-full shadow-sm hover:shadow-md transition-all duration-150 cursor-default group max-w-xs">
-        <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-green-400 to-emerald-500 text-white text-[10px] font-semibold flex items-center justify-center mr-2 shrink-0 ring-1 ring-white">
-            {contact.userName ? contact.userName.substring(0, 2).toUpperCase() : (contact.email ? contact.email.substring(0,2).toUpperCase() : 'N/A')}
-        </div>
-        <div className="truncate">
-            <p className="text-xs font-medium text-slate-700 truncate group-hover:text-green-600">{contact.userName || 'Unnamed Contact'}</p>
-            <p className="text-[10px] text-slate-500 truncate">{contact.email}</p>
-        </div>
-    </div>
-);
-
-
 export default function CampaignViewPage() {
     const { campaignId } = useParams();
     const navigate = useNavigate();
     const [campaign, setCampaign] = useState(null);
     const [loading, setLoading] = useState(true);
     const [previewDevice, setPreviewDevice] = useState('desktop');
-    const [audienceContacts, setAudienceContacts] = useState([]);
-
+    const { token } = useSelector((state) => state.auth.userInfo);
+    
     useEffect(() => {
-        setLoading(true);
-        if (campaignId) {
-            const fetchedCampaign = getCampaignById(campaignId);
-            if (fetchedCampaign) {
+        const fetchCampaign = async () => {
+            if (!token || !campaignId) return;
+            setLoading(true);
+            try {
+                const response = await getapiRequest('get', `/campaigns/${campaignId}`, {}, token);
+                const fetchedCampaign = response.data;
                 setCampaign(fetchedCampaign);
-                if (fetchedCampaign.dataSource?.type === 'fromContacts' && fetchedCampaign.dataSource?.contactListId) {
-                    const contactList = getContactLists().find(list => list.id === fetchedCampaign.dataSource.contactListId);
-                    if (contactList && fetchedCampaign.dataSource.selectedContactIds) {
-                        const selected = contactList.contacts.filter(c => fetchedCampaign.dataSource.selectedContactIds.includes(c.id));
-                        setAudienceContacts(selected);
-                    }
-                }
-            } else {
-                toast.error("Campaign not found.");
+            } catch (error) {
+                toast.error(error.response?.data?.message || "Campaign not found.");
                 navigate('/campaigns');
             }
-        }
-        // Simulate loading delay for demonstration if needed for UI polish
-        // setTimeout(() => setLoading(false), 500);
-        setLoading(false);
-    }, [campaignId, navigate]);
+            setLoading(false);
+        };
+        fetchCampaign();
+    }, [campaignId, navigate, token]);
 
     if (loading) {
         return (
@@ -104,8 +86,10 @@ export default function CampaignViewPage() {
             </div>
         );
     }
-
-    const { campaignDetails, dataSource, templateConfig } = campaign;
+    
+    const { script, status, createdAt, updatedAt } = campaign;
+    const templateConfig = script ? JSON.parse(script) : { type: 'none' };
+    
     const templateName = templateConfig.selectedTemplateId
         ? (mockTemplates.find(t => t.id === templateConfig.selectedTemplateId)?.name || "Selected Template")
         : (templateConfig.templateData ? "Custom Designed Template" : "No Template Configured");
@@ -120,7 +104,7 @@ export default function CampaignViewPage() {
                         </Link>
                         <h1 className="text-3xl md:text-4xl font-bold text-slate-800 flex items-center tracking-tight">
                             <LucideIcons.Presentation size={38} className="mr-3 text-green-500" />
-                            {campaignDetails?.campaignName || "Campaign View"}
+                            {campaign.campaignName || "Campaign View"}
                         </h1>
                     </div>
                     <div className="flex items-center space-x-3 mt-4 sm:mt-0">
@@ -135,45 +119,21 @@ export default function CampaignViewPage() {
                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
                     <div className="xl:col-span-4 space-y-8">
                         <InfoCard title="Core Details" icon={LucideIcons.FileText} gradientFrom="from-green-50" gradientTo="to-emerald-50">
-                            <DetailItem label="Campaign Name" value={campaignDetails?.campaignName} />
-                            <DetailItem label="Status" value={campaign.status || 'Draft'} icon={LucideIcons.Activity} />
-                            <DetailItem label="Start Time" value={campaignDetails?.startTime ? new Date(campaignDetails.startTime).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : null} icon={LucideIcons.CalendarCheck2} />
-                            <DetailItem label="End Time" value={campaignDetails?.endTime ? new Date(campaignDetails.endTime).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : null} icon={LucideIcons.CalendarCheck2} />
-                            <DetailItem label="Created At" value={campaign.createdAt ? new Date(campaign.createdAt).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric' }) : null} icon={LucideIcons.CalendarPlus} />
-                            <DetailItem label="Last Updated" value={campaign.updatedAt ? new Date(campaign.updatedAt).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric' }) : null} icon={LucideIcons.CalendarClock} />
+                            <DetailItem label="Campaign Name" value={campaign.campaignName} />
+                            <DetailItem label="Status" value={status || 'Draft'} icon={LucideIcons.Activity} />
+                            <DetailItem label="Start Time" value={campaign.startTime ? new Date(campaign.startTime).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : null} icon={LucideIcons.CalendarCheck2} />
+                            <DetailItem label="End Time" value={campaign.endTime ? new Date(campaign.endTime).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : null} icon={LucideIcons.CalendarCheck2} />
+                            <DetailItem label="Created At" value={createdAt ? new Date(createdAt).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric' }) : null} icon={LucideIcons.CalendarPlus} />
+                            <DetailItem label="Last Updated" value={updatedAt ? new Date(updatedAt).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric' }) : null} icon={LucideIcons.CalendarClock} />
                         </InfoCard>
 
                         <InfoCard title="Audience Configuration" icon={LucideIcons.Users2} gradientFrom="from-sky-50" gradientTo="to-blue-50">
-                            <DetailItem label="Source Type" value={dataSource?.type === 'file' ? 'File Upload' : dataSource?.type === 'fromContacts' ? 'From Saved Contacts' : 'API (N/A)'} icon={dataSource?.type === 'file' ? LucideIcons.FileUp : LucideIcons.Contact2} />
-                            {dataSource?.type === 'file' && (
-                                <>
-                                    <DetailItem label="Uploaded File" value={dataSource.fileName} icon={LucideIcons.FileArchive}/>
-                                    <h4 className="text-xs font-semibold text-slate-500 pt-3 mt-3 border-t border-slate-200/80 mb-2">Column Mappings:</h4>
-                                    {/* <div className="grid grid-cols-1 gap-1.5">
-                                        {dataSource.fields?.firstName && <AudienceDetailItem label="First Name" value={dataSource.fields.firstName} icon={LucideIcons.UserCircle}/>}
-                                        {dataSource.fields?.lastName && <AudienceDetailItem label="Last Name" value={dataSource.fields.lastName} icon={LucideIcons.UserCircle2}/>}
-                                        <AudienceDetailItem label="Email" value={dataSource.fields?.email} icon={LucideIcons.Mail} type="email"/>
-                                        {dataSource.fields?.phoneNo && <AudienceDetailItem label="Phone" value={dataSource.fields.phoneNo} icon={LucideIcons.Phone}/>}
-                                        {dataSource.fields?.linkedInUrl && <AudienceDetailItem label="LinkedIn" value={dataSource.fields.linkedInUrl} icon={LucideIcons.Linkedin} type="url"/>}
-                                    </div> */}
-                                </>
+                            <DetailItem label="Source Type" value={campaign.audienceFile ? 'File Upload' : campaign.contactListId ? 'From Saved Contacts' : 'N/A'} icon={campaign.audienceFile ? LucideIcons.FileUp : LucideIcons.Contact2} />
+                            {campaign.audienceFile && (
+                                <DetailItem label="Uploaded File" value={campaign.audienceFile} icon={LucideIcons.FileArchive}/>
                             )}
-                            {dataSource?.type === 'fromContacts' && (
-                                <>
-                                    <DetailItem label="Contact List" value={getContactLists().find(l => l.id === dataSource.contactListId)?.name || 'N/A'} icon={LucideIcons.ListChecks} />
-                                    <DetailItem label="Selected Count" value={`${dataSource.selectedContactIds?.length || 0} contacts`} icon={LucideIcons.Users} />
-                                    {audienceContacts.length > 0 && (
-                                        <div className="mt-3 pt-3 border-t border-slate-200/80">
-                                            <h4 className="text-xs font-semibold text-slate-500 mb-2">Selected Contacts (Top 5):</h4>
-                                            <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
-                                                {audienceContacts.slice(0,5).map(contact => (
-                                                    <AudienceContactPill key={contact.id} contact={contact} />
-                                                ))}
-                                                {audienceContacts.length > 5 && <span className="text-xs text-slate-400 p-2">...and {audienceContacts.length - 5} more.</span>}
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
+                            {campaign.contactListId && (
+                                <DetailItem label="Contact List ID" value={campaign.contactListId} icon={LucideIcons.ListChecks} />
                             )}
                         </InfoCard>
                     </div>
@@ -203,8 +163,7 @@ export default function CampaignViewPage() {
                                     </button>
                                 ))}
                             </div>
-                            <div className="flex-grow border-2 border-slate-300 rounded-xl overflow-hidden shadow-2xl bg-slate-200" 
-                                 style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column' }}>
+                            <div className="flex-grow border-2 border-slate-300 rounded-xl overflow-hidden shadow-2xl bg-slate-200" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column' }}>
                                 {templateConfig.templateData && templateConfig.templateData.pages && templateConfig.templateData.activePageId && PagePreviewRenderer ? (
                                     <div className="w-full h-full overflow-auto custom-scrollbar-preview">
                                          <PagePreviewRenderer
@@ -233,7 +192,6 @@ export default function CampaignViewPage() {
                 .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
                 .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
                 .custom-scrollbar-preview::-webkit-scrollbar { width: 8px; height: 8px; }
                 .custom-scrollbar-preview::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 0; }
                 .custom-scrollbar-preview::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 0; }

@@ -1,5 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import * as LucideIcons from 'lucide-react';
+import getapiRequest from '../../../utils/getapiRequest';
+
+const LoadingSpinner = () => (
+    <div className="flex flex-col items-center justify-center py-20 text-slate-500">
+        <LucideIcons.LoaderCircle className="w-12 h-12 animate-spin text-emerald-600" />
+        <p className="mt-4 text-lg font-medium">Loading Plans...</p>
+    </div>
+);
+
+const ErrorDisplay = ({ message }) => (
+    <div className="flex flex-col items-center justify-center py-20 text-center text-red-600 bg-red-50 rounded-lg border border-red-200 mx-auto max-w-2xl">
+        <LucideIcons.AlertTriangle className="w-12 h-12" />
+        <h3 className="mt-4 text-xl font-semibold text-red-800">Oops! Something went wrong.</h3>
+        <p className="mt-2 text-base">{message}</p>
+    </div>
+);
 
 const PricingHeader = ({ billingCycle, setBillingCycle }) => {
   return (
@@ -39,7 +56,7 @@ const PricingHeader = ({ billingCycle, setBillingCycle }) => {
 
 const PlanFeature = ({ text, included = true }) => (
   <li className={`flex items-start space-x-3 py-1.5 ${included ? 'text-slate-700' : 'text-slate-400 line-through'}`}>
-    {included ? 
+    {included ?
       <LucideIcons.CheckCircle2 size={18} className="text-emerald-500 flex-shrink-0 mt-0.5" /> :
       <LucideIcons.XCircle size={18} className="text-slate-400 flex-shrink-0 mt-0.5" />
     }
@@ -72,9 +89,9 @@ const PricingTierCard = ({ plan, onChoosePlan, isPopular = false }) => (
     </ul>
     <button
       onClick={() => onChoosePlan(plan.id)}
-      className={`w-full py-3 px-5 text-base font-semibold rounded-lg transition-all duration-300 ease-in-out transform 
-                  ${isPopular 
-                    ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/30 hover:scale-105' 
+      className={`w-full py-3 px-5 text-base font-semibold rounded-lg transition-all duration-300 ease-in-out transform
+                  ${isPopular
+                    ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/30 hover:scale-105'
                     : 'bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300'
                   }`}
     >
@@ -84,24 +101,27 @@ const PricingTierCard = ({ plan, onChoosePlan, isPopular = false }) => (
 );
 
 const PricingTiersSection = ({ plans, billingCycle, onChoosePlan }) => {
-  return (
-    <section className="container mx-auto px-5 lg:px-8">
-      <div className="p-8 sm:p-12">
-        <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Choose Your Plan</h2>
-            <p className="mt-3 text-base text-slate-500 max-w-lg mx-auto">Select the perfect plan to fit your needs, with the flexibility to upgrade anytime.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 xl:gap-12 items-stretch">
-          {plans[billingCycle].map((plan) => (
-            <PricingTierCard key={plan.id} plan={plan} onChoosePlan={onChoosePlan} isPopular={plan.isPopular} />
-          ))}
-        </div>
-        <div className="mt-16 text-center">
-          <p className="text-sm text-slate-500">Need a custom enterprise solution? <a href="#" className="font-semibold text-emerald-600 hover:text-emerald-700 underline decoration-dotted underline-offset-2">Contact Sales</a>.</p>
-        </div>
-      </div>
-    </section>
-  );
+    if (!plans || !plans[billingCycle]) {
+        return null;
+    }
+    return (
+        <section className="container mx-auto px-5 lg:px-8">
+            <div className="p-8 sm:p-12">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Choose Your Plan</h2>
+                    <p className="mt-3 text-base text-slate-500 max-w-lg mx-auto">Select the perfect plan to fit your needs, with the flexibility to upgrade anytime.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 xl:gap-12 items-stretch">
+                {plans[billingCycle].map((plan) => (
+                    <PricingTierCard key={plan.id} plan={plan} onChoosePlan={onChoosePlan} isPopular={plan.isPopular} />
+                ))}
+                </div>
+                <div className="mt-16 text-center">
+                    <p className="text-sm text-slate-500">Need a custom enterprise solution? <a href="#" className="font-semibold text-emerald-600 hover:text-emerald-700 underline decoration-dotted underline-offset-2">Contact Sales</a>.</p>
+                </div>
+            </div>
+        </section>
+    );
 };
 
 const ComparisonTick = ({ type = 'included' }) => {
@@ -127,93 +147,103 @@ const ComparisonTick = ({ type = 'included' }) => {
 };
 
 const FeatureComparisonSection = ({ plans }) => {
-  const allFeaturesSet = new Set(plans.monthly.flatMap(p => p.features.map(f => f.text)));
-  const uniqueFeatures = Array.from(allFeaturesSet);
+    if (!plans || !plans.monthly || plans.monthly.length === 0) {
+        return null;
+    }
 
-  return (
-    <section className="container mx-auto px-5 lg:px-8">
-        <div className="px-8 sm:px-12 sm:pb-10">
-            <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Compare All Features</h2>
-                <p className="mt-3 text-base text-slate-500 max-w-lg mx-auto">A detailed breakdown of what's included in each plan.</p>
-            </div>
-            <div className="overflow-x-auto rounded-2xl border border-slate-200/70 shadow-lg bg-white">
-                <table className="min-w-full divide-y divide-slate-200">
-                    <thead className="bg-slate-50">
-                        <tr>
-                            <th scope="col" className="py-4 pl-8 pr-3 text-left text-sm font-semibold text-slate-800 uppercase tracking-wider">Feature</th>
-                            {plans.monthly.map(plan => (
-                                <th key={plan.id} scope="col" className="w-40 px-3 py-4 text-center text-sm font-semibold text-slate-800 uppercase tracking-wider">{plan.name}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 bg-white">
-                        {uniqueFeatures.map((featureText, index) => ( 
-                            <tr key={index} className="group transition-colors duration-150 ease-in-out hover:bg-slate-50/70">
-                                <td className="whitespace-nowrap py-4 pl-8 pr-3 text-sm font-medium text-slate-700 group-hover:text-slate-900">{featureText}</td>
-                                {plans.monthly.map(plan => {
-                                    const planFeature = plan.features.find(f => f.text === featureText);
-                                    const tickType = planFeature?.included === true ? 'included' : (planFeature?.included === false ? 'excluded' : 'limited');
-                                    return (
-                                        <td key={`${plan.id}-${featureText}`} className="px-3 py-4 text-center">
-                                            <div className="flex justify-center"><ComparisonTick type={tickType} /></div>
-                                        </td>
-                                    );
-                                })}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
-  );
-};
+    const allFeaturesSet = new Set(plans.monthly.flatMap(p => p.features.map(f => f.text)));
+    const uniqueFeatures = Array.from(allFeaturesSet);
 
-const FaqItem = ({ question, answer }) => {
-    const [isOpen, setIsOpen] = useState(false);
     return (
-        <div className="border-b border-slate-200 py-5">
-            <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center text-left">
-                <span className="text-base font-semibold text-slate-800">{question}</span>
-                <LucideIcons.ChevronDown size={20} className={`text-slate-500 transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-            </button>
-            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 mt-4' : 'max-h-0'}`}>
-                <p className="text-slate-600 text-sm leading-relaxed pr-8">{answer}</p>
+        <section className="container mx-auto px-5 lg:px-8">
+            <div className="px-8 sm:px-12 sm:pb-10">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Compare All Features</h2>
+                    <p className="mt-3 text-base text-slate-500 max-w-lg mx-auto">A detailed breakdown of what's included in each plan.</p>
+                </div>
+                <div className="overflow-x-auto rounded-2xl border border-slate-200/70 shadow-lg bg-white">
+                    <table className="min-w-full divide-y divide-slate-200">
+                        <thead className="bg-slate-50">
+                            <tr>
+                                <th scope="col" className="py-4 pl-8 pr-3 text-left text-sm font-semibold text-slate-800 uppercase tracking-wider">Feature</th>
+                                {plans.monthly.map(plan => (
+                                    <th key={plan.id} scope="col" className="w-40 px-3 py-4 text-center text-sm font-semibold text-slate-800 uppercase tracking-wider">{plan.name}</th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 bg-white">
+                            {uniqueFeatures.map((featureText, index) => (
+                                <tr key={index} className="group transition-colors duration-150 ease-in-out hover:bg-slate-50/70">
+                                    <td className="whitespace-nowrap py-4 pl-8 pr-3 text-sm font-medium text-slate-700 group-hover:text-slate-900">{featureText}</td>
+                                    {plans.monthly.map(plan => {
+                                        const planFeature = plan.features.find(f => f.text === featureText);
+                                        const tickType = planFeature?.included === true ? 'included' : (planFeature?.included === false ? 'excluded' : 'limited');
+                                        return (
+                                            <td key={`${plan.id}-${featureText}`} className="px-3 py-4 text-center">
+                                                <div className="flex justify-center"><ComparisonTick type={tickType} /></div>
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        </section>
     );
 };
 
 export default function PricingPage() {
-  const [billingCycle, setBillingCycle] = useState('monthly'); 
+  const [billingCycle, setBillingCycle] = useState('monthly');
+  const [plans, setPlans] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const plansData = {
-    monthly: [
-      { id: 'starter_monthly', name: 'Starter', price: 29, description: 'For individuals and small teams getting started.', billingNote: 'Billed monthly.', features: [{ text: '5 Active Pitches', included: true }, { text: 'Unlimited Viewers', included: true }, { text: 'Basic Analytics', included: true }, { text: 'Email Support', included: true }, { text: 'Custom Branding', included: false }, { text: 'AI Content Assistant', included: false } ]},
-      { id: 'pro_monthly', name: 'Pro', price: 79, description: 'For growing businesses that need more power and scale.', billingNote: 'Billed monthly.', isPopular: true, features: [ { text: '25 Active Pitches', included: true }, { text: 'Unlimited Viewers', included: true }, { text: 'Advanced Analytics', included: true }, { text: 'Priority Support', included: true }, { text: 'Custom Branding', included: true }, { text: 'AI Content Assistant', included: true } ]},
-      { id: 'enterprise_monthly', name: 'Enterprise', price: 149, description: 'For large organizations with specific needs.', billingNote: 'Contact us for a quote.', features: [{ text: 'Unlimited Pitches', included: true }, { text: 'Unlimited Viewers', included: true }, { text: 'Customizable Analytics', included: true }, { text: 'Dedicated Account Manager', included: true }, { text: 'Full White-labeling', included: true }, { text: 'Premium AI & API Access', included: true }] },
-    ],
-    annually: [
-      { id: 'starter_annually', name: 'Starter', price: 24, description: 'For individuals and small teams getting started.', billingNote: 'Billed annually. Save 20%!', features: [{ text: '5 Active Pitches', included: true }, { text: 'Unlimited Viewers', included: true }, { text: 'Basic Analytics', included: true }, { text: 'Email Support', included: true }, { text: 'Custom Branding', included: false }, { text: 'AI Content Assistant', included: false }] },
-      { id: 'pro_annually', name: 'Pro', price: 65, description: 'For growing businesses that need more power and scale.', billingNote: 'Billed annually. Save 20%!', isPopular: true, features: [{ text: '25 Active Pitches', included: true }, { text: 'Unlimited Viewers', included: true }, { text: 'Advanced Analytics', included: true }, { text: 'Priority Support', included: true }, { text: 'Custom Branding', included: true }, { text: 'AI Content Assistant', included: true }] },
-      { id: 'enterprise_annually', name: 'Enterprise', price: 120, description: 'For large organizations with specific needs.', billingNote: 'Contact us for a quote.', features: [{ text: 'Unlimited Pitches', included: true }, { text: 'Unlimited Viewers', included: true }, { text: 'Customizable Analytics', included: true }, { text: 'Dedicated Account Manager', included: true }, { text: 'Full White-labeling', included: true }, { text: 'Premium AI & API Access', included: true }] },
-    ]
-  };
+  useEffect(() => {
+    const fetchPricingData = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await getapiRequest("get", "/pricing");
+        setPlans(response.data);
+      } catch (err) {
+        const errorMessage = err?.response?.data?.message || "Could not load pricing plans. Please try refreshing the page.";
+        setError(errorMessage);
+        toast.error(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPricingData();
+  }, []);
 
   const handleChoosePlan = (planId) => {
     console.log(`User chose plan: ${planId}. Redirecting to checkout...`);
     alert(`Redirecting to checkout for plan: ${planId}`);
   };
 
+  const renderContent = () => {
+    if (isLoading) {
+      return <LoadingSpinner />;
+    }
+    if (error) {
+      return <ErrorDisplay message={error} />;
+    }
+    return (
+      <div className="space-y-20">
+        <PricingTiersSection plans={plans} billingCycle={billingCycle} onChoosePlan={handleChoosePlan} />
+        <FeatureComparisonSection plans={plans} />
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-sky-50 text-slate-800 overflow-x-hidden">
       <PricingHeader billingCycle={billingCycle} setBillingCycle={setBillingCycle} />
       <main className="pt-10 pb-6">
-          <div className="space-y-20">
-            <PricingTiersSection plans={plansData} billingCycle={billingCycle} onChoosePlan={handleChoosePlan} />
-            <FeatureComparisonSection plans={plansData} />
-          </div>
+        {renderContent()}
       </main>
     </div>
   );

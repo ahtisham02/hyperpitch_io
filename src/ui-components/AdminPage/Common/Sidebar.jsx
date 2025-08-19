@@ -1,20 +1,42 @@
-import { Box, ChevronLeft, CreditCard, LayoutGrid, LogOut, Megaphone, Menu as MenuIcon, User, Users, BarChart3, TestTubeDiagonal, X, Globe } from 'lucide-react';
-import React, { useState } from 'react';
+import { Box, ChevronLeft, CreditCard, LayoutGrid, LogOut, Megaphone, Menu as MenuIcon, User, Users, BarChart3, TestTubeDiagonal, X, Globe, Search, Loader2 } from 'lucide-react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { getCampaigns } from '../../../utils/localStorageHelper';
+import { useDispatch, useSelector } from 'react-redux';
 import { removeUserInfo } from '../../../auth/authSlice';
 import { toast } from 'react-toastify';
+import getapiRequest from '../../../utils/getapiRequest';
 
 const CampaignSelectorModal = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
-    const [campaigns] = useState(() => getCampaigns().filter(c => c.analyticsData));
+    const [campaigns, setCampaigns] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(false);
+    const { token } = useSelector((state) => state.auth.userInfo);
+
+    const fetchCampaigns = useCallback(async () => {
+        if (!token) return;
+        setLoading(true);
+        try {
+            const response = await getapiRequest('get', '/campaigns', {}, token);
+            setCampaigns(response.data);
+        } catch (error) {
+            toast.error("Failed to load campaigns.");
+            setCampaigns([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [token]);
+
+    useEffect(() => {
+        if (isOpen) {
+            fetchCampaigns();
+        }
+    }, [isOpen, fetchCampaigns]);
 
     if (!isOpen) return null;
 
     const filteredCampaigns = campaigns.filter(c =>
-        c.campaignDetails.campaignName.toLowerCase().includes(searchTerm.toLowerCase())
+        c.campaignName.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const handleSelect = (campaignId) => {
@@ -46,15 +68,19 @@ const CampaignSelectorModal = ({ isOpen, onClose }) => {
                     />
                 </div>
                 <div className="px-6 pb-6 max-h-[50vh] overflow-y-auto custom-scrollbar">
-                    {filteredCampaigns.length > 0 ? (
+                    {loading ? (
+                         <div className="flex items-center justify-center h-48">
+                            <Loader2 className="w-8 h-8 animate-spin text-emerald-600"/>
+                        </div>
+                    ) : filteredCampaigns.length > 0 ? (
                         <ul className="space-y-2">
                             {filteredCampaigns.map(campaign => (
                                 <li key={campaign.id}>
                                     <button onClick={() => handleSelect(campaign.id)}
                                         className="w-full text-left p-4 rounded-xl border-2 border-slate-200 hover:border-green-500 hover:bg-green-50 transition-all duration-200 flex items-center justify-between group">
                                         <div>
-                                            <p className="font-semibold text-slate-700">{campaign.campaignDetails.campaignName}</p>
-                                            <p className="text-xs text-slate-500">Last updated: {new Date(campaign.updatedAt).toLocaleDateString()}</p>
+                                            <p className="font-semibold text-slate-700">{campaign.campaignName}</p>
+                                            <p className="text-xs text-slate-500">Last updated: {new Date(campaign.updatedAt || campaign.createdAt).toLocaleDateString()}</p>
                                         </div>
                                         <ChevronLeft className="w-5 h-5 text-slate-400 -rotate-180 group-hover:text-green-600 transition-transform group-hover:translate-x-1" />
                                     </button>

@@ -2,7 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import * as LucideIcons from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { getCampaigns, deleteCampaign } from '../../../utils/localStorageHelper';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
+import getapiRequest from '../../../utils/getapiRequest';
 
 const StyledButton = ({ onClick, children, type = 'button', variant = 'primary', disabled = false, className = '', iconLeft, iconRight, iconCenter, size = 'medium' }) => {
     const baseStyle = "rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-150 ease-in-out inline-flex items-center justify-center group transform hover:-translate-y-px active:translate-y-0";
@@ -50,28 +52,56 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirm
 export default function CampaignListPage() {
     const [campaigns, setCampaigns] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(true);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [campaignToDelete, setCampaignToDelete] = useState(null);
     const navigate = useNavigate();
+    const { token } = useSelector((state) => state.auth.userInfo);
 
-    const loadCampaigns = useCallback(() => {
-        const allCampaigns = getCampaigns();
-        setCampaigns(allCampaigns.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)));
-    }, []);
+    const loadCampaigns = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await getapiRequest('get', '/campaigns', {}, token);
+            const sortedCampaigns = response.data.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+            setCampaigns(sortedCampaigns);
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to load campaigns.");
+            setCampaigns([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [token]);
 
-    useEffect(() => { loadCampaigns(); }, [loadCampaigns]);
+    useEffect(() => {
+        if (token) {
+            loadCampaigns();
+        }
+    }, [loadCampaigns, token]);
 
-    const filteredCampaigns = campaigns.filter(c => c.campaignDetails?.campaignName?.toLowerCase().includes(searchTerm.toLowerCase()));
+    const filteredCampaigns = campaigns.filter(c => c.campaignName?.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const promptDelete = (campaign) => { setCampaignToDelete(campaign); setIsConfirmModalOpen(true); };
+    const promptDelete = (campaign) => {
+        setCampaignToDelete(campaign);
+        setIsConfirmModalOpen(true);
+    };
 
-    const handleConfirmDelete = () => {
+    const handleConfirmDelete = async () => {
         if (campaignToDelete) {
-            deleteCampaign(campaignToDelete.id);
-            toast.success(`Campaign "${campaignToDelete.campaignDetails.campaignName}" deleted!`);
-            loadCampaigns(); 
-            setIsConfirmModalOpen(false);
-            setCampaignToDelete(null);
+            const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            try {
+                await axios.delete(`${BASE_URL}/campaigns/${campaignToDelete.id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                toast.success(`Campaign "${campaignToDelete.campaignName}" deleted!`);
+                loadCampaigns();
+            } catch (error) {
+                toast.error(error.response?.data?.message || "Failed to delete campaign.");
+            } finally {
+                setIsConfirmModalOpen(false);
+                setCampaignToDelete(null);
+            }
         }
     };
 
@@ -96,18 +126,26 @@ export default function CampaignListPage() {
             {!searchTerm && (<Link to="/campaigns/create"><StyledButton iconLeft={<LucideIcons.PlusCircle />}>Create First Campaign</StyledButton></Link>)}
         </div>
     );
+    
+    if (loading) {
+        return (
+            <div className="p-4 md:p-6 lg:p-8 bg-slate-50 min-h-screen flex items-center justify-center">
+                <LucideIcons.Loader2 className="animate-spin text-green-600 w-12 h-12" />
+            </div>
+        );
+    }
 
     return (
         <div className="p-4 md:p-6 lg:p-8 bg-slate-50 min-h-screen">
             <div className="max-w-screen-xl mx-auto">
                 <header className="mb-8 flex flex-col text-center sm:flex-row sm:justify-between sm:items-center sm:text-left gap-4">
                    <div className="flex flex-col sm:flex-row items-center">
-    <LucideIcons.Megaphone size={36} className="text-green-600 hidden sm:block mb-2 sm:mb-0 sm:mr-4" />
-    <div className="text-center sm:text-left">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Campaigns</h1>
-        <p className="text-sm text-slate-500">Oversee all your marketing initiatives.</p>
-    </div>
-</div>
+                    <LucideIcons.Megaphone size={36} className="text-green-600 hidden sm:block mb-2 sm:mb-0 sm:mr-4" />
+                    <div className="text-center sm:text-left">
+                        <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Campaigns</h1>
+                        <p className="text-sm text-slate-500">Oversee all your marketing initiatives.</p>
+                    </div>
+                </div>
                     <Link to="/campaigns/create">
                         <StyledButton iconLeft={<LucideIcons.PlusCircle size={18} />} size="medium" className="w-full sm:w-auto">
                             Create New Campaign
@@ -127,14 +165,14 @@ export default function CampaignListPage() {
                                 <div key={campaign.id} className="bg-white p-4 rounded-lg shadow-lg border border-slate-200">
                                     <div className="flex justify-between items-start">
                                         <div className="flex-1 pr-2">
-                                            <p className="text-sm font-semibold text-slate-800">{campaign.campaignDetails?.campaignName || 'Unnamed Campaign'}</p>
-                                            <p className="text-xs text-slate-400 mt-0.5">ID: {campaign.id.slice(-8)}</p>
+                                            <p className="text-sm font-semibold text-slate-800">{campaign.campaignName || 'Unnamed Campaign'}</p>
+                                            <p className="text-xs text-slate-400 mt-0.5">ID: {String(campaign.id).slice(-8)}</p>
                                         </div>
                                         {getStatusChip(campaign.status || 'Draft')}
                                     </div>
                                     <div className="grid grid-cols-2 gap-4 text-xs text-slate-600 mt-3 py-3 border-y border-slate-100">
-                                        <div><strong className="block text-slate-500">Start Date</strong>{campaign.campaignDetails?.startTime ? new Date(campaign.campaignDetails.startTime).toLocaleDateString() : 'N/A'}</div>
-                                        <div><strong className="block text-slate-500">Audience</strong>{campaign.dataSource?.type === 'fromContacts' ? `${campaign.dataSource.selectedContactIds?.length || 0} Contacts` : (campaign.dataSource?.file ? 'File Based' : 'N/A')}</div>
+                                        <div><strong className="block text-slate-500">Start Date</strong>{campaign.startTime ? new Date(campaign.startTime).toLocaleDateString() : 'N/A'}</div>
+                                        <div><strong className="block text-slate-500">Audience</strong>{campaign.audienceFile ? 'File Based' : (campaign.contactListId ? 'Contact List' : 'N/A')}</div>
                                     </div>
                                     <div className="flex items-center justify-between mt-3">
                                         <p className="text-[11px] text-slate-400">Updated: {new Date(campaign.updatedAt || campaign.createdAt).toLocaleString()}</p>
@@ -154,15 +192,15 @@ export default function CampaignListPage() {
                                 <table className="min-w-full divide-y divide-slate-200">
                                     <thead className="bg-slate-100"><tr className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                         <th className="px-6 py-3">Campaign Name</th><th className="px-6 py-3">Status</th><th className="px-6 py-3">Start Date</th>
-                                        <th className="px-6 py-3 text-center">Audience Size</th><th className="px-6 py-3">Last Updated</th><th className="px-6 py-3 text-center">Actions</th>
+                                        <th className="px-6 py-3 text-center">Audience Source</th><th className="px-6 py-3">Last Updated</th><th className="px-6 py-3 text-center">Actions</th>
                                     </tr></thead>
                                     <tbody className="bg-white divide-y divide-slate-100">
                                         {filteredCampaigns.map((campaign) => (
                                             <tr key={campaign.id} className="hover:bg-slate-50/70 transition-colors duration-150">
-                                                <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-slate-800">{campaign.campaignDetails?.campaignName || 'Unnamed Campaign'}</div><div className="text-xs text-slate-500">ID: {campaign.id.slice(-8)}</div></td>
+                                                <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-slate-800">{campaign.campaignName || 'Unnamed Campaign'}</div><div className="text-xs text-slate-500">ID: {String(campaign.id).slice(-8)}</div></td>
                                                 <td className="px-6 py-4 whitespace-nowrap">{getStatusChip(campaign.status || 'Draft')}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{campaign.campaignDetails?.startTime ? new Date(campaign.campaignDetails.startTime).toLocaleDateString() : 'N/A'}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 text-center">{campaign.dataSource?.type === 'fromContacts' ? campaign.dataSource.selectedContactIds?.length : (campaign.dataSource?.file ? 'File Based' : 'N/A')}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{campaign.startTime ? new Date(campaign.startTime).toLocaleDateString() : 'N/A'}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 text-center">{campaign.audienceFile ? 'File Based' : (campaign.contactListId ? 'Contact List' : 'N/A')}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{new Date(campaign.updatedAt || campaign.createdAt).toLocaleString()}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium"><div className="flex items-center justify-center space-x-1.5">
                                                     <StyledButton onClick={() => navigate(`/analytics/${campaign.id}`)} variant="outline" size="small" iconLeft={<LucideIcons.BarChart3 size={14} />} className="!px-2.5 !py-1 border-green-300 text-green-700 hover:bg-green-50">Analytics</StyledButton>
@@ -182,7 +220,7 @@ export default function CampaignListPage() {
 
             <ConfirmationModal
                 isOpen={isConfirmModalOpen} onClose={() => setIsConfirmModalOpen(false)} onConfirm={handleConfirmDelete}
-                title="Confirm Campaign Deletion" message={`Are you sure you want to delete "${campaignToDelete?.campaignDetails?.campaignName || 'this campaign'}"? This action cannot be undone.`}
+                title="Confirm Campaign Deletion" message={`Are you sure you want to delete "${campaignToDelete?.campaignName || 'this campaign'}"? This action cannot be undone.`}
             />
             <style jsx global>{`
                 @keyframes fadeInModal { 0% { opacity: 0; } 100% { opacity: 1; } }

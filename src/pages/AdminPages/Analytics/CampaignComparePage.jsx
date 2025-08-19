@@ -1,17 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { Trophy, ArrowLeft, Scaling, Users, Target, MousePointerClick, CheckCircle2 } from 'lucide-react';
-
-const getCampaigns = () => {
-    const mockData = [
-        { id: '1', campaignDetails: { campaignName: 'Q2 Product Launch' }, createdAt: '2023-06-15T10:00:00Z', analyticsData: { kpi: { totalViews: { value: 12500 }, uniqueVisitors: { value: 8300 }, conversions: { value: 450 }, ctr: { value: 3.6 } } } },
-        { id: '2', campaignDetails: { campaignName: 'Summer Sale 2023' }, createdAt: '2023-07-01T10:00:00Z', analyticsData: { kpi: { totalViews: { value: 25000 }, uniqueVisitors: { value: 19800 }, conversions: { value: 1200 }, ctr: { value: 4.8 } } } },
-        { id: '3', campaignDetails: { campaignName: 'Developer Outreach' }, createdAt: '2023-05-20T10:00:00Z', analyticsData: { kpi: { totalViews: { value: 9800 }, uniqueVisitors: { value: 6500 }, conversions: { value: 320 }, ctr: { value: 3.2 } } } },
-        { id: '4', campaignDetails: { campaignName: 'Holiday Special' }, createdAt: '2023-11-15T10:00:00Z', analyticsData: { kpi: { totalViews: { value: 35000 }, uniqueVisitors: { value: 28000 }, conversions: { value: 2100 }, ctr: { value: 6.0 } } } },
-    ];
-    return mockData;
-};
+import { Trophy, ArrowLeft, Scaling, Users, Target, MousePointerClick, CheckCircle2, Loader2 } from 'lucide-react';
+import getapiRequest from '../../../utils/getapiRequest';
 
 const kpiConfig = [
     { key: 'totalViews', name: 'Total Views', icon: Scaling, format: 'number' },
@@ -42,8 +35,48 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function CampaignComparePage() {
-    const [allCampaigns] = useState(() => getCampaigns().filter(c => c.analyticsData));
+    const [allCampaigns, setAllCampaigns] = useState([]);
     const [selectedCampaignIds, setSelectedCampaignIds] = useState([]);
+    const [comparisonData, setComparisonData] = useState([]);
+    const [loadingCampaigns, setLoadingCampaigns] = useState(true);
+    const [loadingComparison, setLoadingComparison] = useState(false);
+    const { token } = useSelector((state) => state.auth.userInfo);
+
+    useEffect(() => {
+        const fetchCampaigns = async () => {
+            if (!token) return;
+            setLoadingCampaigns(true);
+            try {
+                const response = await getapiRequest('get', '/campaigns', {}, token);
+                setAllCampaigns(response.data);
+            } catch (error) {
+                toast.error("Failed to fetch campaigns list.");
+            } finally {
+                setLoadingCampaigns(false);
+            }
+        };
+        fetchCampaigns();
+    }, [token]);
+    
+    useEffect(() => {
+        const fetchComparisonData = async () => {
+            if (selectedCampaignIds.length < 2 || !token) {
+                setComparisonData([]);
+                return;
+            }
+            setLoadingComparison(true);
+            try {
+                const idsQuery = selectedCampaignIds.join(',');
+                const response = await getapiRequest('get', '/campaigns/compare', { ids: idsQuery }, token);
+                setComparisonData(response.data);
+            } catch (error) {
+                toast.error("Failed to fetch comparison data.");
+            } finally {
+                setLoadingComparison(false);
+            }
+        };
+        fetchComparisonData();
+    }, [selectedCampaignIds, token]);
 
     const handleSelectCampaign = (id) => {
         setSelectedCampaignIds(prev => {
@@ -55,26 +88,28 @@ export default function CampaignComparePage() {
     };
 
     const selectedCampaigns = useMemo(() => {
-        return selectedCampaignIds.map(id => allCampaigns.find(c => c.id === id));
+        return selectedCampaignIds.map(id => allCampaigns.find(c => String(c.id) === String(id))).filter(Boolean);
     }, [allCampaigns, selectedCampaignIds]);
 
-    const comparisonData = useMemo(() => {
-        if (selectedCampaigns.length === 0) return [];
+    const chartData = useMemo(() => {
+        if (!comparisonData || comparisonData.length === 0 || selectedCampaigns.length === 0) return [];
         return kpiConfig.map(kpi => {
             const dataPoint = { name: kpi.name };
             selectedCampaigns.forEach((campaign) => {
-                dataPoint[campaign.campaignDetails.campaignName] = campaign.analyticsData.kpi[kpi.key]?.value || 0;
+                const campaignData = comparisonData.find(c => String(c.id) === String(campaign.id));
+                dataPoint[campaign.campaignName] = campaignData?.kpi?.[kpi.key]?.value || 0;
             });
             return dataPoint;
         });
-    }, [selectedCampaigns]);
+    }, [selectedCampaigns, comparisonData]);
 
     const findBestPerformer = (kpiKey) => {
-        if (selectedCampaigns.length < 2) return null;
+        if (selectedCampaigns.length < 2 || !comparisonData) return null;
         let bestCampaignId = null;
         let bestValue = -Infinity;
         selectedCampaigns.forEach(campaign => {
-            const value = campaign.analyticsData.kpi[kpiKey]?.value || 0;
+            const campaignData = comparisonData.find(c => String(c.id) === String(campaign.id));
+            const value = campaignData?.kpi?.[kpi.key]?.value || 0;
             if (value > bestValue) {
                 bestValue = value;
                 bestCampaignId = campaign.id;
@@ -102,7 +137,8 @@ export default function CampaignComparePage() {
                                 <h3 className="font-bold text-slate-800 text-xl">Select Campaigns</h3>
                                 <p className="text-sm text-slate-500 mt-1 mb-4">You have selected {selectedCampaignIds.length} of 4 campaigns.</p>
                                 <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                                    {allCampaigns.map((campaign) => {
+                                    {loadingCampaigns ? (<div className="flex justify-center items-center py-10"><Loader2 className="animate-spin text-emerald-500 w-8 h-8"/></div>) : 
+                                        allCampaigns.map((campaign) => {
                                         const isSelected = selectedCampaignIds.includes(campaign.id);
                                         const colorIndex = isSelected ? selectedCampaignIds.indexOf(campaign.id) : -1;
                                         return (
@@ -115,7 +151,7 @@ export default function CampaignComparePage() {
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center">
                                                         {isSelected && <div className="w-2.5 h-2.5 rounded-full mr-3 shrink-0" style={{ backgroundColor: campaignColors[colorIndex] }}></div>}
-                                                        <p className="font-semibold text-sm text-slate-800 truncate">{campaign.campaignDetails.campaignName}</p>
+                                                        <p className="font-semibold text-sm text-slate-800 truncate">{campaign.campaignName}</p>
                                                     </div>
                                                     <CheckCircle2 size={20} className={`text-emerald-600 shrink-0 ml-2 ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
                                                 </div>
@@ -125,13 +161,14 @@ export default function CampaignComparePage() {
                                             </button>
                                         );
                                     })}
-                                    {allCampaigns.length === 0 && <p className="text-sm text-slate-500 text-center py-4">No campaigns with analytics data found.</p>}
+                                    {!loadingCampaigns && allCampaigns.length === 0 && <p className="text-sm text-slate-500 text-center py-4">No campaigns with analytics data found.</p>}
                                 </div>
                             </div>
                         </aside>
 
                         <main className="lg:col-span-8 xl:col-span-9">
-                            {selectedCampaigns.length < 2 ? (
+                            {loadingComparison ? (<div className="flex justify-center items-center h-full min-h-[500px]"><Loader2 className="animate-spin text-emerald-500 w-12 h-12"/></div>) :
+                                selectedCampaigns.length < 2 ? (
                                 <div className="flex items-center justify-center bg-slate-100/50 border-2 border-dashed border-slate-300 rounded-2xl h-full min-h-[60vh] lg:min-h-[500px]">
                                     <div className="text-center p-4">
                                         <Trophy className="mx-auto text-slate-400 mb-4 w-10 h-10 sm:w-12 sm:h-12" />
@@ -145,7 +182,7 @@ export default function CampaignComparePage() {
                                         <h3 className="font-bold text-slate-800 mb-4 text-xl">Performance Chart</h3>
                                         <div className="h-[300px] sm:h-[350px]">
                                             <ResponsiveContainer width="100%" height="100%">
-                                                <BarChart data={comparisonData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                                                <BarChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
                                                     <defs>
                                                         {campaignColors.map((color, i) => (
                                                             <linearGradient key={i} id={`gradient-${i}`} x1="0" y1="0" x2="0" y2="1">
@@ -159,7 +196,7 @@ export default function CampaignComparePage() {
                                                     <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(148, 163, 184, 0.08)' }} />
                                                     <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "12px", paddingTop: "20px" }} />
                                                     {selectedCampaigns.map((campaign, index) => (
-                                                        <Bar key={campaign.id} dataKey={campaign.campaignDetails.campaignName} fill={campaignGradients[index]} barSize={25} radius={[6, 6, 0, 0]} />
+                                                        <Bar key={campaign.id} dataKey={campaign.campaignName} fill={campaignGradients[index]} barSize={25} radius={[6, 6, 0, 0]} />
                                                     ))}
                                                 </BarChart>
                                             </ResponsiveContainer>
@@ -175,28 +212,31 @@ export default function CampaignComparePage() {
                                                         <th className="text-left font-semibold text-slate-600 px-2 py-3 sm:p-4 whitespace-nowrap">Metric</th>
                                                         {selectedCampaigns.map((campaign, index) => (
                                                             <th key={campaign.id} className="text-center font-semibold px-2 py-3 sm:p-4" style={{ color: campaignColors[index] }}>
-                                                                <span className="truncate block">{campaign.campaignDetails.campaignName}</span>
+                                                                <span className="truncate block">{campaign.campaignName}</span>
                                                             </th>
                                                         ))}
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {kpiConfig.map((kpi, index) => {
+                                                    {kpiConfig.map((kpi) => {
                                                         const bestPerformerId = findBestPerformer(kpi.key);
                                                         return (
                                                             <tr key={kpi.key} className="border-b border-slate-100 last:border-b-0">
                                                                 <td className="px-2 py-3 sm:p-4 font-semibold text-slate-700 flex items-center whitespace-nowrap"><kpi.icon size={16} className="mr-3 text-slate-400 shrink-0" /> {kpi.name}</td>
-                                                                {selectedCampaigns.map(campaign => (
+                                                                {selectedCampaigns.map(campaign => {
+                                                                    const campaignData = comparisonData.find(c => String(c.id) === String(campaign.id));
+                                                                    const value = campaignData?.kpi?.[kpi.key]?.value || 0;
+                                                                    return (
                                                                     <td key={campaign.id} className="text-center px-2 py-3 sm:p-4 font-mono text-sm sm:text-base">
                                                                         <div className={`p-2 rounded-lg transition-colors ${bestPerformerId === campaign.id ? 'bg-emerald-100' : 'bg-transparent'}`}>
                                                                             <span className={`inline-flex items-center ${bestPerformerId === campaign.id ? 'font-bold text-emerald-800' : 'text-slate-800'}`}>
                                                                                 {bestPerformerId === campaign.id && <Trophy size={14} className="inline-block -mt-px mr-1.5 text-amber-500" />}
-                                                                                {(campaign.analyticsData.kpi[kpi.key]?.value || 0).toLocaleString()}
+                                                                                {value.toLocaleString()}
                                                                                 {kpi.format === 'percentage' ? '%' : ''}
                                                                             </span>
                                                                         </div>
                                                                     </td>
-                                                                ))}
+                                                                )})}
                                                             </tr>
                                                         )
                                                     })}
