@@ -20,7 +20,7 @@ const ErrorDisplay = ({ message }) => (
 
 const PricingHeader = ({ billingCycle, setBillingCycle }) => {
   return (
-    <header className="relative pt-20 pb-12 bg-slate-100 text-slate-900 overflow-hidden border-b border-slate-200/80">
+    <header className="relative pt-20 pb-12 text-slate-900 overflow-hidden">
       <div className="relative container mx-auto px-5 text-center z-10">
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-slate-900">
           Find the <span className="text-emerald-600">Perfect Plan</span> For You
@@ -28,7 +28,7 @@ const PricingHeader = ({ billingCycle, setBillingCycle }) => {
         <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
           Simple, transparent pricing for teams of all sizes. Start for free, and scale up as you grow. No hidden fees.
         </p>
-        <div className="mt-8 flex justify-center">
+        {/* <div className="mt-8 flex justify-center">
            <div className="inline-flex bg-slate-200 border border-slate-200/80 p-1 rounded-full shadow-sm">
               <button
                   onClick={() => setBillingCycle('monthly')}
@@ -48,14 +48,14 @@ const PricingHeader = ({ billingCycle, setBillingCycle }) => {
                   </span>
               </button>
           </div>
-        </div>
+        </div> */}
       </div>
     </header>
   );
 };
 
 const PlanFeature = ({ text, included = true }) => (
-  <li className={`flex items-start space-x-3 py-1.5 ${included ? 'text-slate-700' : 'text-slate-400 line-through'}`}>
+  <li className={`flex items-start space-x-3 py-1.5 ${included ? 'text-slate-700' : 'text-slate-400'}`}>
     {included ?
       <LucideIcons.CheckCircle2 size={18} className="text-emerald-500 flex-shrink-0 mt-0.5" /> :
       <LucideIcons.XCircle size={18} className="text-slate-400 flex-shrink-0 mt-0.5" />
@@ -64,11 +64,11 @@ const PlanFeature = ({ text, included = true }) => (
   </li>
 );
 
-const PricingTierCard = ({ plan, onChoosePlan, isPopular = false }) => (
+const PricingTierCard = ({ plan, billingCycle, onChoosePlan, isPopular = false }) => (
   <div className={`relative flex flex-col bg-white rounded-2xl border ${isPopular ? 'border-emerald-500 shadow-2xl shadow-emerald-900/10' : 'border-slate-200/80 shadow-lg'} p-8 transition-all duration-300 ease-in-out transform hover:shadow-2xl hover:-translate-y-2 ${isPopular ? 'lg:scale-105' : ''}`}>
     {isPopular && (
       <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2">
-        <span className="inline-block px-4 py-1 text-xs font-bold tracking-wider text-white uppercase bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full shadow-lg">
+        <span className="inline-block text-nowrap px-4 py-1 text-xs font-bold tracking-wider text-white uppercase bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full shadow-lg">
           Most Popular
         </span>
       </div>
@@ -79,7 +79,7 @@ const PricingTierCard = ({ plan, onChoosePlan, isPopular = false }) => (
     </div>
     <div className="my-6 text-center">
       <span className="text-5xl font-bold text-slate-900">${plan.price}</span>
-      <span className="text-base font-medium text-slate-500">/month</span>
+      <span className="text-base font-medium text-slate-500">/{billingCycle === 'monthly' ? 'month' : 'year'}</span>
     </div>
     <p className="text-xs text-slate-400 text-center mb-6">{plan.billingNote}</p>
     <ul className="space-y-2 flex-grow mb-8">
@@ -111,9 +111,9 @@ const PricingTiersSection = ({ plans, billingCycle, onChoosePlan }) => {
                     <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Choose Your Plan</h2>
                     <p className="mt-3 text-base text-slate-500 max-w-lg mx-auto">Select the perfect plan to fit your needs, with the flexibility to upgrade anytime.</p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 xl:gap-12 items-stretch">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 xl:gap-8 items-stretch">
                 {plans[billingCycle].map((plan) => (
-                    <PricingTierCard key={plan.id} plan={plan} onChoosePlan={onChoosePlan} isPopular={plan.isPopular} />
+                    <PricingTierCard key={plan.id} plan={plan} billingCycle={billingCycle} onChoosePlan={onChoosePlan} isPopular={plan.isPopular} />
                 ))}
                 </div>
                 <div className="mt-16 text-center">
@@ -177,7 +177,7 @@ const FeatureComparisonSection = ({ plans }) => {
                                     <td className="whitespace-nowrap py-4 pl-8 pr-3 text-sm font-medium text-slate-700 group-hover:text-slate-900">{featureText}</td>
                                     {plans.monthly.map(plan => {
                                         const planFeature = plan.features.find(f => f.text === featureText);
-                                        const tickType = planFeature?.included === true ? 'included' : (planFeature?.included === false ? 'excluded' : 'limited');
+                                        const tickType = planFeature?.included === true ? 'included' : 'excluded';
                                         return (
                                             <td key={`${plan.id}-${featureText}`} className="px-3 py-4 text-center">
                                                 <div className="flex justify-center"><ComparisonTick type={tickType} /></div>
@@ -194,11 +194,50 @@ const FeatureComparisonSection = ({ plans }) => {
     );
 };
 
+
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [plans, setPlans] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const planDetails = {
+    "Free": { description: "Perfect for individuals and small projects getting started.", isPopular: false },
+    "Basic": { description: "Ideal for small teams and growing businesses.", isPopular: false },
+    "Pro": { description: "For established businesses that need advanced features.", isPopular: true },
+    "Enterprise": { description: "Custom solutions for large-scale organizations.", isPopular: false },
+  };
+
+  const allFeatures = [
+    { text: "Email Support", includedIn: ["Free", "Basic", "Pro", "Enterprise"] },
+    { text: "Campaign Analytics", includedIn: ["Basic", "Pro", "Enterprise"] },
+    { text: "A/B Testing", includedIn: ["Basic", "Pro", "Enterprise"] },
+    { text: "Marketing Automation", includedIn: ["Pro", "Enterprise"] },
+    { text: "Priority Support", includedIn: ["Pro", "Enterprise"] },
+    { text: "Dedicated Account Manager", includedIn: ["Enterprise"] },
+  ];
+
+  const transformApiData = (apiPlans) => {
+    const monthly = apiPlans.map(plan => ({
+      ...plan,
+      description: planDetails[plan.name]?.description || "",
+      isPopular: planDetails[plan.name]?.isPopular || false,
+      billingNote: "Billed monthly. Cancel anytime.",
+      features: [
+        { text: `${plan.maxContacts.toLocaleString()} Contacts`, included: true },
+        { text: `${plan.maxCampaigns} Campaigns/month`, included: true },
+        ...allFeatures.map(f => ({ text: f.text, included: f.includedIn.includes(plan.name) }))
+      ]
+    }));
+
+    const annually = monthly.map(plan => ({
+      ...plan,
+      price: plan.price > 0 ? Math.round((plan.price * 12 * 0.8)) : 0,
+      billingNote: "Billed annually. Save 20%!",
+    }));
+
+    return { monthly, annually };
+  };
 
   useEffect(() => {
     const fetchPricingData = async () => {
@@ -206,7 +245,8 @@ export default function PricingPage() {
       setError(null);
       try {
         const response = await getapiRequest("get", "/pricing");
-        setPlans(response.data);
+        const transformedPlans = transformApiData(response.data);
+        setPlans(transformedPlans);
       } catch (err) {
         const errorMessage = err?.response?.data?.message || "Could not load pricing plans. Please try refreshing the page.";
         setError(errorMessage);
@@ -220,7 +260,7 @@ export default function PricingPage() {
   }, []);
 
   const handleChoosePlan = (planId) => {
-    console.log(`User chose plan: ${planId}. Redirecting to checkout...`);
+    console.log(`User chose plan: ${planId} with ${billingCycle} billing. Redirecting to checkout...`);
     alert(`Redirecting to checkout for plan: ${planId}`);
   };
 

@@ -135,7 +135,7 @@ const StylishAreaChart = ({ data, title, subtitle, dataKey = "value", areaColor 
 const StylishPieChart = ({ data, title, subtitle, dataKey = "value", nameKey = "name" }) => {
     const COLORS = ['#10b981', '#0ea5e9', '#8b5cf6', '#f59e0b', '#ef4444', '#6366f1'];
     const RADIAN = Math.PI / 180;
-    const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, payload }) => {
+    const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
         const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
         const x = cx + radius * Math.cos(-midAngle * RADIAN);
         const y = cy + radius * Math.sin(-midAngle * RADIAN);
@@ -200,89 +200,17 @@ const QuickActionButton = ({ to, icon, label, description, color = 'emerald' }) 
     );
 };
 
-const ActivityItem = ({ icon, text, time, userInitials, userColor }) => {
-    const IconComponent = icon || LucideIcons.Info;
-    const initialsColors = {
-        emerald: 'bg-emerald-500', sky: 'bg-sky-500', violet: 'bg-violet-500', rose: 'bg-rose-500', amber: 'bg-amber-500'
-    };
-    const selectedUserColor = initialsColors[userColor] || initialsColors.emerald;
-
-    return (
-        <li className="flex items-start py-4 px-2 group transition-colors hover:bg-slate-50/70 rounded-lg -mx-2">
-             <div className={`w-8 h-8 rounded-full ${selectedUserColor} text-white text-xs font-semibold flex items-center justify-center mr-3.5 shrink-0 ring-2 ring-white shadow-sm`}>
-                {userInitials || <IconComponent size={16} />}
-            </div>
-            <div className="flex-1">
-                <p className="text-sm text-slate-700 group-hover:text-slate-800 leading-snug">{text}</p>
-                <p className="text-xs text-slate-400 group-hover:text-slate-500 mt-1">{time}</p>
-            </div>
-        </li>
-    );
-};
-
-const PriorityPill = ({ priority }) => {
-    const priorityStyles = {
-        High: 'bg-rose-100 text-rose-800',
-        Medium: 'bg-amber-100 text-amber-800',
-        Low: 'bg-sky-100 text-sky-800',
-    };
-    return <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${priorityStyles[priority]}`}>{priority}</span>;
-};
-
-const AssigneeAvatar = ({ assignee }) => {
-    const initials = assignee.split(' ').map(n => n[0]).join('');
-    const colors = ['bg-emerald-500', 'bg-sky-500', 'bg-violet-500', 'bg-rose-500'];
-    const color = colors[assignee.charCodeAt(0) % colors.length];
-    return <div className={`w-6 h-6 rounded-full ${color} text-white text-xs font-semibold flex items-center justify-center ring-2 ring-white`}>{initials}</div>;
-};
-
-const TaskItem = ({ task }) => {
-    const [isCompleted, setIsCompleted] = useState(false);
-
-    return (
-        <li className="flex items-center py-3 px-2 border-b border-slate-100 last:border-b-0 hover:bg-slate-50/70 -mx-2 rounded-lg transition-colors">
-            <button onClick={() => setIsCompleted(!isCompleted)} className="mr-3 shrink-0">
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${isCompleted ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 group-hover:border-emerald-400'}`}>
-                    {isCompleted && <LucideIcons.Check size={14} className="text-white" />}
-                </div>
-            </button>
-            <div className="flex-grow">
-                <p className={`text-sm font-medium transition-colors ${isCompleted ? 'text-slate-400 line-through' : 'text-slate-800'}`}>{task.title}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{task.dueDate}</p>
-            </div>
-            <div className="flex items-center gap-x-3 ml-4 shrink-0">
-                <PriorityPill priority={task.priority} />
-                <AssigneeAvatar assignee={task.assignee} />
-            </div>
-        </li>
-    );
-};
-
-const UpcomingTasks = ({ tasks }) => {
-    return (
-        <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200/80 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-slate-800">Upcoming Tasks</h3>
-                <a href="#" className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
-                    View All <LucideIcons.ArrowRight size={14} />
-                </a>
-            </div>
-            <ul>
-                {tasks.map(task => <TaskItem key={task.id} task={task} />)}
-            </ul>
-        </div>
-    );
-};
-
 export default function Dashboard() {
     const [dashboardData, setDashboardData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const token = useSelector((state) => state.auth.userToken);
+    const username = useSelector((state) => state.auth.userInfo.profile.name);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             if (!token) {
+                setIsLoading(false);
                 return;
             }
             setIsLoading(true);
@@ -290,7 +218,6 @@ export default function Dashboard() {
             try {
                 const response = await getapiRequest("get", "/dashboard", null, token);
                 setDashboardData(response.data);
-                console.log("Dashboard data fetched:", response.data);
             } catch (err) {
                 const errorMessage = err?.response?.data?.message || "Could not load dashboard data.";
                 setError(errorMessage);
@@ -303,8 +230,6 @@ export default function Dashboard() {
         fetchDashboardData();
     }, [token]);
 
-    const mockUser = { name: "Jane Doe" };
-
     const getGreeting = () => {
         const hour = new Date().getHours();
         if (hour < 5) return "Working Late";
@@ -313,13 +238,36 @@ export default function Dashboard() {
         return "Good Evening";
     };
 
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-slate-50">
+                <div className="text-center">
+                    <LucideIcons.Loader2 className="animate-spin text-emerald-500 h-12 w-12 mx-auto" />
+                    <p className="mt-4 text-slate-600">Loading your dashboard...</p>
+                </div>
+            </div>
+        );
+    }
+    
+    if (error || !dashboardData) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-slate-50">
+                <div className="text-center p-8 bg-white rounded-lg shadow-lg border border-rose-200">
+                    <LucideIcons.AlertTriangle className="text-rose-500 h-12 w-12 mx-auto" />
+                    <h2 className="mt-4 text-xl font-bold text-slate-800">Oops! Something went wrong.</h2>
+                    <p className="mt-2 text-slate-600">{error || "Could not retrieve dashboard data."}</p>
+                </div>
+            </div>
+        );
+    }
+    
     const dashboardStats = [
-        { title: "Active Campaigns", value: "7", icon: LucideIcons.Rocket, color: 'emerald', description: "Engaging your audience.", trend: { change: 3.1 } },
-        { title: "Total Contacts", value: "2,450", icon: LucideIcons.Users2, color: 'sky', description: "Across all lists.", trend: { change: 12.5 } },
-        { title: "Conversion Rate", value: "4.8%", icon: LucideIcons.Target, color: 'violet', description: "From recent campaigns.", trend: { change: -1.2 } },
-        { title: "Pending Approvals", value: "2", icon: LucideIcons.ClipboardCheck, color: 'rose', description: "Awaiting your review.", trend: { change: 0 } },
+        { title: "Active Campaigns", value: dashboardData.overview.activeCampaigns, icon: LucideIcons.Rocket, color: 'emerald'},
+        { title: "Total Contacts", value: dashboardData.overview.totalContacts.toLocaleString(), icon: LucideIcons.Users2, color: 'sky' },
+        { title: "Conversion Rate", value: `${dashboardData.overview.conversionRate}%`, icon: LucideIcons.Target, color: 'violet' },
+        { title: "Total Campaigns", value: dashboardData.overview.totalCampaigns, icon: LucideIcons.ClipboardCheck, color: 'rose' },
     ];
-
+    
     const campaignEngagementData = [
         { label: "Jan '24", value: 65 }, { label: "Feb '24", value: 59 },
         { label: "Mar '24", value: 80 }, { label: "Apr '24", value: 81 },
@@ -345,27 +293,13 @@ export default function Dashboard() {
         { to: "/settings/general", icon: LucideIcons.SlidersHorizontal, label: "System Settings", description: "Configure application preferences.", color: "violet" },
     ];
 
-    const recentActivities = [
-        { icon: LucideIcons.MailCheck, text: "Campaign 'Product Hunt Launch' sent to 850 contacts.", time: "15 minutes ago", userInitials: "JD" , userColor: 'emerald'},
-        { icon: LucideIcons.UserPlus, text: "New list 'Beta Signups Q3' imported with 78 contacts.", time: "2 hours ago", userInitials: "MK", userColor: 'sky' },
-        { icon: LucideIcons.FileEdit, text: "Landing page 'SaaS Offer' was updated by Michael.", time: "Yesterday, 4:30 PM", userInitials: "MK", userColor: 'sky' },
-        { icon: LucideIcons.AlertCircle, text: "Automation 'Welcome Series' was paused due to an error.", time: "2 days ago", userInitials: "Sys", userColor: 'rose' },
-    ];
-    
-    const upcomingTasks = [
-        { id: 1, title: 'Review Q3 Marketing Budget', dueDate: 'Due in 2 days', priority: 'High', assignee: 'Jane Doe' },
-        { id: 2, title: 'Approve new landing page design', dueDate: 'Due tomorrow', priority: 'High', assignee: 'Michael Kors' },
-        { id: 3, title: 'Finalize developer blog post', dueDate: 'Due July 25th', priority: 'Medium', assignee: 'Alex Johnson' },
-        { id: 4, title: 'Plan August social media calendar', dueDate: 'Due July 28th', priority: 'Low', assignee: 'Jane Doe' },
-    ];
-
     return (
         <div className="p-4 md:p-6 lg:p-8 bg-slate-50 min-h-screen">
             <div className="max-w-screen-2xl mx-auto">
                 <header className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center">
                     <div>
                         <h1 className="text-3xl lg:text-4xl font-bold text-slate-800">
-                            {getGreeting()}, <span className="text-emerald-600">{mockUser.name}</span>!
+                            {getGreeting()}, <span className="text-emerald-600">{username}</span>!
                         </h1>
                         <p className="text-slate-600 mt-1.5 text-base">
                             Here's what's happening today. Let's make it a great one! 🚀
@@ -393,10 +327,9 @@ export default function Dashboard() {
                 </section>
                 
                 <section className="grid grid-cols-1 xl:grid-cols-5 gap-8 mb-8">
-                     <div className="xl:col-span-3">
-                         <UpcomingTasks tasks={upcomingTasks} />
+                    <div className="xl:col-span-3">
+                        <StylishAreaChart title="Revenue Growth (USD)" subtitle="Growth and progression insights." data={monthlyRevenueData} areaColor="violet" />
                     </div>
-
                     <div className="xl:col-span-2 flex flex-col gap-y-8">
                          <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200/80 flex-1 hover:shadow-xl transition-shadow duration-300">
                             <h3 className="text-lg font-semibold text-slate-800 mb-5">Quick Actions</h3>
@@ -406,20 +339,34 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </section>
-                
-                <section className="grid grid-cols-1 xl:grid-cols-5 gap-8">
-                    <div className="xl:col-span-3">
-                        <StylishAreaChart title="Revenue Growth (USD)" subtitle="Growth and progression insights." data={monthlyRevenueData} areaColor="violet" />
-                    </div>
-                     <div className="xl:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-slate-200/80 hover:shadow-xl transition-shadow duration-300">
-                        <h3 className="text-lg font-semibold text-slate-800 mb-2">Recent Activity</h3>
-                        <ul className="divide-y divide-slate-100">
-                            {recentActivities.length > 0 ? recentActivities.slice(0, 4).map((activity, index) => (
-                                <ActivityItem key={index} {...activity} />
-                            )) : (
-                                <p className="text-sm text-slate-500 py-6 text-center">No recent activity.</p>
-                            )}
-                        </ul>
+
+                <section className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200/80 hover:shadow-xl transition-shadow duration-300">
+                    <h3 className="text-lg font-semibold text-slate-800 mb-2">Recent Campaigns</h3>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left text-slate-500">
+                            <thead className="text-xs text-slate-700 uppercase bg-slate-50">
+                                <tr>
+                                    <th scope="col" className="px-6 py-3">Campaign Name</th>
+                                    <th scope="col" className="px-6 py-3">Views</th>
+                                    <th scope="col" className="px-6 py-3">Conversions</th>
+                                    <th scope="col" className="px-6 py-3">Start Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {dashboardData.recentCampaigns.length > 0 ? dashboardData.recentCampaigns.map((campaign) => (
+                                    <tr key={campaign.id} className="bg-white border-b hover:bg-slate-50">
+                                        <th scope="row" className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{campaign.name}</th>
+                                        <td className="px-6 py-4">{campaign.views}</td>
+                                        <td className="px-6 py-4">{campaign.conversions}</td>
+                                        <td className="px-6 py-4">{new Date(campaign.startTime).toLocaleDateString()}</td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan="4" className="text-center py-6">No recent campaigns to display.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </section>
             </div>

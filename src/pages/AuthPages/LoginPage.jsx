@@ -20,24 +20,27 @@ function LoginPage() {
   const canResetPassword = true;
 
   const handleAuthSuccess = async (loginResponseData) => {
-    if (!loginResponseData?.token) {
-      throw new Error("Login failed: No token received.");
+    if (!loginResponseData?.token || !loginResponseData?.userId) {
+      toast.error("Login failed: Invalid response from server.");
+      throw new Error("Login failed: No token or userId received.");
     }
-    const { token } = loginResponseData;
+    const { token, userId } = loginResponseData;
 
-    // As requested, the profile API call remains commented out.
-    // This assumes the login response itself contains all necessary user data.
-    // const profileResponse = await apiRequest("get", "/user/profile", null, token);
-    // const userData = profileResponse.data;
+    try {
+      // THE FIX: Pass the userId as a query parameter in the URL
+      const profileResponse = await apiRequest("get", `/user/profile/${userId}`, null, token);
+      const userProfileData = profileResponse.data;
 
-    // Dispatch `setUserInfo` using the data directly from the login response.
-    dispatch(setUserInfo({ token, data: loginResponseData }));
+      dispatch(setUserInfo({ token, data: userProfileData }));
 
-    toast.success("Login successful! Redirecting...");
-    navigate("/dashboard");
+      toast.success("Login successful! Redirecting...");
+      navigate("/dashboard");
+    } catch (profileError) {
+      console.error("Failed to fetch user profile:", profileError);
+      toast.error(profileError?.response?.data?.message || "Could not fetch user profile after login.");
+    }
   };
 
-  // --- Google Login (Unchanged) ---
   const handleGoogleAuth = async (googleProfile) => {
     setIsGoogleLoading(true);
     try {
@@ -70,8 +73,6 @@ function LoginPage() {
       setIsGoogleLoading(false);
     },
   });
-  // --- End of Google Login ---
-
 
   const formik = useFormik({
     initialValues: { email: "", password: "" },
@@ -79,12 +80,9 @@ function LoginPage() {
       email: Yup.string().email("Invalid email address").required("Email is required"),
       password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
     }),
-    
-    // The form now submits to the live API endpoint.
     onSubmit: async (values, { setSubmitting }) => {
       try {
         const response = await apiRequest("post", "/auth/login", values);
-        // The success handler will use the response data directly.
         await handleAuthSuccess(response.data);
       } catch (error) {
         toast.error(error?.response?.data?.message || "Login failed. Please check your credentials.");
@@ -193,42 +191,7 @@ function LoginPage() {
           </button>
         </div>
       </form>
-      
-      {/* 
-        This section is commented out in your original code, so I've left it that way.
-        If you want to re-enable Google Login, just uncomment this block.
-      */}
-      {/* <div className="my-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-2 text-gray-500">OR</span>
-          </div>
-        </div>
-      </div>
 
-      <div>
-        <button
-          type="button"
-          onClick={() => handleGoogleLogin()}
-          disabled={isGoogleLoading}
-          className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {isGoogleLoading ? (
-            <LoaderCircle className="h-5 w-5 animate-spin" />
-          ) : (
-            <>
-              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                <path fillRule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zM5.122 6.122a.75.75 0 011.06 0L10 9.939l3.818-3.817a.75.75 0 111.06 1.06L11.061 11l3.817 3.818a.75.75 0 11-1.06 1.06L10 12.061l-3.818 3.817a.75.75 0 01-1.06-1.06L8.939 11 5.122 7.182a.75.75 0 010-1.06z" clipRule="evenodd" />
-              </svg>
-              <span>Continue with Google</span>
-            </>
-          )}
-        </button>
-      </div> */}
-      
       <div className="mt-6 text-center text-sm text-gray-600">
         Don't have an account?{' '}
         <Link
