@@ -56,7 +56,7 @@ export default function CampaignListPage() {
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [campaignToDelete, setCampaignToDelete] = useState(null);
     const navigate = useNavigate();
-    const { token } = useSelector((state) => state.auth.userInfo);
+    const token = useSelector((state) => state.auth.userToken);
 
     const loadCampaigns = useCallback(async () => {
         setLoading(true);

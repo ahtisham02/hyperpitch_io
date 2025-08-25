@@ -91,7 +91,7 @@ export default function CampaignAnalyticsPage() {
     const [timeframe, setTimeframe] = useState('14d');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 7;
-    const { token } = useSelector((state) => state.auth.userInfo);
+    const token = useSelector((state) => state.auth.userToken);
 
     const fetchCampaignData = useCallback(async () => {
         if (!campaignId || !token) return;

@@ -244,7 +244,7 @@ export default function PricingPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await getapiRequest("get", "/pricing");
+        const response = await getapiRequest("get", "/api/public/pricing");
         const transformedPlans = transformApiData(response.data);
         setPlans(transformedPlans);
       } catch (err) {

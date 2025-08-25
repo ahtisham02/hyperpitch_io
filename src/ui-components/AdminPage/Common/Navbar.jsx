@@ -15,7 +15,7 @@ export default function AppSidebarHeader() {
     const navigate = useNavigate();
     
     const userInfo = useSelector((state) => state.auth.userInfo);
-    const user = userInfo?.profile;
+    const user = userInfo;
 
     const { credits, CAMPAIGN_COST, TOTAL_CREDITS } = useCredits();
     const prevCreditsRef = useRef(credits);

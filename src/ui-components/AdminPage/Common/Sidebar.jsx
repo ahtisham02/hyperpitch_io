@@ -11,7 +11,7 @@ const CampaignSelectorModal = ({ isOpen, onClose }) => {
     const [campaigns, setCampaigns] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
-    const { token } = useSelector((state) => state.auth.userInfo);
+    const token = useSelector((state) => state.auth.userToken);
 
     const fetchCampaigns = useCallback(async () => {
         if (!token) return;

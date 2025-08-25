@@ -45,10 +45,14 @@ export const authSlice = createSlice({
         state.userInfo.profile = action.payload;
       }
     },
+    updateUserData: (state, action) => {
+      // Update the entire userInfo with new data
+      state.userInfo = { ...state.userInfo, ...action.payload };
+    },
   },
 });
 
-export const { setUserInfo, removeUserInfo, updateUserProfile } =
+export const { setUserInfo, removeUserInfo, updateUserProfile, updateUserData } =
   authSlice.actions;
 
 export default authSlice.reducer;

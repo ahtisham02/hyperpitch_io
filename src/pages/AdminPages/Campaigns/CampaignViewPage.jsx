@@ -44,7 +44,7 @@ export default function CampaignViewPage() {
     const [campaign, setCampaign] = useState(null);
     const [loading, setLoading] = useState(true);
     const [previewDevice, setPreviewDevice] = useState('desktop');
-    const { token } = useSelector((state) => state.auth.userInfo);
+    const token = useSelector((state) => state.auth.userToken);
     
     useEffect(() => {
         const fetchCampaign = async () => {

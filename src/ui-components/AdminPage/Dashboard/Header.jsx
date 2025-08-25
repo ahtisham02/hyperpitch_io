@@ -205,7 +205,7 @@ export default function Dashboard() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const token = useSelector((state) => state.auth.userToken);
-    const username = useSelector((state) => state.auth.userInfo.profile.name);
+    const username = useSelector((state) => state.auth.userInfo.name);    
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -216,7 +216,7 @@ export default function Dashboard() {
             setIsLoading(true);
             setError(null);
             try {
-                const response = await getapiRequest("get", "/dashboard", null, token);
+                const response = await getapiRequest("get", "/api/dashboard", null, token);
                 setDashboardData(response.data);
             } catch (err) {
                 const errorMessage = err?.response?.data?.message || "Could not load dashboard data.";

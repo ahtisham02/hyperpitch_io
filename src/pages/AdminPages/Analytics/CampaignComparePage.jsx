@@ -40,7 +40,7 @@ export default function CampaignComparePage() {
     const [comparisonData, setComparisonData] = useState([]);
     const [loadingCampaigns, setLoadingCampaigns] = useState(true);
     const [loadingComparison, setLoadingComparison] = useState(false);
-    const { token } = useSelector((state) => state.auth.userInfo);
+    const token = useSelector((state) => state.auth.userToken);
 
     useEffect(() => {
         const fetchCampaigns = async () => {

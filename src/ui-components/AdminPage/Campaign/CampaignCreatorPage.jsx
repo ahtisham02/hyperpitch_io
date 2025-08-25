@@ -113,7 +113,7 @@ export default function CampaignCreatorPage() {
     const { campaignId } = useParams();
     const navigate = useNavigate();
     const { credits, deductCredits, CAMPAIGN_COST } = useCredits();
-    const { token } = useSelector((state) => state.auth.userInfo);
+    const token = useSelector((state) => state.auth.userToken);
 
     const [isEditing, setIsEditing] = useState(!!campaignId);
     const [isLoading, setIsLoading] = useState(!!campaignId);
