@@ -25,6 +25,7 @@ import Settings from "../pages/AdminPages/Settings/GeneralSettingsPage";
 import Pricing from "../pages/AdminPages/PricingPage/PricingPage";
 import ContactsManager from "../pages/AdminPages/Contacts/ContactsManager";
 import CampaignCreatorPage from '../ui-components/AdminPage/Campaign/CampaignCreatorPage';
+import TemplateEditorPage from '../ui-components/AdminPage/Campaign/TemplateEditorPage';
 import CampaignsListPage from '../pages/AdminPages/Campaigns/CampaignsListPage';
 import CampaignViewPage from "../pages/AdminPages/Campaigns/CampaignViewPage";
 import CampaignComparePage from "../pages/AdminPages/Analytics/CampaignComparePage";
@@ -72,6 +73,7 @@ const MainRoutes = () => {
           <Route path="/campaigns" element={<CampaignsListPage />} />
           <Route path="/campaigns/create" element={<CampaignCreatorPage />} />
           <Route path="/campaigns/edit/:campaignId" element={<CampaignCreatorPage />} />
+          <Route path="/campaigns/template-editor" element={<TemplateEditorPage />} />
           <Route path="/campaigns/view/:campaignId" element={<CampaignViewPage />} />
           <Route path="/domains" element={<DomainManagerPage />} />
           <Route path="/settings/profile" element={<Profile />} />

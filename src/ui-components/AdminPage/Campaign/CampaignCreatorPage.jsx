@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useLayoutEffect } from "react";
 import * as XLSX from "xlsx";
 import * as LucideIcons from "lucide-react";
-import { UserCheck, UsersRound as AudienceIcon } from "lucide-react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { UserCheck, UsersRound as AudienceIcon, FileText } from "lucide-react";
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useSelector } from 'react-redux';
 import axios from 'axios';
@@ -10,6 +10,7 @@ import { getContactLists } from "../../../utils/localStorageHelper";
 import getapiRequest from "../../../utils/getapiRequest";
 import { useCredits } from "../../../utils/creditHelper";
 import ElementBuilderPage, { PagePreviewRenderer } from "./Header";
+import { mockTemplates } from "../../../utils/mockTemplates";
 
 const mockGenerateId = (prefix = "tpl-id") => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`;
 const TopStepperNav = ({ currentStep, steps, setCurrentStep, canProceed }) => (
@@ -88,16 +89,13 @@ const PublishSuccessModal = ({ isOpen, onAddDomain, onClose }) => {
                         <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
                     </svg>
                 </div>
-                <h3 className="text-2xl font-bold text-slate-800 mb-2">Nicely done!</h3>
-                <p className="text-slate-500 mb-8">Your campaign has been successfully published.</p>
+                <h3 className="text-2xl font-bold text-slate-800 mb-2">Template Saved!</h3>
+                <p className="text-slate-500 mb-8">Your template has been successfully saved and loaded.</p>
                 <div className="border-t border-slate-200 pt-6">
-                    <h4 className="font-semibold text-slate-700 mb-1">What's next?</h4>
-                    <p className="text-lg font-bold text-slate-800 mb-1">Add a custom domain</p>
-                    <p className="text-sm text-slate-500 mb-5 max-w-sm mx-auto">Build your brand recognition and help your audience find you by adding a custom domain to your website.</p>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:justify-center sm:gap-3">
-                        <StyledButton onClick={onAddDomain} variant="primary">Add domain</StyledButton>
-                        <StyledButton onClick={onClose} variant="secondary">Remind me tomorrow</StyledButton>
-                        <StyledButton onClick={onClose} variant="secondary">Don't show again</StyledButton>
+                    <h4 className="font-semibold text-slate-700 mb-1">Ready to continue?</h4>
+                    <p className="text-sm text-slate-500 mb-5 max-w-sm mx-auto">You can now review your campaign and proceed to the next step.</p>
+                    <div className="flex justify-center">
+                        <StyledButton onClick={onClose} variant="primary">Continue to Review</StyledButton>
                     </div>
                 </div>
             </div>
@@ -106,12 +104,13 @@ const PublishSuccessModal = ({ isOpen, onAddDomain, onClose }) => {
     );
 };
 const initialCampaignDetails = { campaignName: "", startTime: "", endTime: "" };
-const initialDataSource = { type: "file", file: null, fileName: "", contactListId: null, selectedContactIds: [] };
-const initialTemplateConfig = { type: "create", selectedTemplateId: null, templateData: null, editingTemplate: null };
+    const initialDataSource = { type: null, file: null, fileName: "", contactListId: null, selectedContactIds: [] };
+const initialTemplateConfig = { type: null, selectedTemplateId: null, templateData: null, editingTemplate: null };
 
 export default function CampaignCreatorPage() {
     const { campaignId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const { credits, deductCredits, CAMPAIGN_COST } = useCredits();
     const token = useSelector((state) => state.auth.userToken);
 
@@ -127,16 +126,203 @@ export default function CampaignCreatorPage() {
     const [templateConfig, setTemplateConfig] = useState(initialTemplateConfig);
     const [showPublishModal, setShowPublishModal] = useState(false);
     const [fileError, setFileError] = useState("");
+    const [showContactDropdown, setShowContactDropdown] = useState(false);
+    const [showTemplateEditor, setShowTemplateEditor] = useState(false);
+
+    // Save campaign data to localStorage whenever it changes
+    useEffect(() => {
+        // Only save if we have meaningful data
+        if (campaignDetails.campaignName || dataSource.type || templateConfig.type) {
+            const campaignData = {
+                campaignDetails,
+                dataSource,
+                templateConfig,
+                currentStep
+            };
+            localStorage.setItem('campaign_creator_data', JSON.stringify(campaignData));
+
+        }
+    }, [campaignDetails, dataSource, templateConfig, currentStep]);
+
+    // Save template data separately for better persistence
+    useEffect(() => {
+        if (templateConfig.templateData && templateConfig.templateData.pages) {
+            localStorage.setItem('campaign_template_data', JSON.stringify(templateConfig.templateData));
+
+        }
+    }, [templateConfig.templateData]);
+
+    // Load campaign data from localStorage on mount
+    useEffect(() => {
+        const savedData = localStorage.getItem('campaign_creator_data');
+        if (savedData && !campaignId) { // Only load if not editing existing campaign
+            try {
+                const parsedData = JSON.parse(savedData);
+
+                
+                // Only restore data if it's not empty/null
+                if (parsedData.campaignDetails && Object.keys(parsedData.campaignDetails).length > 0) {
+                    setCampaignDetails(parsedData.campaignDetails);
+                }
+                if (parsedData.dataSource && Object.keys(parsedData.dataSource).length > 0) {
+                    setDataSource(parsedData.dataSource);
+                }
+                if (parsedData.templateConfig && Object.keys(parsedData.templateConfig).length > 0) {
+                    setTemplateConfig(parsedData.templateConfig);
+                }
+                if (parsedData.currentStep && parsedData.currentStep >= 1 && parsedData.currentStep <= 4) {
+                    setCurrentStep(parsedData.currentStep);
+                }
+            } catch (error) {
+                console.error('Error loading saved campaign data:', error);
+            }
+        }
+    }, [campaignId]);
+
+    // Auto-sync template data from location.state when component mounts
+    useEffect(() => {
+        if (location.state?.fromEditor && location.state?.templateData && !templateConfig.templateData) {
+
+            const newTemplateConfig = {
+                type: "create",
+                templateData: location.state.templateData,
+                editingTemplate: location.state.templateData
+            };
+            setTemplateConfig(newTemplateConfig);
+        }
+    }, [location.state, templateConfig.templateData]);
+
+    // Load template data from localStorage if available
+    useEffect(() => {
+        const savedTemplateData = localStorage.getItem('campaign_template_data');
+        if (savedTemplateData && !templateConfig.templateData) {
+            try {
+                const parsedTemplateData = JSON.parse(savedTemplateData);
+
+                
+                // Only load if it has valid structure
+                if (parsedTemplateData.pages && parsedTemplateData.activePageId) {
+                    setTemplateConfig(prev => ({
+                        ...prev,
+                        type: "create",
+                        templateData: parsedTemplateData,
+                        editingTemplate: parsedTemplateData
+                    }));
+                }
+            } catch (error) {
+                console.error('Error loading template data from localStorage:', error);
+            }
+        }
+    }, [templateConfig.templateData]);
 
     const getEmptyBuilderState = () => {
         const pageId = mockGenerateId("page");
-        return { pages: { [pageId]: { id: pageId, name: "Main Page", layout: [] } }, activePageId: pageId };
+        return { 
+            pages: { 
+                [pageId]: { 
+                    id: pageId, 
+                    name: "Untitled", 
+                    layout: []
+                }
+            }, 
+            activePageId: pageId,
+            globalNavbar: null,
+            globalFooter: null,
+            pageTitle: "Untitled"
+        };
     };
 
-    const mockTemplates = useMemo(() => {
-        return [{ id: "tpl_corporate_sleek", name: "Sleek Corporate Testimonial", builderData: {} }, { id: "tpl_creative_vibrant", name: "Vibrant Creative Showcase", builderData: {} }, { id: "tpl_product_launch", name: "Modern Product Launch", builderData: {} }, { id: "tpl_webinar_invite", name: "Professional Webinar Invite", builderData: {} }];
-    }, []);
+    const templates = useMemo(() => mockTemplates(), []);
     
+         // Handle return from template editor
+     useEffect(() => {
+         if (location.state?.fromEditor && location.state?.templateData) {
+             
+             
+             // Set template config first
+             const newTemplateConfig = {
+                 type: "create",
+                 templateData: location.state.templateData,
+                 editingTemplate: location.state.templateData
+             };
+     
+             setTemplateConfig(newTemplateConfig);
+             
+             // Force a re-render to ensure state is updated
+             setTimeout(() => {
+         
+                 setTemplateConfig(prev => ({
+                     ...prev,
+                     type: "create",
+                     templateData: location.state.templateData,
+                     editingTemplate: location.state.templateData
+                 }));
+             }, 100);
+             
+             // Then set step and update URL
+             setCurrentStep(3);
+             
+             // URL will be updated automatically by the useEffect above
+     
+             
+             toast.success("Template loaded successfully! Review your template.");
+         }
+     }, [location.state]);
+
+    // Use useLayoutEffect to ensure step is set immediately when returning from editor
+    useLayoutEffect(() => {
+        if (location.state?.fromEditor && location.state?.templateData) {
+    
+            setCurrentStep(3);
+        }
+    }, [location.state]);
+
+    // Simple URL handling - only update URL when step changes, don't read from it
+    useEffect(() => {
+        // Skip if we're returning from template editor
+        if (location.state?.fromEditor) return;
+        
+        const url = new URL(window.location);
+        url.searchParams.set('step', currentStep.toString());
+        window.history.replaceState({}, '', url);
+    }, [currentStep, location.state]);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (showContactDropdown && !event.target.closest('.relative')) {
+                setShowContactDropdown(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showContactDropdown]);
+    
+    // Create sample contacts if none exist (for testing purposes)
+    useEffect(() => {
+        const createSampleContacts = () => {
+            const existingContacts = localStorage.getItem('contactImports');
+            if (!existingContacts) {
+                const sampleContacts = [{
+                    id: 'sample-list-1',
+                    listName: 'Sample Contacts',
+                    name: 'Sample Contacts',
+                    contacts: [
+                        { id: 'contact-1', userName: 'John Smith', email: 'john.smith@example.com' },
+                        { id: 'contact-2', userName: 'Sarah Johnson', email: 'sarah.johnson@example.com' },
+                        { id: 'contact-3', userName: 'Mike Davis', email: 'mike.davis@example.com' }
+                    ],
+                    createdAt: new Date().toISOString(),
+                    contactCount: 3
+                }];
+                localStorage.setItem('contactImports', JSON.stringify(sampleContacts));
+            }
+        };
+        
+        createSampleContacts();
+    }, []);
+
     useEffect(() => {
         const loadCampaignForEdit = async () => {
             if (campaignId && token) {
@@ -168,10 +354,18 @@ export default function CampaignCreatorPage() {
                 } finally {
                     setIsLoading(false);
                 }
-            } else if (!campaignId) {
-                resetCampaignStates();
-                setIsLoading(false);
-            }
+                         } else if (!campaignId) {
+                 // Don't reset campaign states if we're returning from template editor
+                 if (!location.state?.fromEditor) {
+             
+                     resetCampaignStates();
+                                   } else {
+              
+                      // Don't load from localStorage here - let the main useEffect handle it
+                      // Just ensure we don't reset the states
+                  }
+                 setIsLoading(false);
+             }
         };
         loadCampaignForEdit();
     }, [campaignId, navigate, token]);
@@ -180,12 +374,33 @@ export default function CampaignCreatorPage() {
 
     useEffect(() => {
         if (dataSource.type === "fromContacts") {
-            const lists = getContactLists();
-            setAvailableContactLists(lists);
+            // Get contacts from both sources: hyperpitch_contact_lists and contactImports
+            const hyperpitchLists = getContactLists();
+            const contactImports = JSON.parse(localStorage.getItem('contactImports') || '[]');
+            
+            
+            
+            // Convert contactImports to the expected format
+            const convertedImports = contactImports.map(importData => ({
+                id: importData.id,
+                name: importData.listName || importData.name,
+                contacts: importData.contacts || []
+            }));
+            
+            const allLists = [...convertedImports, ...hyperpitchLists];
+
+            setAvailableContactLists(allLists);
+            
             if (dataSource.contactListId) {
-                const currentList = lists.find((l) => l.id === dataSource.contactListId);
-                if (currentList) setContactsInSelectedList(currentList.contacts);
-                else { setDataSource((prev) => ({ ...prev, contactListId: null, selectedContactIds: [] })); setContactsInSelectedList([]); }
+                const currentList = allLists.find((l) => l.id === dataSource.contactListId);
+
+                if (currentList) {
+
+                    setContactsInSelectedList(currentList.contacts);
+                } else { 
+                    setDataSource((prev) => ({ ...prev, contactListId: null, selectedContactIds: [] })); 
+                    setContactsInSelectedList([]); 
+                }
             }
         } else {
             setAvailableContactLists([]); setContactsInSelectedList([]); setSearchTermInList("");
@@ -212,12 +427,35 @@ export default function CampaignCreatorPage() {
             setFileError(""); setDataSource((prev) => ({ ...prev, file: file, fileName: file.name }));
         } else if (name === "contactListId") {
             const selectedList = availableContactLists.find((l) => l.id === value);
+            // Reset selected contacts when changing lists
             setDataSource((prev) => ({ ...prev, contactListId: value, selectedContactIds: [] }));
             setContactsInSelectedList(selectedList ? selectedList.contacts : []);
             setSearchTermInList("");
         } else if (name && name.startsWith("contact-select-")) {
             const contactId = name.split("contact-select-")[1];
-            setDataSource((prev) => ({ ...prev, selectedContactIds: checked ? [...prev.selectedContactIds, contactId] : prev.selectedContactIds.filter((id) => id !== contactId) }));
+
+            
+            // Handle contact selection with unique identifiers
+            if (contactId && contactId !== 'undefined' && contactId !== 'null') {
+                setDataSource((prev) => {
+                    if (checked) {
+                        // Add contact if not already selected
+                        if (!prev.selectedContactIds.includes(contactId)) {
+                            const newSelectedIds = [...prev.selectedContactIds, contactId];
+
+                            return { ...prev, selectedContactIds: newSelectedIds };
+                        }
+                    } else {
+                        // Remove contact if selected
+                        const newSelectedIds = prev.selectedContactIds.filter((id) => id !== contactId);
+
+                        return { ...prev, selectedContactIds: newSelectedIds };
+                    }
+                    return prev;
+                });
+            } else {
+                console.error('Invalid contact ID:', contactId);
+            }
         }
     };
 
@@ -233,15 +471,34 @@ export default function CampaignCreatorPage() {
     const canProceedToNext = () => {
         switch (currentStep) {
             case 1: return !!(campaignDetails.campaignName && campaignDetails.startTime && campaignDetails.endTime);
-            case 2: if (dataSource.type === "file") return !!dataSource.file || !!dataSource.fileName; else if (dataSource.type === "fromContacts") return !!(dataSource.contactListId && dataSource.selectedContactIds.length > 0); return false;
-            case 3: return !!templateConfig.templateData;
+            case 2: 
+                if (dataSource.type === "file") return !!dataSource.file || !!dataSource.fileName; 
+                else if (dataSource.type === "fromContacts") return !!(dataSource.contactListId && dataSource.selectedContactIds.length > 0); 
+                return false;
+            case 3: return (templateConfig.type && !!templateConfig.templateData) || (location.state?.fromEditor && location.state?.templateData);
             default: return true;
         }
     };
 
     const nextStep = () => { if (canProceedToNext()) setCurrentStep((prev) => Math.min(prev + 1, steps.length)); };
     const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
-    const resetCampaignStates = () => { setCampaignDetails(initialCampaignDetails); setDataSource(initialDataSource); setTemplateConfig(initialTemplateConfig); setCurrentStep(1); setContactsInSelectedList([]); setSearchTermInList(""); setIsEditing(false); setFileError(""); };
+    const resetCampaignStates = () => { 
+        setCampaignDetails(initialCampaignDetails); 
+        setDataSource(initialDataSource); 
+        setTemplateConfig(initialTemplateConfig); 
+        setCurrentStep(1); 
+        setContactsInSelectedList([]); 
+        setSearchTermInList(""); 
+        setIsEditing(false); 
+        setFileError(""); 
+        // Only clear localStorage if not returning from template editor
+        if (!location.state?.fromEditor) {
+            localStorage.removeItem('campaign_creator_data');
+    
+        } else {
+
+        }
+    };
 
     const handleSaveCampaign = async () => {
         if (!campaignDetails.campaignName) { toast.warn("Campaign Name is required."); setCurrentStep(1); return; }
@@ -286,17 +543,40 @@ export default function CampaignCreatorPage() {
         }
     };
 
-    const handleCloseModalAndReset = () => { setShowPublishModal(false); resetCampaignStates(); navigate("/campaigns"); };
+    const handleCloseModalAndReset = () => { 
+        setShowPublishModal(false); 
+        // Clear localStorage after successful save
+        localStorage.removeItem('campaign_creator_data');
+        // Navigate to campaigns page
+        navigate("/campaigns"); 
+    };
     const handleTemplateDataFromBuilder = (builderData) => setTemplateConfig((prev) => ({ ...prev, templateData: builderData }));
     const selectTemplateToEdit = (templateId) => {
-        const templateToEdit = mockTemplates.find((t) => t.id === templateId);
+        const templateToEdit = templates.find((t) => t.id === templateId);
         if (templateToEdit) setTemplateConfig({ type: "edit", selectedTemplateId: templateId, editingTemplate: templateToEdit.builderData, templateData: templateToEdit.builderData });
     };
 
     const handleTemplateOptionClick = (type) => {
-        if (type === "create") { const emptyState = getEmptyBuilderState(); setTemplateConfig({ type: "create", selectedTemplateId: null, editingTemplate: emptyState, templateData: emptyState }); }
-        else if (type === "select") { setTemplateConfig({ type: "select", selectedTemplateId: null, editingTemplate: null, templateData: null }); }
+        if (type === "create") { 
+            const emptyState = getEmptyBuilderState(); 
+            setTemplateConfig({ 
+                type: "create", 
+                selectedTemplateId: null, 
+                editingTemplate: emptyState, 
+                templateData: emptyState 
+            }); 
+        }
+        else if (type === "select") { 
+            setTemplateConfig({ 
+                type: "select", 
+                selectedTemplateId: null, 
+                editingTemplate: null, 
+                templateData: null 
+            }); 
+        }
     };
+
+
     
     if (isLoading) {
         return (
@@ -310,9 +590,370 @@ export default function CampaignCreatorPage() {
         let content;
         switch (currentStep) {
             case 1: content = ( <> <InputField label="Campaign Name" name="campaignName" value={campaignDetails.campaignName} onChange={handleDetailChange} placeholder="e.g., Q4 Product Showcase" required icon={<LucideIcons.Edit3 />} /> <div className="grid md:grid-cols-2 gap-x-5"> <InputField label="Start Date & Time" name="startTime" type="datetime-local" value={campaignDetails.startTime} onChange={handleDetailChange} required icon={<LucideIcons.CalendarPlus />} /> <InputField label="End Date & Time" name="endTime" type="datetime-local" value={campaignDetails.endTime} onChange={handleDetailChange} required icon={<LucideIcons.CalendarMinus />} /> </div> </> ); break;
-            case 2: content = ( <> <div className="space-y-3 mb-6"> <OptionCard title="Upload File (.xls, .xlsx)" description="Import contacts directly from a spreadsheet." selected={dataSource.type === "file"} onClick={() => handleDataSourceTypeChange("file")} icon={<LucideIcons.FileUp />} /> <OptionCard title="From My Contacts" description="Select from your saved contact lists." selected={dataSource.type === "fromContacts"} onClick={() => handleDataSourceTypeChange("fromContacts")} icon={<UserCheck />} /> </div> {dataSource.type === "file" && ( <div className="mt-5 p-4 border border-slate-200 rounded-xl bg-slate-50/70 animate-fadeIn"> <h3 className="text-base font-semibold text-slate-700 mb-3">Audience File Details</h3> <InputField label="Choose Spreadsheet File" type="file" name="fileUpload" onChange={handleDataSourceChange} accept=".xls,.xlsx" icon={<LucideIcons.UploadCloud />} /> {fileError && <p className="text-xs text-red-500 -mt-3 mb-3">{fileError}</p>} {dataSource.fileName && !fileError && <p className="text-xs text-slate-500 mb-4 -mt-3">Selected: <span className="font-medium text-green-600">{dataSource.fileName}</span></p>} </div> )} {dataSource.type === "fromContacts" && ( <div className="mt-5 p-4 border border-slate-200 rounded-xl bg-slate-50/70 animate-fadeIn"> <h3 className="text-base font-semibold text-slate-700 mb-3">Select From Your Contacts</h3> {availableContactLists.length > 0 ? ( <> <div className="mb-4"> <label htmlFor="contactListSelect" className="block text-xs font-medium text-slate-600 mb-1">Choose a Contact List:</label> <select id="contactListSelect" name="contactListId" value={dataSource.contactListId || ""} onChange={handleDataSourceChange} className="block w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/70 focus:border-green-500 sm:text-sm bg-white"> <option value="" disabled>-- Select a List --</option> {availableContactLists.map((list) => ( <option key={list.id} value={list.id}>{list.name} ({list.contacts.length} contacts)</option> ))} </select> </div> {dataSource.contactListId && contactsInSelectedList.length > 0 && ( <> <InputField label="Search Contacts in Selected List" name="searchTermInList" value={searchTermInList} onChange={(e) => setSearchTermInList(e.target.value)} placeholder="Search by name or email..." icon={<LucideIcons.Search size={14} />} className="mb-3" /> <p className="text-xs text-slate-600 mb-2">Select contacts for this campaign ({dataSource.selectedContactIds.length} selected):</p> <div className="max-h-60 overflow-y-auto border border-slate-300 rounded-lg bg-white p-2 space-y-1.5 custom-scrollbar"> {filteredContactsForSelection.length > 0 ? ( filteredContactsForSelection.map((contact) => ( <div key={contact.id} className="flex items-center p-2 rounded-md hover:bg-slate-100 transition-colors"> <input type="checkbox" id={`contact-select-${contact.id}`} name={`contact-select-${contact.id}`} checked={dataSource.selectedContactIds.includes(contact.id)} onChange={handleDataSourceChange} className="h-4 w-4 text-green-600 border-slate-300 rounded focus:ring-green-500 mr-2.5 cursor-pointer accent-[#2e8b57]" /> <label htmlFor={`contact-select-${contact.id}`} className="flex-1 text-xs text-slate-700 cursor-pointer"> <span className="font-medium">{contact.userName || "N/A"}</span> - <span className="text-slate-500">{contact.email}</span> </label> </div> )) ) : ( <p className="text-xs text-slate-500 text-center py-3">{searchTermInList ? "No contacts match your search." : "No contacts in this list (or clear search)."}</p> )} </div> </> )} {dataSource.contactListId && contactsInSelectedList.length === 0 && <p className="text-xs text-slate-500 text-center py-3">This list is empty.</p>} </> ) : ( <div className="text-center py-6"> <LucideIcons.Users size={28} className="mx-auto text-slate-400 mb-2" /> <p className="text-sm text-slate-500">No contact lists available.</p> <p className="text-xs text-slate-400">Please create a contact list in the <Link to="/contacts" className="text-green-600 hover:underline font-medium">'Contacts'</Link> section first.</p> </div> )} </div> )} </> ); break;
-            case 3: const showEditor = templateConfig.type === "create" || templateConfig.type === "edit"; content = ( <> <div className="space-y-3 mb-5"> <div className="grid md:grid-cols-2 gap-3"> <OptionCard title="Create New Template" description="Build a unique template from scratch." selected={templateConfig.type === "create"} onClick={() => handleTemplateOptionClick("create")} icon={<LucideIcons.Brush />} /> <OptionCard title="Select Existing Template" description="Choose and customize a pre-built design." selected={templateConfig.type === "select" || (templateConfig.type === "edit" && !!templateConfig.selectedTemplateId)} onClick={() => handleTemplateOptionClick("select")} icon={<LucideIcons.LayoutGrid />} /> </div> </div> {templateConfig.type === "select" && ( <div className="mt-5 p-4 border border-slate-200 rounded-xl bg-slate-50/70"> <h3 className="text-base font-semibold text-slate-700 mb-3">Available Templates</h3> {mockTemplates.length > 0 ? ( <ul className="space-y-2.5">{mockTemplates.map((template) => ( <li key={template.id} className="p-2.5 pr-3 border border-slate-300/80 rounded-lg hover:shadow-sm transition-shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 bg-white hover:bg-slate-50"> <span className="text-xs font-medium text-slate-600">{template.name}</span> <StyledButton onClick={() => selectTemplateToEdit(template.id)} variant="secondary" className="py-1 px-2.5 text-xs self-start sm:self-center" iconLeft={<LucideIcons.Edit3 size={12} />}>Edit</StyledButton> </li> ))}</ul> ) : ( <p className="text-xs text-slate-500 text-center py-2">No existing templates. Create one!</p> )} </div> )} {showEditor && ( <div className="mt-5"> <h3 className="text-lg font-semibold text-slate-800 mb-0.5">{templateConfig.type === "edit" ? `Editing: ${mockTemplates.find((t) => t.id === templateConfig.selectedTemplateId)?.name}` : "Create New Template"}</h3> <p className="text-xs text-slate-500 mb-3">Use "Save" in builder, then "Next" below.</p> {ElementBuilderPage ? ( <div className="border-2 border-slate-300 rounded-xl shadow-lg bg-slate-100 h-[70vh] min-h-[500px] lg:h-[calc(100vh_-_450px)] overflow-auto"> <ElementBuilderPage onExternalSave={handleTemplateDataFromBuilder} initialBuilderState={templateConfig.templateData} key={JSON.stringify(templateConfig.templateData)} /> </div> ) : ( <div className="p-4 bg-red-100 border border-red-300 rounded-lg text-red-700">Error: ElementBuilderPage component not loaded.</div> )} </div> )} </> ); break;
-            case 4: const templateName = templateConfig.selectedTemplateId ? mockTemplates.find((t) => t.id === templateConfig.selectedTemplateId)?.name : templateConfig.templateData ? "Custom Template" : "No Template"; const currentTemplateData = templateConfig.templateData; const selectedContactListName = dataSource.contactListId && availableContactLists.length > 0 ? availableContactLists.find((l) => l.id === dataSource.contactListId)?.name || "N/A" : "N/A"; content = ( <> <div className="grid lg:grid-cols-3 gap-5"> <div className="lg:col-span-1 space-y-4"> <SummaryCard title="Campaign Settings" icon={<LucideIcons.Settings2 />}> <p><strong>Name:</strong> {campaignDetails.campaignName || "N/A"}</p> <p><strong>Start:</strong> {campaignDetails.startTime ? new Date(campaignDetails.startTime).toLocaleString() : "N/A"}</p> <p><strong>End:</strong> {campaignDetails.endTime ? new Date(campaignDetails.endTime).toLocaleString() : "N/A"}</p> </SummaryCard> <SummaryCard title="Audience Data" icon={<AudienceIcon />}> <p><strong>Source:</strong>{dataSource.type === "file" && " File Upload"}{dataSource.type === "fromContacts" && " From My Contacts"}</p> {dataSource.type === "file" && dataSource.fileName && <p><strong>File:</strong> {dataSource.fileName || "N/A"}</p>} {dataSource.type === "fromContacts" && ( <> <p><strong>List Name:</strong> {selectedContactListName}</p> <p><strong>Selected Contacts:</strong> {dataSource.selectedContactIds.length} contacts</p> </> )} </SummaryCard> </div> <div className="lg:col-span-2 min-w-0"> <SummaryCard title="Template Preview" icon={<LucideIcons.MonitorPlay />}> <p className="mb-3 text-xs"><strong>Using:</strong> {templateName}</p> {currentTemplateData && currentTemplateData.pages && currentTemplateData.activePageId && PagePreviewRenderer ? ( <div className="border-2 border-slate-200 rounded-lg shadow-inner bg-white min-h-[400px] overflow-x-auto"> <PagePreviewRenderer pageLayout={currentTemplateData.pages[currentTemplateData.activePageId]?.layout || []} globalNavbar={currentTemplateData.globalNavbar} globalFooter={currentTemplateData.globalFooter} activePageId={currentTemplateData.activePageId} onNavigate={() => {}} /> </div> ) : ( <div className="p-4 bg-slate-100/70 rounded-lg text-slate-500 text-center min-h-[150px] flex flex-col items-center justify-center border border-slate-200"> <LucideIcons.ImageOff className="w-6 h-6 mb-1.5 text-slate-400" /> <p className="font-medium text-xs">No template preview available.</p> <p className="text-[11px]">Please complete the template design step.</p> </div> )} </SummaryCard> </div> </div> </> ); break;
+            case 2: 
+                content = ( 
+                    <> 
+                        <div className="space-y-3 mb-6"> 
+                            <OptionCard 
+                                title="Upload File (.xls, .xlsx)" 
+                                description="Import contacts directly from a spreadsheet." 
+                                selected={dataSource.type === "file"} 
+                                onClick={() => handleDataSourceTypeChange("file")} 
+                                icon={<LucideIcons.FileUp />} 
+                            /> 
+                            <OptionCard 
+                                title="From My Contacts" 
+                                description="Select from your saved contact lists." 
+                                selected={dataSource.type === "fromContacts"} 
+                                onClick={() => handleDataSourceTypeChange("fromContacts")} 
+                                icon={<UserCheck />} 
+                            /> 
+                        </div> 
+                        
+                        {dataSource.type === "file" && (
+                            <div className="mt-5 p-4 border border-slate-200 rounded-xl bg-slate-50/70 animate-fadeIn"> 
+                                <h3 className="text-base font-semibold text-slate-700 mb-3">Audience File Details</h3> 
+                                <InputField 
+                                    label="Choose Spreadsheet File" 
+                                    type="file" 
+                                    name="fileUpload" 
+                                    onChange={handleDataSourceChange} 
+                                    accept=".xls,.xlsx" 
+                                    icon={<LucideIcons.UploadCloud />} 
+                                /> 
+                                {fileError && <p className="text-xs text-red-500 -mt-3 mb-3">{fileError}</p>} 
+                                {dataSource.fileName && !fileError && (
+                                    <p className="text-xs text-slate-500 mb-4 -mt-3">
+                                        Selected: <span className="font-medium text-green-600">{dataSource.fileName}</span>
+                                    </p>
+                                )} 
+                            </div> 
+                        )} 
+                        
+                        {dataSource.type === "fromContacts" && (
+                            <div className="mt-5 p-4 border border-slate-200 rounded-xl bg-slate-50/70 animate-fadeIn"> 
+                                <h3 className="text-base font-semibold text-slate-700 mb-3">Select From Your Contacts</h3> 
+                                {availableContactLists.length > 0 ? (
+                                    <> 
+                                        <div className="mb-4"> 
+                                            <label className="block text-xs font-medium text-slate-600 mb-2">Choose a Contact List:</label>
+                                            <div className="relative">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowContactDropdown(!showContactDropdown)}
+                                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/70 focus:border-green-500 sm:text-sm bg-white text-left flex items-center justify-between"
+                                                >
+                                                    <span className={dataSource.contactListId ? "text-slate-800" : "text-slate-500"}>
+                                                        {dataSource.contactListId 
+                                                            ? availableContactLists.find(l => l.id === dataSource.contactListId)?.name || "Select a List"
+                                                            : "-- Select a List --"
+                                                        }
+                                                    </span>
+                                                    <LucideIcons.ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showContactDropdown ? 'rotate-180' : ''}`} />
+                                                </button>
+                                                
+                                                {showContactDropdown && (
+                                                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                                        <ul className="py-1">
+                                                            {availableContactLists.map((list) => (
+                                                                <li key={list.id}>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            handleDataSourceChange({ target: { name: "contactListId", value: list.id } });
+                                                                            setShowContactDropdown(false);
+                                                                        }}
+                                                                        className={`w-full px-3 py-2 text-left hover:bg-slate-50 transition-colors ${
+                                                                            dataSource.contactListId === list.id 
+                                                                                ? "bg-green-50 text-green-700 border-r-2 border-green-500" 
+                                                                                : "text-slate-700"
+                                                                        }`}
+                                                                    >
+                                                                        <div className="flex items-center justify-between">
+                                                                            <span className="font-medium">{list.name}</span>
+                                                                            <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
+                                                                                {list.contacts.length} contacts
+                                                                            </span>
+                                                                        </div>
+                                                                    </button>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div> 
+                                        
+                                        {dataSource.contactListId && contactsInSelectedList.length > 0 && (
+                                            <> 
+                                                <InputField 
+                                                    label="Search Contacts in Selected List" 
+                                                    name="searchTermInList" 
+                                                    value={searchTermInList} 
+                                                    onChange={(e) => setSearchTermInList(e.target.value)} 
+                                                    placeholder="Search by name or email..." 
+                                                    icon={<LucideIcons.Search size={14} />} 
+                                                    className="mb-3" 
+                                                /> 
+                                                <p className="text-xs text-slate-600 mb-2">
+                                                    Select contacts for this campaign ({dataSource.selectedContactIds.length} selected):
+                                                </p> 
+                                                <div className="max-h-60 overflow-y-auto border border-slate-300 rounded-lg bg-white p-2 space-y-1.5 custom-scrollbar"> 
+                                                    {filteredContactsForSelection.length > 0 ? (
+                                                        filteredContactsForSelection.map((contact, index) => {
+                                                            // Debug: Log contact object to see what we're working with
+                                                    
+                                                            
+                                                            // Create a truly unique identifier for each contact
+                                                            const contactIdentifier = contact.id || `contact-${index}-${contact.email}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                                                            
+                                                    
+                                                            
+                                                            return (
+                                                                <div key={contactIdentifier} className="flex items-center p-2 rounded-md hover:bg-slate-100 transition-colors"> 
+                                                                    <input 
+                                                                        type="checkbox" 
+                                                                        id={`contact-select-${contactIdentifier}`} 
+                                                                        name={`contact-select-${contactIdentifier}`} 
+                                                                        checked={dataSource.selectedContactIds.includes(contactIdentifier)} 
+                                                                        onChange={(e) => handleDataSourceChange({
+                                                                            target: { 
+                                                                                name: `contact-select-${contactIdentifier}`, 
+                                                                                checked: e.target.checked 
+                                                                            }
+                                                                        })} 
+                                                                        className="h-4 w-4 text-green-600 border-slate-300 rounded focus:ring-green-500 mr-2.5 cursor-pointer accent-[#2e8b57]" 
+                                                                    /> 
+                                                                    <label htmlFor={`contact-select-${contactIdentifier}`} className="flex-1 text-xs text-slate-700 cursor-pointer"> 
+                                                                        <span className="font-medium">{contact.userName || "N/A"}</span> - <span className="text-slate-500">{contact.email}</span> 
+                                                                    </label> 
+                                                                </div> 
+                                                            );
+                                                        })
+                                                    ) : (
+                                                        <p className="text-xs text-slate-500 text-center py-3">
+                                                            {searchTermInList ? "No contacts match your search." : "No contacts in this list (or clear search)."}
+                                                        </p> 
+                                                    )} 
+                                                </div> 
+                                            </> 
+                                        )} 
+                                        
+                                        {dataSource.contactListId && contactsInSelectedList.length === 0 && (
+                                            <p className="text-xs text-slate-500 text-center py-3">This list is empty.</p>
+                                        )} 
+                                    </> 
+                                ) : (
+                                    <div className="text-center py-6"> 
+                                        <LucideIcons.Users size={28} className="mx-auto text-slate-400 mb-2" /> 
+                                        <p className="text-sm text-slate-500">No contact lists available.</p> 
+                                        <p className="text-xs text-slate-400">
+                                            Please create a contact list in the <Link to="/contacts" className="text-green-600 hover:underline font-medium">'Contacts'</Link> section first.
+                                        </p> 
+                                    </div> 
+                                )} 
+                            </div> 
+                        )} 
+                    </> 
+                ); 
+                break;
+            case 3: 
+                // Check if we're returning from template editor
+                const isReturningFromEditor = location.state?.fromEditor && location.state?.templateData;
+                const showEditor = templateConfig.type === "edit"; 
+                const showCreatedTemplate = (templateConfig.type === "create" && templateConfig.templateData && templateConfig.templateData.pages) || isReturningFromEditor; 
+
+                content = ( 
+                    <> 
+                        <div className="mb-5"> 
+                            <h3 className="text-lg font-semibold text-slate-800 mb-3">Select Template or Create New</h3> 
+                            <p className="text-sm text-slate-600 mb-4">Choose how you want to design your campaign template</p> 
+                            <div className="space-y-3"> 
+                                <div className="grid md:grid-cols-2 gap-3"> 
+                                    <OptionCard 
+                                        title="Create New Template" 
+                                        description="Build a unique template from scratch in full-screen editor." 
+                                        selected={templateConfig.type === "create"} 
+                                        onClick={() => {
+                                            setTemplateConfig({ 
+                                                type: "create", 
+                                                selectedTemplateId: null, 
+                                                editingTemplate: getEmptyBuilderState(), 
+                                                templateData: getEmptyBuilderState() 
+                                            });
+                                            setShowTemplateEditor(true);
+                                        }} 
+                                        icon={<LucideIcons.Brush />} 
+                                    /> 
+                                    <OptionCard 
+                                        title="Select Existing Template" 
+                                        description="Choose and customize a pre-built design." 
+                                        selected={templateConfig.type === "select" || (templateConfig.type === "edit" && !!templateConfig.selectedTemplateId)} 
+                                        onClick={() => handleTemplateOptionClick("select")} 
+                                        icon={<LucideIcons.LayoutGrid />} 
+                                    /> 
+                                </div> 
+                            </div> 
+                        </div> 
+                        
+                        {templateConfig.type === "create" && !showCreatedTemplate && (
+                            <div className="mt-5 p-4 border border-slate-200 rounded-xl bg-slate-50/70"> 
+                                <h3 className="text-base font-semibold text-slate-700 mb-3">Page Title</h3> 
+                                <InputField 
+                                    label="Landing Page Title" 
+                                    name="pageTitle" 
+                                    value={templateConfig.templateData?.pageTitle || "Untitled"} 
+                                    onChange={(e) => setTemplateConfig(prev => ({ 
+                                        ...prev, 
+                                        templateData: { 
+                                            ...prev.templateData, 
+                                            pageTitle: e.target.value 
+                                        } 
+                                    }))} 
+                                    placeholder="Enter page title..." 
+                                    icon={<LucideIcons.Edit3 />} 
+                                /> 
+                                <p className="text-xs text-slate-500 mt-2">This title will be displayed in the browser tab and can be edited in the template editor.</p> 
+                            </div> 
+                        )} 
+                        
+                        {showCreatedTemplate && (
+                            <div className="mt-5"> 
+                                <h3 className="text-lg font-semibold text-slate-800 mb-0.5">
+                                    Using: {(templateConfig.templateData?.pageTitle || location.state?.templateData?.pageTitle) || "Custom Template"}
+                                </h3> 
+                                <p className="text-xs text-slate-500 mb-3">Template created successfully. You can proceed to the next step.</p> 
+                                <div className="p-4 bg-green-50 border border-green-200 rounded-lg"> 
+                                    <p className="text-sm text-green-700 font-medium">✓ Template loaded successfully</p> 
+                                    <p className="text-xs text-green-600 mt-1">Your custom template "{(templateConfig.templateData?.pageTitle || location.state?.templateData?.pageTitle) || "Untitled"}" has been created and is ready for use.</p> 
+                                    <div className="mt-2 text-xs text-slate-600">
+                                        <p><strong>Template Type:</strong> Custom Landing Page</p>
+                                        <p><strong>Page Title:</strong> {(templateConfig.templateData?.pageTitle || location.state?.templateData?.pageTitle) || "Untitled"}</p>
+                                        <p><strong>Status:</strong> Ready for Review</p>
+                                    </div>
+                                </div> 
+                            </div> 
+                        )} 
+                        
+                        {templateConfig.type === "select" && (
+                            <div className="mt-5 p-4 border border-slate-200 rounded-xl bg-slate-50/70"> 
+                                <h3 className="text-base font-semibold text-slate-700 mb-3">Available Templates</h3> 
+                                {templates.length > 0 ? (
+                                    <ul className="space-y-2.5">
+                                        {templates.map((template) => (
+                                            <li key={template.id} className="p-2.5 pr-3 border border-slate-300/80 rounded-lg hover:shadow-sm transition-shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 bg-white hover:bg-slate-50"> 
+                                                <span className="text-xs font-medium text-slate-600">{template.name}</span> 
+                                                <StyledButton 
+                                                    onClick={() => selectTemplateToEdit(template.id)} 
+                                                    variant="secondary" 
+                                                    className="py-1 px-2.5 text-xs self-start sm:self-center" 
+                                                    iconLeft={<LucideIcons.Edit3 size={12} />}
+                                                >
+                                                    Use Template
+                                                </StyledButton> 
+                                            </li> 
+                                        ))}
+                                    </ul> 
+                                ) : (
+                                    <p className="text-xs text-slate-500 text-center py-2">No existing templates. Create one!</p> 
+                                )} 
+                            </div> 
+                        )} 
+                        
+                        {showEditor && (
+                            <div className="mt-5"> 
+                                <h3 className="text-lg font-semibold text-slate-800 mb-0.5">
+                                    {templateConfig.type === "edit" ? `Using: ${templates.find((t) => t.id === templateConfig.selectedTemplateId)?.name}` : "Create New Template"}
+                                </h3> 
+                                <p className="text-xs text-slate-500 mb-3">Template selected successfully. You can proceed to the next step.</p> 
+                                <div className="p-4 bg-green-50 border border-green-200 rounded-lg"> 
+                                    <p className="text-sm text-green-700 font-medium">✓ Template loaded successfully</p> 
+                                    <p className="text-xs text-green-600 mt-1">The selected template has been loaded and is ready for use.</p> 
+                                </div> 
+                            </div> 
+                        )} 
+                    </> 
+                ); 
+                break;
+                        case 4: 
+                // Get template data from localStorage first, then templateConfig, then location.state
+                const savedTemplateData = localStorage.getItem('campaign_template_data');
+                let currentTemplateData = null;
+                
+                if (savedTemplateData) {
+                    try {
+                        currentTemplateData = JSON.parse(savedTemplateData);
+        
+                    } catch (error) {
+                        console.error('Error parsing saved template data:', error);
+                    }
+                }
+                
+                // Fallback to other sources if localStorage is empty
+                if (!currentTemplateData) {
+                    currentTemplateData = templateConfig.templateData || location.state?.templateData;
+                }
+                
+                const templateName = templateConfig.selectedTemplateId 
+                    ? templates.find((t) => t.id === templateConfig.selectedTemplateId)?.name 
+                    : currentTemplateData 
+                        ? (currentTemplateData.pageTitle || "Custom Template")
+                        : "No Template";
+                
+                const selectedContactListName = dataSource.contactListId && availableContactLists.length > 0 
+                    ? availableContactLists.find((l) => l.id === dataSource.contactListId)?.name || "N/A" 
+                    : "N/A";
+                
+
+                
+                // Template preview rendering
+                
+                content = ( 
+                    <> 
+                        <div className="grid lg:grid-cols-3 gap-5"> 
+                            <div className="lg:col-span-1 space-y-4"> 
+                                <SummaryCard title="Campaign Settings" icon={<LucideIcons.Settings2 />}> 
+                                    <p><strong>Name:</strong> {campaignDetails.campaignName || "N/A"}</p> 
+                                    <p><strong>Start:</strong> {campaignDetails.startTime ? new Date(campaignDetails.startTime).toLocaleString() : "N/A"}</p> 
+                                    <p><strong>End:</strong> {campaignDetails.endTime ? new Date(campaignDetails.endTime).toLocaleString() : "N/A"}</p> 
+                                </SummaryCard> 
+                                <SummaryCard title="Audience Data" icon={<AudienceIcon />}> 
+                                    <p><strong>Source:</strong>{dataSource.type === "file" && " File Upload"}{dataSource.type === "fromContacts" && " From My Contacts"}</p> 
+                                    {dataSource.type === "file" && dataSource.fileName && <p><strong>File:</strong> {dataSource.fileName || "N/A"}</p>} 
+                                    {dataSource.type === "fromContacts" && ( 
+                                        <> 
+                                            <p><strong>List Name:</strong> {selectedContactListName}</p> 
+                                            <p><strong>Selected Contacts:</strong> {dataSource.selectedContactIds.length} contacts</p> 
+                                        </> 
+                                    )} 
+                                </SummaryCard> 
+                            </div> 
+                            <div className="lg:col-span-2 min-w-0"> 
+                                <SummaryCard title="Template Preview" icon={<LucideIcons.MonitorPlay />}> 
+                                    <p className="mb-3 text-xs"><strong>Using:</strong> {templateName}</p> 
+                                    
+                                    {currentTemplateData && currentTemplateData.pages && currentTemplateData.activePageId && PagePreviewRenderer ? (
+                                        <div className="border-2 border-slate-200 rounded-lg shadow-inner bg-white min-h-[400px] overflow-x-auto">
+                                            <PagePreviewRenderer 
+                                                pageLayout={currentTemplateData.pages[currentTemplateData.activePageId]?.layout || []} 
+                                                globalNavbar={currentTemplateData.globalNavbar} 
+                                                globalFooter={currentTemplateData.globalFooter} 
+                                                activePageId={currentTemplateData.activePageId} 
+                                                onNavigate={() => {}} 
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="p-4 bg-slate-100/70 rounded-lg text-slate-500 text-center min-h-[150px] flex flex-col items-center justify-center border border-slate-200">
+                                            <LucideIcons.ImageOff className="w-6 h-6 mb-1.5 text-slate-400" />
+                                            <p className="font-medium text-xs">No template preview available.</p>
+                                            <p className="text-[11px]">Please complete the template design step.</p>
+                                        </div>
+                                    )} 
+                                </SummaryCard> 
+                            </div> 
+                        </div> 
+                    </> 
+                ); break;
             default: content = <div className="text-center py-8 text-slate-500">Error: Unknown step.</div>;
         }
         return ( <div className="bg-white p-5 md:p-6 rounded-xl shadow-lg border border-slate-200"> {content} <div className="mt-8 pt-5 border-t border-slate-200/80 flex justify-between items-center"> <StyledButton onClick={prevStep} variant="secondary" iconLeft={<LucideIcons.ArrowLeft />} disabled={currentStep === 1}>Back</StyledButton> {currentStep < steps.length ? <StyledButton onClick={nextStep} disabled={!canProceedToNext()} iconRight={<LucideIcons.ArrowRight />}>{canProceedToNext() ? "Next" : "Complete Step"}</StyledButton> : <StyledButton onClick={handleSaveCampaign} variant="launch" iconLeft={isSubmitting ? <LucideIcons.Loader2 className="animate-spin" /> : <LucideIcons.Save />} disabled={isSubmitting}>{isSubmitting ? 'Saving...' : (isEditing ? 'Update Campaign' : 'Save Campaign')}</StyledButton>} </div> </div> );
@@ -322,18 +963,82 @@ export default function CampaignCreatorPage() {
         <>
             <div className="min-h-screen bg-slate-100 text-slate-800">
                 <main className="w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
-                    <div className="flex items-center mb-6 md:mb-8">
-                        <div className="p-3 bg-green-100 rounded-xl mr-4 shrink-0"><LucideIcons.ClipboardCheck className="w-8 h-8 text-green-600" strokeWidth={1.5} /></div>
-                        <div>
-                            <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Campaign Setup</h1>
-                            <p className="text-sm text-slate-500 mt-0.5">Follow the steps to create or edit your campaign.</p>
-                        </div>
-                    </div>
+                                         <div className="flex items-center justify-between mb-6 md:mb-8">
+                         <div className="flex items-center">
+                             <div className="p-3 bg-green-100 rounded-xl mr-4 shrink-0"><LucideIcons.ClipboardCheck className="w-8 h-8 text-green-600" strokeWidth={1.5} /></div>
+                             <div>
+                                 <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Campaign Setup</h1>
+                                 <p className="text-sm text-slate-500 mt-0.5">Follow the steps to create or edit your campaign.</p>
+                             </div>
+                         </div>
+                                                   
+                     </div>
                     <TopStepperNav currentStep={currentStep} steps={steps} setCurrentStep={setCurrentStep} canProceed={canProceedToNext} />
                     {renderStepContent()}
                 </main>
                 <PublishSuccessModal isOpen={showPublishModal} onAddDomain={() => { setShowPublishModal(false); resetCampaignStates(); navigate("/domains"); }} onClose={handleCloseModalAndReset} />
             </div>
+            
+            {/* Template Editor Overlay */}
+            {showTemplateEditor && (
+                <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-sm z-50 flex flex-col">
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-4 bg-white border-b border-slate-200 shadow-sm">
+                        <div className="flex items-center space-x-3">
+                            <h2 className="text-xl font-bold text-slate-800">Template Editor</h2>
+                            <span className="text-sm text-slate-500">Create and customize your campaign template</span>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                            <StyledButton 
+                                onClick={() => setShowTemplateEditor(false)} 
+                                variant="secondary"
+                                iconLeft={<LucideIcons.X />}
+                            >
+                                Cancel
+                            </StyledButton>
+                            <StyledButton 
+                                onClick={() => {
+                                    // Save template data and close editor
+                                    if (templateConfig.templateData) {
+                                        localStorage.setItem('campaign_template_data', JSON.stringify(templateConfig.templateData));
+                            
+                                        toast.success('Template saved successfully!');
+                                    }
+                                    setShowTemplateEditor(false);
+                                    // Move to next step
+                                    if (canProceedToNext()) {
+                                        setCurrentStep(4);
+                                    }
+                                }} 
+                                variant="primary"
+                                iconLeft={<LucideIcons.Save />}
+                            >
+                                Save Template
+                            </StyledButton>
+                        </div>
+                    </div>
+                    
+                    {/* Editor Content */}
+                    <div className="flex-1 overflow-hidden">
+                        {ElementBuilderPage ? (
+                            <ElementBuilderPage 
+                                onExternalSave={handleTemplateDataFromBuilder} 
+                                initialBuilderState={templateConfig.templateData || getEmptyBuilderState()} 
+                                key={JSON.stringify(templateConfig.templateData)}
+                            />
+                        ) : (
+                            <div className="flex items-center justify-center h-full">
+                                <div className="text-center">
+                                    <LucideIcons.AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                                    <p className="text-lg font-semibold text-slate-800">Builder Component Not Loaded</p>
+                                    <p className="text-slate-500">Please refresh the page and try again.</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+            
             <style jsx global>{` @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } } .animate-fadeIn { animation: fadeIn 0.2s ease-out forwards; } .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; } .custom-scrollbar::-webkit-scrollbar-track { background: #f7fafc; border-radius: 10px; } .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 10px; } .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a0aec0; } `}</style>
         </>
     );

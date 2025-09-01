@@ -4,7 +4,7 @@ import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } 
 import { CSS } from "@dnd-kit/utilities";
 import img from "../../../assets/img/cards/672e98fa2d1ed0b7d1bf2adb_glass.png";
 import * as LucideIcons from "lucide-react";
-import apiRequest from "../../../utils/apiRequest";
+import apiRequest from "../../../utils/apiRequestAI";
 
 // --- MODAL & UI COMPONENTS (UNCHANGED) ---
 const StyledModalButton = ({ children, onClick, variant = "primary", className = "" }) => {
@@ -651,6 +651,7 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
   const sectionPath = `pages[${pageId}].layout[${sectionIndex}]`;
   const isSelected = selectedItemId === sectionData.id;
   const handleClick = (e) => { e.stopPropagation(); if (!isPreviewMode && isDraggable) { onSelect(sectionData.id, "section", sectionPath, sectionData); } };
+  
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
       id: sectionData.id,
       data: { type: "section", sectionId: sectionData.id, path: sectionPath, sectionData, pageId },
@@ -668,6 +669,226 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
   };
   const sectionRootClasses = ["relative", "group", "transition-all", "duration-200", "ease-in-out", getSectionBaseBgClass(), !isPreviewMode && isSelected ? "selected-outline" : "", !isPreviewMode && !isSelected ? "hover:ring-2 hover:ring-green-300/80 cursor-pointer" : ""].join(" ").replace(/\s+/g, " ").trim();
   const sectionPaddingStyle = { paddingTop: sectionProps.paddingTop, paddingBottom: sectionProps.paddingBottom, paddingLeft: sectionProps.paddingLeft, paddingRight: sectionProps.paddingRight };
+  
+  // Handle default template structure (content/style based)
+  const renderDefaultTemplateSection = () => {
+    if (!sectionData.content) return null;
+    
+    const content = sectionData.content;
+    const style = sectionData.style || {};
+    
+    if (sectionData.type === 'header') {
+      return (
+        <div className="text-center py-8" style={{ 
+          backgroundColor: content.backgroundColor, 
+          color: content.textColor,
+          padding: style.padding,
+          textAlign: style.textAlign
+        }}>
+          <h1 className="text-3xl font-bold mb-2">{content.title || 'Header Title'}</h1>
+          <p className="text-lg opacity-80">{content.subtitle || 'Header Subtitle'}</p>
+        </div>
+      );
+    }
+    
+    if (sectionData.type === 'content') {
+      return (
+        <div className="text-center py-12" style={{ 
+          backgroundColor: content.backgroundColor, 
+          color: content.textColor,
+          padding: style.padding,
+          textAlign: style.textAlign
+        }}>
+          <h2 className="text-2xl font-bold mb-4">{content.title || 'Content Title'}</h2>
+          <p className="text-base max-w-2xl mx-auto leading-relaxed">{content.description || 'Content description goes here.'}</p>
+        </div>
+      );
+    }
+    
+    if (sectionData.type === 'footer') {
+      return (
+        <div className="text-center py-6" style={{ 
+          backgroundColor: content.backgroundColor, 
+          color: content.textColor,
+          padding: style.padding,
+          textAlign: style.textAlign
+        }}>
+          <p className="text-sm">{content.text || 'Footer text'}</p>
+        </div>
+      );
+    }
+    
+    return null;
+  };
+  
+  // Handle AI-generated structure (props/columns/elements based)
+  const renderAIGeneratedSection = () => {
+    if (!sectionData.columns && !sectionData.elements && !sectionData.props) return null;
+    
+    // If we have columns structure (AI-generated with columns)
+    if (sectionData.columns && sectionData.columns.length > 0) {
+      return (
+        <div className="w-full">
+          {sectionData.columns.map((col, colIdx) => (
+            <ColumnComponent 
+              key={col.id} 
+              parentPath={sectionPath} 
+              columnData={col} 
+              columnIndex={colIdx} 
+              onUpdateProps={onUpdateProps} 
+              onDelete={onDelete} 
+              onSelect={onSelect} 
+              selectedItemId={selectedItemId} 
+              onOpenStructureModal={onOpenStructureModal} 
+              isPreviewMode={isPreviewMode} 
+              onNavigate={onNavigate} 
+              isDraggable={isDraggable} 
+            />
+          ))}
+        </div>
+      );
+    }
+    
+    // If we have elements array (AI-generated with direct elements)
+    if (sectionData.elements && sectionData.elements.length > 0) {
+      return (
+        <div className="w-full">
+          {sectionData.elements.map((element, elementIndex) => (
+            <div key={element.id || elementIndex} className="mb-4">
+              {element.type === 'heading' && (
+                <div className="text-center" style={{ 
+                  color: element.props?.textColor || '#000',
+                  backgroundColor: element.props?.backgroundColor || 'transparent',
+                  padding: element.props?.padding || '1rem'
+                }}>
+                  <h1 className="text-4xl font-bold" style={{ fontSize: element.props?.fontSize || '2.25rem' }}>
+                    {element.props?.text || 'Heading'}
+                  </h1>
+                </div>
+              )}
+              
+              {element.type === 'text' && (
+                <div className="text-center" style={{ 
+                  color: element.props?.textColor || '#000',
+                  backgroundColor: element.props?.backgroundColor || 'transparent',
+                  padding: element.props?.padding || '1rem'
+                }}>
+                  <p className="text-lg" style={{ fontSize: element.props?.fontSize || '1.125rem' }}>
+                    {element.props?.text || 'Text content'}
+                  </p>
+                </div>
+              )}
+              
+              {element.type === 'button' && (
+                <div className="text-center" style={{ 
+                  backgroundColor: element.props?.backgroundColor || '#3b82f6',
+                  padding: element.props?.padding || '1rem'
+                }}>
+                  <button className="px-6 py-3 rounded-lg text-white font-medium" style={{ 
+                    backgroundColor: element.props?.buttonColor || '#3b82f6',
+                    color: element.props?.textColor || '#ffffff'
+                  }}>
+                    {element.props?.text || 'Button'}
+                  </button>
+                </div>
+              )}
+              
+              {element.type === 'image' && element.props?.imageSrc && (
+                <div className="text-center" style={{ 
+                  padding: element.props?.padding || '1rem'
+                }}>
+                  <img 
+                    src={element.props.imageSrc} 
+                    alt={element.props?.altText || 'Image'} 
+                    className="mx-auto max-w-full h-auto rounded-lg"
+                    style={{ 
+                      maxWidth: element.props?.maxWidth || '100%',
+                      height: element.props?.height || 'auto'
+                    }}
+                  />
+                </div>
+              )}
+              
+              {element.type === 'divider' && (
+                <div className="text-center" style={{ 
+                  padding: element.props?.padding || '1rem'
+                }}>
+                  <hr className="border-t-2 mx-auto" style={{ 
+                    width: element.props?.width || '50%',
+                    borderColor: element.props?.color || '#e5e7eb'
+                  }} />
+                </div>
+              )}
+              
+              {element.type === 'textBlock' && (
+                <div className="text-center" style={{ 
+                  color: element.props?.textColor || '#000',
+                  backgroundColor: element.props?.backgroundColor || 'transparent',
+                  padding: element.props?.padding || '1rem'
+                }}>
+                  <p className="text-base leading-relaxed" style={{ fontSize: element.props?.fontSize || '1rem' }}>
+                    {element.props?.text || 'Text content'}
+                  </p>
+                </div>
+              )}
+              
+              {element.type === 'accordion' && (
+                <div className="max-w-2xl mx-auto mb-4">
+                  <details className="bg-white border border-gray-200 rounded-lg">
+                    <summary className="px-4 py-3 cursor-pointer font-medium text-gray-900 hover:bg-gray-50">
+                      {element.props?.title || 'Accordion Title'}
+                    </summary>
+                    <div className="px-4 py-3 border-t border-gray-200 text-gray-600">
+                      {element.props?.content || 'Accordion content goes here.'}
+                    </div>
+                  </details>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    
+    // If we have props structure (AI-generated with section props)
+    if (sectionData.props) {
+      return (
+        <div className="w-full" style={{
+          backgroundColor: sectionData.props.backgroundColor || 'transparent',
+          color: sectionData.props.textColor || '#000',
+          padding: sectionData.props.padding || '2rem',
+          textAlign: sectionData.props.textAlign || 'center'
+        }}>
+          {sectionData.props.title && (
+            <h2 className="text-2xl font-bold mb-4" style={{ fontSize: sectionData.props.fontSize || '1.5rem' }}>
+              {sectionData.props.title}
+            </h2>
+          )}
+          
+          {sectionData.props.text && (
+            <p className="text-base leading-relaxed" style={{ fontSize: sectionData.props.textSize || '1rem' }}>
+              {sectionData.props.text}
+            </p>
+          )}
+          
+          {sectionData.props.subtitle && (
+            <p className="text-lg opacity-80 mt-2" style={{ fontSize: sectionData.props.subtitleSize || '1.125rem' }}>
+              {sectionData.props.subtitle}
+            </p>
+          )}
+          
+          {sectionData.props.buttonText && (
+            <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors mt-4">
+              {sectionData.props.buttonText}
+            </button>
+          )}
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
   return (
       <div ref={setNodeRef} style={effectiveBgStyle} className={sectionRootClasses} onClick={handleClick}>
           {!isPreviewMode && isDraggable && (
@@ -686,9 +907,8 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
               </button>
           )}
           <div style={sectionPaddingStyle} className="flex flex-wrap -m-1.5 relative z-0">
-              {sectionData.columns.map((col, colIdx) => (
-                  <ColumnComponent key={col.id} parentPath={sectionPath} columnData={col} columnIndex={colIdx} onUpdateProps={onUpdateProps} onDelete={onDelete} onSelect={onSelect} selectedItemId={selectedItemId} onOpenStructureModal={onOpenStructureModal} isPreviewMode={isPreviewMode} onNavigate={onNavigate} isDraggable={isDraggable} />
-              ))}
+              {/* Render based on data structure */}
+              {renderDefaultTemplateSection() || renderAIGeneratedSection()}
           </div>
       </div>
   );
@@ -1171,7 +1391,22 @@ export function PagePreviewRenderer({ pageLayout, globalNavbar, globalFooter, on
                 <div style={containerStyle} className="bg-white shadow-2xl mx-auto transition-all duration-300 rounded-2xl">
                     <div className="w-full h-full overflow-y-auto scrollbar-thin scrollbar-thumb-slate-400 scrollbar-track-slate-100">
                         {globalNavbar && (<NavbarElement {...globalNavbar.props} isPreviewMode={true} onNavigate={onNavigate} previewDevice={device.name.toLowerCase()} />)}
-                        {pageLayout && pageLayout.map((sec, idx) => ( <SectionComponent key={`${activePageId}-${sec.id}-${idx}`} sectionData={sec} sectionIndex={idx} onUpdateProps={() => {}} onDelete={() => {}} onSelect={() => {}} selectedItemId={null} onOpenStructureModal={() => {}} isPreviewMode={true} onNavigate={onNavigate} />))}
+                        {pageLayout && pageLayout.map((sec, idx) => ( 
+                            <SectionComponent 
+                                key={`${activePageId}-${sec.id}-${idx}`} 
+                                pageId={activePageId}
+                                sectionData={sec} 
+                                sectionIndex={idx} 
+                                onUpdateProps={() => {}} 
+                                onDelete={() => {}} 
+                                onSelect={() => {}} 
+                                selectedItemId={null} 
+                                onOpenStructureModal={() => {}} 
+                                isPreviewMode={true} 
+                                onNavigate={onNavigate} 
+                                isDraggable={false}
+                            />
+                        ))}
                         {globalFooter && (<FooterElement {...globalFooter.props} isPreviewMode={true} onNavigate={onNavigate} />)}
                     </div>
                 </div>
@@ -1224,12 +1459,17 @@ function TopBar({ onSave, onTogglePreview, isPreviewMode, onToggleLeftPanel, onT
                         <LucideIcons.PanelLeft className="w-6 h-6" />
                     </button>
                 )}
-                <a href="#" className="flex items-center gap-2.5 text-slate-800 text-lg">
+                <div className="flex items-center gap-2.5 text-slate-800 text-lg">
                     <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
                        <LucideIcons.Feather className="w-5 h-5 text-white" />
                     </div>
-                    <span className="hidden sm:inline font-bold">Web<span className="font-light text-green-500">Forge</span></span>
-                </a>
+                    <input 
+                        type="text" 
+                        defaultValue="Template Editor" 
+                        className="hidden sm:inline font-bold bg-transparent border-none outline-none focus:ring-2 focus:ring-green-500/50 rounded px-1"
+                        placeholder="Enter title..."
+                    />
+                </div>
             </div>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <div className="relative flex items-center p-1 bg-slate-200/70 rounded-full border border-slate-300/50 shadow-inner">
@@ -1251,10 +1491,10 @@ function TopBar({ onSave, onTogglePreview, isPreviewMode, onToggleLeftPanel, onT
                         {isFullscreen ? <LucideIcons.Minimize className="w-5 h-5" /> : <LucideIcons.Maximize className="w-5 h-5" />}
                     </button>
                 )}
-                <StyledModalButton onClick={onSave} variant="primary">
+                {/* <StyledModalButton onClick={onSave} variant="primary">
                     <LucideIcons.Save className="w-4 h-4 mr-2" />
                     Save
-                </StyledModalButton>
+                </StyledModalButton> */}
             </div>
         </header>
     );
@@ -1419,20 +1659,47 @@ function apiStateToBuilderJson(apiResponse) {
 }
 
 // --- MAIN PAGE COMPONENT ---
-export default function ElementBuilderPage({ onExternalSave, initialBuilderState }) {
+export default function ElementBuilderPage({ onExternalSave, initialBuilderState, initialData, onDataChange, isFullScreen }) {
   const [newlyAddedElementId, setNewlyAddedElementId] = useState(null);
   const initialPageId = useMemo(() => generateId("page-home"), []);
-  const [pages, setPages] = useState(initialBuilderState?.pages && Object.keys(initialBuilderState.pages).length > 0 ? initialBuilderState.pages : { [initialPageId]: { id: initialPageId, name: "Home", layout: [] } });
-  const [activePageId, setActivePageId] = useState(initialBuilderState?.activePageId && pages[initialBuilderState.activePageId] ? initialBuilderState.activePageId : initialPageId);
-  const [globalNavbar, setGlobalNavbar] = useState(initialBuilderState?.globalNavbar || null);
-  const [globalFooter, setGlobalFooter] = useState(initialBuilderState?.globalFooter || null);
+  
+  // Use initialData if provided, otherwise fall back to initialBuilderState
+  const effectiveInitialData = initialData || initialBuilderState;
+  
+
+  
+  const [pages, setPages] = useState(effectiveInitialData?.pages && Object.keys(effectiveInitialData.pages).length > 0 ? effectiveInitialData.pages : { [initialPageId]: { id: initialPageId, name: "Home", layout: [] } });
+  const [activePageId, setActivePageId] = useState(effectiveInitialData?.activePageId && pages[effectiveInitialData.activePageId] ? effectiveInitialData.activePageId : initialPageId);
+  const [globalNavbar, setGlobalNavbar] = useState(effectiveInitialData?.globalNavbar || null);
+  const [globalFooter, setGlobalFooter] = useState(effectiveInitialData?.globalFooter || null);
+  
+  // Wrapper functions that call onExternalSave when global elements change
+  const updateGlobalNavbar = (newNavbar) => {
+    setGlobalNavbar(newNavbar);
+    // Use setTimeout to ensure state is updated before calling onExternalSave
+    setTimeout(() => {
+      if (onExternalSave) {
+        onExternalSave({ pages, activePageId, globalNavbar: newNavbar, globalFooter, comments });
+      }
+    }, 0);
+  };
+  
+  const updateGlobalFooter = (newFooter) => {
+    setGlobalFooter(newFooter);
+    // Use setTimeout to ensure state is updated before calling onExternalSave
+    setTimeout(() => {
+      if (onExternalSave) {
+        onExternalSave({ pages, activePageId, globalNavbar, globalFooter: newFooter, comments });
+      }
+    }, 0);
+  };
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeDragItem, setActiveDragItem] = useState(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [activeTool, setActiveTool] = useState('select');
   const [zoom, setZoom] = useState(0.5);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
-  const [comments, setComments] = useState(initialBuilderState?.comments || {});
+  const [comments, setComments] = useState(effectiveInitialData?.comments || {});
   const canvasRef = useRef(null);
   const builderRef = useRef(null);
   const isPanning = useRef(false);
@@ -1447,7 +1714,37 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   const [modalStates, setModalStates] = useState({ addPage: { isOpen: false }, renamePage: { isOpen: false, pageId: null, currentName: "" }, deletePage: { isOpen: false, pageId: null, pageName: "" }, alert: { isOpen: false, title: "", message: "" }, saveConfirm: { isOpen: false, title: "", message: "" } });
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const updateLayoutForPage = (pageId, callback) => setPages((p) => { const targetPage = p[pageId]; if (!targetPage) return p; return { ...p, [pageId]: { ...targetPage, layout: callback(targetPage.layout || []) } }; });
+
+
+  const updateLayoutForPage = (pageId, callback) => {
+    setPages((p) => { 
+      const targetPage = p[pageId]; 
+      if (!targetPage) return p; 
+      const newLayout = callback(targetPage.layout || []);
+      const updatedPages = { ...p, [pageId]: { ...targetPage, layout: newLayout } };
+      
+      // Call onExternalSave whenever layout changes to keep parent component updated
+      if (onExternalSave) {
+        onExternalSave({ pages: updatedPages, activePageId, globalNavbar, globalFooter, comments });
+      }
+      
+      return updatedPages; 
+    });
+  };
+
+  // Call onDataChange whenever pages, globalNavbar, or globalFooter changes
+  useEffect(() => {
+    if (onDataChange) {
+      const currentData = {
+        pages,
+        activePageId,
+        globalNavbar,
+        globalFooter,
+        pageTitle: pages[activePageId]?.name || "Untitled"
+      };
+      onDataChange(currentData);
+    }
+  }, [pages, activePageId, globalNavbar, globalFooter, onDataChange]);
 
   const syncPageWithAI = useCallback(async () => {
       if (!aiSessionId.current || !activePageId) return;
@@ -1617,7 +1914,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   const handleUpdateProps = (path, newProps) => {
     const isGlobal = path.startsWith('global');
     if (isGlobal) {
-        const updater = path === 'globalNavbar' ? setGlobalNavbar : setGlobalFooter;
+        const updater = path === 'globalNavbar' ? updateGlobalNavbar : updateGlobalFooter;
         updater(prev => ({...prev, props: mergeDeep({}, prev.props || {}, newProps)}));
     } else {
         setPages(currentPages => {
@@ -1659,8 +1956,8 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     }
   };
 
-  const handleAddGlobalElement = (type) => { const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === type && c.isGlobalOnly); if(!config) return; const newGlobalElement = { id: `global-${config.id}`, type: config.id, props: getDefaultProps(type) }; if (type === 'navbar') setGlobalNavbar(newGlobalElement); if (type === 'footer') setGlobalFooter(newGlobalElement); };
-  const handleDeleteGlobalElement = (elementType) => { const updater = elementType === "navbar" ? setGlobalNavbar : setGlobalFooter; updater(null); if (selectedItem?.itemType === elementType) setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); };
+  const handleAddGlobalElement = (type) => { const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === type && c.isGlobalOnly); if(!config) return; const newGlobalElement = { id: `global-${config.id}`, type: config.id, props: getDefaultProps(type) }; if (type === 'navbar') updateGlobalNavbar(newGlobalElement); if (type === 'footer') updateGlobalFooter(newGlobalElement); };
+  const handleDeleteGlobalElement = (elementType) => { const updater = elementType === "navbar" ? updateGlobalNavbar : updateGlobalFooter; updater(null); if (selectedItem?.itemType === elementType) setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); };
 
   const findContainerById = (items, id, pathPrefix = '') => {
       for (let i = 0; i < items.length; i++) {
