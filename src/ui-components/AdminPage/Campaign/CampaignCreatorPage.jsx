@@ -653,7 +653,7 @@ export default function CampaignCreatorPage() {
                                                 </button>
                                                 
                                                 {showContactDropdown && (
-                                                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                                    <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                                                         <ul className="py-1">
                                                             {availableContactLists.map((list) => (
                                                                 <li key={list.id}>

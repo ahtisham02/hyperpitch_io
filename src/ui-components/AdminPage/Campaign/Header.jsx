@@ -6,9 +6,8 @@ import img from "../../../assets/img/cards/672e98fa2d1ed0b7d1bf2adb_glass.png";
 import * as LucideIcons from "lucide-react";
 import apiRequest from "../../../utils/apiRequestAI";
 
-// --- MODAL & UI COMPONENTS (UNCHANGED) ---
 const StyledModalButton = ({ children, onClick, variant = "primary", className = "" }) => {
-  const baseStyle = "inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed";
+  const baseStyle = "inline-flex items-center justify-center px-5 py-2 text-xs font-semibold rounded-lg transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed";
   const variantStyles = {
     primary: "bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 shadow-md hover:shadow-lg",
     secondary: "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-green-500 shadow-sm",
@@ -26,15 +25,15 @@ function GeneralModal({ isOpen, onClose, title, children, size = "md" }) {
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[99999] p-4 print-hidden animate-fadeIn">
       <div className={`bg-white rounded-2xl shadow-2xl w-full ${sizeClasses[size] || sizeClasses.md} transition-all duration-300 ease-out animate-scaleIn`}>
-        <div className="flex justify-between items-center p-5 bg-slate-50 rounded-t-2xl border-b border-slate-200">
-          <h3 className="text-lg font-bold text-slate-800">{title}</h3>
+        <div className="flex justify-between items-center p-4 bg-slate-50 rounded-t-2xl border-b border-slate-200">
+          <h3 className="text-base font-bold text-slate-800">{title}</h3>
           {onClose && (
             <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 rounded-full hover:bg-slate-200">
-              <LucideIcons.X className="w-5 h-5" />
+              <LucideIcons.X className="w-4 h-4" />
             </button>
           )}
         </div>
-        <div className="p-6">{children}</div>
+        <div className="p-5">{children}</div>
       </div>
     </div>
   );
@@ -43,8 +42,8 @@ function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, confirm
   if (!isOpen) return null;
   return (
     <GeneralModal isOpen={isOpen} onClose={onClose} title={title} size="sm">
-      <p className="text-sm text-slate-600 mb-8">{message}</p>
-      <div className="flex justify-end space-x-3">
+      <p className="text-sm text-slate-600 mb-6">{message}</p>
+      <div className="flex justify-end space-x-2">
         <StyledModalButton onClick={onClose} variant="secondary">{cancelText}</StyledModalButton>
         <StyledModalButton onClick={() => { onConfirm(); onClose(); }} variant={confirmButtonVariant}>{confirmText}</StyledModalButton>
       </div>
@@ -60,8 +59,8 @@ function InputModal({ isOpen, onClose, onSubmit, title, message, inputLabel, ini
     <GeneralModal isOpen={isOpen} onClose={onClose} title={title}>
       {message && <p className="text-sm text-slate-600 mb-4">{message}</p>}
       <label htmlFor="input-modal-field" className="block text-sm font-medium text-slate-700 mb-2">{inputLabel}</label>
-      <input id="input-modal-field" type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} placeholder={placeholder} className="w-full px-4 py-2 border border-slate-300 rounded-lg text-base focus:ring-2 focus:ring-green-500 focus:border-green-500 transition shadow-sm" />
-      <div className="flex justify-end space-x-3 mt-6">
+      <input id="input-modal-field" type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} placeholder={placeholder} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition shadow-sm" />
+      <div className="flex justify-end space-x-2 mt-6">
         <StyledModalButton onClick={onClose} variant="secondary">{cancelText}</StyledModalButton>
         <StyledModalButton onClick={handleSubmit} variant="primary">{submitText}</StyledModalButton>
       </div>
@@ -76,22 +75,21 @@ function CustomDropdown({ options, value, onChange, placeholder = "Select an opt
   const handleSelect = (optionValue) => { onChange(optionValue); setIsOpen(false); };
   return (
     <div className="relative w-full" ref={dropdownRef}>
-      {label && (<label className="block text-xs font-medium text-slate-600 mb-1.5">{label}</label>)}
-      <button type="button" onClick={() => !disabled && setIsOpen(!isOpen)} disabled={disabled} className={`w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all shadow-sm bg-white text-left flex justify-between items-center ${disabled ? "bg-slate-100 cursor-not-allowed" : "cursor-pointer"}`}>
+      {label && (<label className="block text-xs font-medium text-slate-600 mb-1">{label}</label>)}
+      <button type="button" onClick={() => !disabled && setIsOpen(!isOpen)} disabled={disabled} className={`w-full px-2.5 py-1.5 border border-slate-300 rounded-md text-sm focus:ring-1 focus:ring-green-500 focus:border-green-500 transition-all shadow-sm bg-white text-left flex justify-between items-center ${disabled ? "bg-slate-100 cursor-not-allowed" : "cursor-pointer"}`}>
         <span className={selectedOption ? "text-slate-800" : "text-slate-500"}>{selectedOption ? selectedOption.label : placeholder}</span>
-        <LucideIcons.ChevronDown className={`w-5 h-5 text-slate-500 transition-transform ${isOpen ? "transform rotate-180" : ""}`} />
+        <LucideIcons.ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${isOpen ? "transform rotate-180" : ""}`} />
       </button>
       {isOpen && !disabled && (
-        <ul className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-lg max-h-60 overflow-auto py-1.5 text-sm shadow-xl animate-fadeInDown">
+        <ul className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-lg max-h-60 overflow-auto py-1 text-sm shadow-xl animate-fadeInDown">
           {options.map((opt) => (
-            <li key={`${opt.value}-${idSuffix}`} onClick={() => handleSelect(opt.value)} className={`px-4 py-2 hover:bg-green-50 cursor-pointer ${opt.value === value ? "bg-green-100 text-green-800 font-semibold" : "text-slate-700"}`}>{opt.label}</li>
+            <li key={`${opt.value}-${idSuffix}`} onClick={() => handleSelect(opt.value)} className={`px-3 py-1.5 hover:bg-green-50 cursor-pointer ${opt.value === value ? "bg-green-100 text-green-800 font-semibold" : "text-slate-700"}`}>{opt.label}</li>
           ))}
         </ul>
       )}
     </div>
   );
 }
-// --- HELPER FUNCTIONS (UNCHANGED) ---
 function generateId(prefix = "id") { return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`; }
 function isObject(item) { return (item && typeof item === 'object' && !Array.isArray(item)); }
 function mergeDeep(target, ...sources) {
@@ -163,19 +161,18 @@ function findItemAndPathRecursive(data, targetId, currentPathBase = "") {
   }
   return null;
 }
-// --- CONFIGS & ELEMENT COMPONENTS (UNCHANGED) ---
 const textSizeOptions = [ { label: "Tiny", value: "text-xs" }, { label: "Small", value: "text-sm" }, { label: "Base", value: "text-base" }, { label: "Large", value: "text-lg" }, { label: "XL", value: "text-xl" }, { label: "2XL", value: "text-2xl" }, ];
 const fontWeightOptions = [ { label: "Light", value: "font-light" }, { label: "Normal", value: "font-normal" }, { label: "Medium", value: "font-medium" }, { label: "Semibold", value: "font-semibold" }, { label: "Bold", value: "font-bold" }, ];
-const textAlignOptions = [ { label: "Left", value: "text-left", icon: <LucideIcons.AlignLeft className="w-5 h-5" /> }, { label: "Center", value: "text-center", icon: <LucideIcons.AlignCenter className="w-5 h-5" /> }, { label: "Right", value: "text-right", icon: <LucideIcons.AlignRight className="w-5 h-5" /> }, ];
+const textAlignOptions = [ { label: "Left", value: "text-left", icon: <LucideIcons.AlignLeft className="w-4 h-4" /> }, { label: "Center", value: "text-center", icon: <LucideIcons.AlignCenter className="w-4 h-4" /> }, { label: "Right", value: "text-right", icon: <LucideIcons.AlignRight className="w-4 h-4" /> }, ];
 const PREDEFINED_STRUCTURES = [ { name: "1 Column", id: "1col", layout: [{ width: "100%" }] }, { name: "2 Columns", id: "2col5050", layout: [{ width: "50%" }, { width: "50%" }] }, { name: "3 Columns", id: "3col33", layout: [{ width: "33.33%" }, { width: "33.33%" }, { width: "33.33%" }] }, { name: "4 Columns", id: "4col25", layout: [{ width: "25%" }, { width: "25%" }, { width: "25%" }, { width: "25%" }] }, { name: "Left Sidebar", id: "leftsidebar", layout: [{ width: "30%" }, { width: "70%" }] }, { name: "Right Sidebar", id: "rightsidebar", layout: [{ width: "70%" }, { width: "30%" }] }, ];
 const PREVIEW_DEVICES = [ { name: "Mobile", width: 390, icon: LucideIcons.Smartphone }, { name: "Tablet", width: 768, icon: LucideIcons.Tablet }, { name: "Desktop", width: "100%", icon: LucideIcons.Monitor }, ];
 function Heading({ text = "Default Heading Title", onUpdate, isSelected, sizeClass, fontWeight, textAlign, textColor, isPreviewMode, isEditable, style }) {
   const handleBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ text: e.currentTarget.innerText }); };
   return (
-    <div className={`p-2 ${!isPreviewMode ? `rounded-lg ${isSelected ? "" : "hover:ring-2 hover:ring-green-400/20"}`: ""}`} style={style}>
+    <div className={`p-1 ${!isPreviewMode ? `rounded-md ${isSelected ? "" : "hover:ring-1 hover:ring-green-400/20"}`: ""}`} style={style}>
       <h1
         style={{ color: textColor || undefined }}
-        className={`${sizeClass || "text-2xl"} ${fontWeight || "font-bold"} ${textAlign || "text-left"} ${!textColor ? "text-slate-800" : ""} ${!isPreviewMode ? "focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white/80 p-1 -m-1 rounded-lg" : ""} transition-all`}
+        className={`${sizeClass || "text-2xl"} ${fontWeight || "font-bold"} ${textAlign || "text-left"} ${!textColor ? "text-slate-800" : ""} ${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-green-500 focus:bg-white/80 p-1 -m-1 rounded-md" : ""} transition-all`}
         contentEditable={!isPreviewMode && isEditable} suppressContentEditableWarning onBlur={handleBlur} dangerouslySetInnerHTML={{ __html: text }}></h1>
     </div>
   );
@@ -183,10 +180,10 @@ function Heading({ text = "Default Heading Title", onUpdate, isSelected, sizeCla
 function TextBlock({ text = "Lorem ipsum dolor sit amet...", onUpdate, isSelected, sizeClass, fontWeight, textAlign, textColor, isPreviewMode, isEditable, style }) {
     const handleBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ text: e.currentTarget.innerText }); };
     return (
-        <div className={`p-2 ${!isPreviewMode ? `rounded-lg ${isSelected ? "" : "hover:ring-2 hover:ring-green-400/20"}` : ""}`} style={style}>
+        <div className={`p-1 ${!isPreviewMode ? `rounded-md ${isSelected ? "" : "hover:ring-1 hover:ring-green-400/20"}` : ""}`} style={style}>
             <p
                 style={{ color: textColor || undefined }}
-                className={`${sizeClass || "text-base"} ${fontWeight || "font-normal"} ${textAlign || "text-left"} ${!textColor ? "text-slate-700" : ""} leading-relaxed ${!isPreviewMode ? "focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white/80 p-1 -m-1 rounded-lg whitespace-pre-wrap" : "whitespace-pre-wrap"} transition-all`}
+                className={`${sizeClass || "text-base"} ${fontWeight || "font-normal"} ${textAlign || "text-left"} ${!textColor ? "text-slate-700" : ""} leading-relaxed ${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-green-500 focus:bg-white/80 p-1 -m-1 rounded-md whitespace-pre-wrap" : "whitespace-pre-wrap"} transition-all`}
                 contentEditable={!isPreviewMode && isEditable}
                 suppressContentEditableWarning
                 onBlur={handleBlur}
@@ -202,17 +199,17 @@ function AccordionElement({ title = "Accordion Title", content = "Accordion cont
     const effectiveToggle = !isPreviewMode ? () => {} : toggleOpen;
 
     return (
-        <div className={`p-2 ${!isPreviewMode ? `rounded-lg ${isSelected ? "" : "hover:ring-2 hover:ring-green-400/20"}` : ""}`} style={style}>
-            <div className={`bg-white rounded-lg shadow-sm border ${isSelected && !isPreviewMode ? "border-green-300" : "border-slate-200"}`}>
+        <div className={`p-1 ${!isPreviewMode ? `rounded-md ${isSelected ? "" : "hover:ring-1 hover:ring-green-400/20"}` : ""}`} style={style}>
+            <div className={`bg-white rounded-md shadow-sm border ${isSelected && !isPreviewMode ? "border-green-300" : "border-slate-200"}`}>
                 <h2>
-                    <button type="button" onClick={effectiveToggle} className={`flex items-center justify-between w-full p-4 font-medium text-left text-slate-800 ${isPreviewMode ? 'hover:bg-green-50/50' : 'cursor-default'} transition-colors`}>
+                    <button type="button" onClick={effectiveToggle} className={`flex items-center justify-between w-full p-3 font-medium text-left text-slate-800 text-sm ${isPreviewMode ? 'hover:bg-green-50/50' : 'cursor-default'} transition-colors`}>
                         <span contentEditable={!isPreviewMode && isEditable} suppressContentEditableWarning onBlur={handleTitleBlur} className={`flex-1 ${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-green-400 p-0.5 -m-0.5 rounded-sm" : ""}`} dangerouslySetInnerHTML={{ __html: title }}></span>
-                        <LucideIcons.ChevronDown className={`w-5 h-5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}/>
+                        <LucideIcons.ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}/>
                     </button>
                 </h2>
                 <div className={`grid overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                     <div className="overflow-hidden">
-                        <div className="p-4 border-t border-slate-200 text-slate-600">
+                        <div className="p-3 border-t border-slate-200 text-slate-600 text-sm">
                              <p contentEditable={!isPreviewMode && isEditable} suppressContentEditableWarning onBlur={handleContentBlur} className={`${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-green-400 p-0.5 -m-0.5 rounded-sm whitespace-pre-wrap" : "whitespace-pre-wrap"}`} dangerouslySetInnerHTML={{ __html: content }}></p>
                         </div>
                     </div>
@@ -224,7 +221,7 @@ function AccordionElement({ title = "Accordion Title", content = "Accordion cont
 function ImageElement({ src = img, alt = "Placeholder", width = "100%", height = "auto", borderRadius = "8px", boxShadow = "none", isSelected, isPreviewMode, style }) {
     const getStyleValue = (v) => v === "auto" || (typeof v === "string" && v.endsWith("%")) ? v : `${parseInt(v, 10) || "auto"}px`;
     return (
-        <div className={`p-1 ${!isPreviewMode ? `rounded-lg ${isSelected ? "" : "hover:ring-2 hover:ring-green-400/20"}` : ""}`} style={style}>
+        <div className={`p-1 ${!isPreviewMode ? `rounded-md ${isSelected ? "" : "hover:ring-1 hover:ring-green-400/20"}` : ""}`} style={style}>
             <img src={src} alt={alt} className={`max-w-full h-auto block mx-auto transition-all`} style={{ width: getStyleValue(width), height: getStyleValue(height), minHeight: "50px", objectFit: "cover", borderRadius: borderRadius, boxShadow: boxShadow }} />
         </div>
     );
@@ -240,8 +237,8 @@ function ButtonElement({ buttonText = "Click Me", link = "#", onUpdate, isSelect
         else if (link === "#") { e.preventDefault(); }
     };
     return (
-        <div className={`py-3 px-2 ${textAlign || "text-center"} ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/5" : ""}`} style={style}>
-            <a href={link} onClick={handleClick} target={ isPreviewMode && link && !link.startsWith("/") && link !== "#" ? "_blank" : "_self" } rel={ isPreviewMode && link && !link.startsWith("/") && link !== "#" ? "noopener noreferrer" : "" } className={`inline-block px-8 py-3 font-semibold shadow-md hover:opacity-90 transition-all transform hover:-translate-y-px active:translate-y-0`} style={buttonStyle}>
+        <div className={`py-2 px-1 ${textAlign || "text-center"} ${!isPreviewMode && isSelected ? "rounded-lg bg-green-500/5" : ""}`} style={style}>
+            <a href={link} onClick={handleClick} target={ isPreviewMode && link && !link.startsWith("/") && link !== "#" ? "_blank" : "_self" } rel={ isPreviewMode && link && !link.startsWith("/") && link !== "#" ? "noopener noreferrer" : "" } className={`inline-block px-6 py-2.5 font-semibold shadow-md hover:opacity-90 transition-all transform hover:-translate-y-px active:translate-y-0 text-sm`} style={buttonStyle}>
                 <span contentEditable={!isPreviewMode && isEditable} suppressContentEditableWarning onBlur={handleTextBlur} dangerouslySetInnerHTML={{ __html: buttonText }} className={`${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-white/50 p-0.5 -m-0.5 rounded-sm" : ""}`}></span>
             </a>
         </div>
@@ -249,7 +246,7 @@ function ButtonElement({ buttonText = "Click Me", link = "#", onUpdate, isSelect
 }
 function Divider({ isSelected, isPreviewMode, style }) {
     return (
-        <div className={`py-4 px-1 ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/5" : ""}`} style={style}>
+        <div className={`py-3 px-1 ${!isPreviewMode && isSelected ? "rounded-lg bg-green-500/5" : ""}`} style={style}>
             <hr className="border-t border-slate-300" />
         </div>
     );
@@ -261,15 +258,15 @@ function IconElement({ iconName = "Star", size = "32px", color = "currentColor",
     const IconComponent = LucideIcons[iconName] || LucideIcons.HelpCircle;
     const ActualIconComponent = IconComponent || LucideIcons.HelpCircle;
     return (
-        <div className={`p-2 flex justify-center items-center ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/5" : ""}`} style={style}>
+        <div className={`p-2 flex justify-center items-center ${!isPreviewMode && isSelected ? "rounded-lg bg-green-500/5" : ""}`} style={style}>
             <ActualIconComponent style={{ fontSize: size, color: color }} strokeWidth={color === "currentColor" ? 1.75 : 2} />
         </div>
     );
 }
 function GoogleMapsPlaceholder({ address = "1600 Amphitheatre Parkway, Mountain View, CA", zoom = 14, onUpdate, isSelected, isPreviewMode, style }) {
     return (
-        <div className={`p-3 rounded-xl ${!isPreviewMode ? `${isSelected ? "bg-green-500/5 ring-2 ring-green-500" : "bg-slate-100 border border-slate-200 hover:border-green-300"}` : "bg-slate-100 border border-slate-200"} aspect-video flex flex-col items-center justify-center text-center`} style={style}>
-            <LucideIcons.MapPin className="h-12 w-12 text-slate-400 mb-2" />
+        <div className={`p-3 rounded-lg ${!isPreviewMode ? `${isSelected ? "bg-green-500/5 ring-1 ring-green-500" : "bg-slate-100 border border-slate-200 hover:border-green-300"}` : "bg-slate-100 border border-slate-200"} aspect-video flex flex-col items-center justify-center text-center`} style={style}>
+            <LucideIcons.MapPin className="h-10 w-10 text-slate-400 mb-2" />
             <p className="text-sm font-medium text-slate-600">{address}</p>
             <p className="text-xs text-slate-500 mt-0.5">Maps Placeholder (Zoom: {zoom})</p>
         </div>
@@ -281,7 +278,7 @@ function VideoElement({ videoType = "mp4", src, width = "100%", height = "auto",
     const effectiveHeight = height === "auto" ? "auto" : parseInt(height) ? `${parseInt(height)}px` : "300px";
     const effectiveWidth = width === "auto" ? "auto" : parseInt(width) || (typeof width === "string" && width.endsWith("%")) ? width : "100%";
     const renderVideo = () => {
-        if (!src) return (<div className="p-4 text-center text-slate-500 aspect-video flex items-center justify-center bg-slate-100 rounded-lg border border-slate-200">Video source not configured.</div>);
+        if (!src) return (<div className="p-4 text-center text-slate-500 aspect-video flex items-center justify-center bg-slate-100 rounded-md border border-slate-200 text-sm">Video source not configured.</div>);
         switch (videoType) {
             case "youtube": return (<iframe src={getYouTubeEmbedUrl(src)} style={{ width: effectiveWidth, height: effectiveHeight }} frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title="YouTube Video" className="block mx-auto rounded-lg shadow-lg"></iframe>);
             case "vimeo": return (<iframe src={getVimeoEmbedUrl(src)} style={{ width: effectiveWidth, height: effectiveHeight }} frameBorder="0" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title="Vimeo Video" className="block mx-auto rounded-lg shadow-lg"></iframe>);
@@ -289,7 +286,7 @@ function VideoElement({ videoType = "mp4", src, width = "100%", height = "auto",
         }
     };
     return (
-        <div className={`p-1 ${!isPreviewMode ? `rounded-xl ${isSelected ? "" : "hover:ring-2 hover:ring-green-400/20"}` : ""}`} style={style}>
+        <div className={`p-1 ${!isPreviewMode ? `rounded-lg ${isSelected ? "" : "hover:ring-1 hover:ring-green-400/20"}` : ""}`} style={style}>
             {renderVideo()}
         </div>
     );
@@ -299,16 +296,16 @@ function InnerSectionComponentDisplay({ sectionData, onOpenStructureModal, onSel
   const ownPath = sectionData.path;
   if (!hasColumns) {
     return (
-      <div onClick={(e) => { if (!isPreviewMode && isDraggable) { e.stopPropagation(); onSelect(sectionData.id, "element", ownPath); } }} className={`p-4 min-h-[80px] flex flex-col items-center justify-center ${!isPreviewMode ? `rounded-xl border-2 border-dashed ${isSelected ? "border-green-500 bg-green-50/80" : "border-slate-300 bg-slate-100/80 hover:border-green-400 hover:bg-green-50/50"} cursor-pointer transition-all` : ""}`} style={style}>
-          <LucideIcons.Rows3 className="h-8 w-8 text-slate-400 mb-2" />
+      <div onClick={(e) => { if (!isPreviewMode && isDraggable) { e.stopPropagation(); onSelect(sectionData.id, "element", ownPath); } }} className={`p-4 min-h-[60px] flex flex-col items-center justify-center ${!isPreviewMode ? `rounded-lg border-2 border-dashed ${isSelected ? "border-green-500 bg-green-50/80" : "border-slate-300 bg-slate-100/80 hover:border-green-400 hover:bg-green-50/50"} cursor-pointer transition-all` : ""}`} style={style}>
+          <LucideIcons.Rows3 className="h-6 w-6 text-slate-400 mb-2" />
           {!isPreviewMode && (
-            <button onClick={(e) => { e.stopPropagation(); onOpenStructureModal(ownPath, "innerSection"); }} className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors">Set Inner Structure</button>
+            <button onClick={(e) => { e.stopPropagation(); onOpenStructureModal(ownPath, "innerSection"); }} className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-md hover:bg-green-700 transition-colors">Set Inner Structure</button>
           )}
       </div>
     );
   }
   return (
-    <div onClick={(e) => { if (!isPreviewMode && isDraggable) { e.stopPropagation(); onSelect(sectionData.id, "element", ownPath); } }} className={`p-1 ${!isPreviewMode ? `border rounded-xl ${isSelected ? "border-green-500 bg-green-50/50" : "border-slate-200 hover:border-green-300/70"}` : ""}`} style={style}>
+    <div onClick={(e) => { if (!isPreviewMode && isDraggable) { e.stopPropagation(); onSelect(sectionData.id, "element", ownPath); } }} className={`p-1 ${!isPreviewMode ? `border rounded-lg ${isSelected ? "border-green-500 bg-green-50/50" : "border-slate-200 hover:border-green-300/70"}` : ""}`} style={style}>
         <div className="flex flex-wrap -m-0.5">
             {sectionData.columns.map((col, colIdx) => (
                 <ColumnComponent key={col.id} parentPath={ownPath} columnData={col} columnIndex={colIdx} onUpdateProps={onUpdateProps} onDelete={onDelete} onSelect={onSelect} selectedItemId={selectedItemId} onOpenStructureModal={onOpenStructureModal} isInner={true} isPreviewMode={isPreviewMode} isDraggable={isDraggable} />
@@ -352,8 +349,8 @@ function CardSliderElement({ slides = [], slidesPerView = 3, spaceBetween = 16, 
   };
   if (totalSlides === 0 && !isPreviewMode) {
       return (
-          <div className={`p-4 min-h-[150px] flex flex-col items-center justify-center text-center border-2 border-dashed rounded-xl ${isSelected ? "border-green-500 bg-green-500/10" : "border-slate-300 bg-slate-100/80"}`} style={style}>
-              <LucideIcons.GalleryHorizontalEnd className="h-12 w-12 text-slate-400 mb-3" />
+          <div className={`p-4 min-h-[120px] flex flex-col items-center justify-center text-center border-2 border-dashed rounded-lg ${isSelected ? "border-green-500 bg-green-500/10" : "border-slate-300 bg-slate-100/80"}`} style={style}>
+              <LucideIcons.GalleryHorizontalEnd className="h-10 w-10 text-slate-400 mb-2" />
               <p className="text-sm font-medium text-slate-600">Card Slider</p>
               <p className="text-xs text-slate-500">Add slides in the Properties Panel.</p>
           </div>
@@ -361,31 +358,31 @@ function CardSliderElement({ slides = [], slidesPerView = 3, spaceBetween = 16, 
   }
   if (totalSlides === 0 && isPreviewMode) return null;
   return (
-      <div className={`p-2 relative ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/5" : ""}`} style={style}>
+      <div className={`p-2 relative ${!isPreviewMode && isSelected ? "rounded-lg bg-green-500/5" : ""}`} style={style}>
           <div className="overflow-hidden relative">
               <div ref={sliderWrapperRef} className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${currentIndex * (100 / effectiveSlidesPerView)}%)`, transitionDuration: `${speed}ms` }}>
                   {slides.map((slide, index) => (
                       <div key={slide.id || index} className="flex-shrink-0 w-full" style={{ width: `${100 / effectiveSlidesPerView}%`, paddingLeft: `${spaceBetween / 2}px`, paddingRight: `${spaceBetween / 2}px` }}>
-                          <div className="bg-white p-4 flex flex-col h-full shadow-lg" style={{ borderRadius: cardBorderRadius }}>
-                              <h3 className={`text-lg font-semibold mb-1 ${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-green-400 p-0.5 -m-0.5 rounded-lg" : ""}`} contentEditable={!isPreviewMode && isEditable} suppressContentEditableWarning onBlur={(e) => handleCardTextUpdate( index, "heading", e.currentTarget.innerText )} dangerouslySetInnerHTML={{ __html: slide.heading || `Slide ${index + 1}` }} ></h3>
-                              <p className={`text-sm text-slate-600 flex-grow ${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-green-400 p-0.5 -m-0.5 rounded-lg whitespace-pre-wrap" : "whitespace-pre-wrap"}`} contentEditable={!isPreviewMode && isEditable} suppressContentEditableWarning onBlur={(e) => handleCardTextUpdate( index, "text", e.currentTarget.innerText )} dangerouslySetInnerHTML={{ __html: slide.text || "Slide content goes here." }}></p>
+                          <div className="bg-white p-3 flex flex-col h-full shadow-lg" style={{ borderRadius: cardBorderRadius }}>
+                              <h3 className={`text-base font-semibold mb-1 ${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-green-400 p-0.5 -m-0.5 rounded-md" : ""}`} contentEditable={!isPreviewMode && isEditable} suppressContentEditableWarning onBlur={(e) => handleCardTextUpdate( index, "heading", e.currentTarget.innerText )} dangerouslySetInnerHTML={{ __html: slide.heading || `Slide ${index + 1}` }} ></h3>
+                              <p className={`text-xs text-slate-600 flex-grow ${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-green-400 p-0.5 -m-0.5 rounded-md whitespace-pre-wrap" : "whitespace-pre-wrap"}`} contentEditable={!isPreviewMode && isEditable} suppressContentEditableWarning onBlur={(e) => handleCardTextUpdate( index, "text", e.currentTarget.innerText )} dangerouslySetInnerHTML={{ __html: slide.text || "Slide content goes here." }}></p>
                               {slide.link && isPreviewMode && (
-                                  <a href={slide.link} onClick={(e) => { if (slide.link.startsWith("/")) { e.preventDefault(); if (onNavigate) onNavigate(slide.link.substring(1)); } else if (slide.link === "#") { e.preventDefault(); } }} target={ !slide.link.startsWith("/") && slide.link !== "#" ? "_blank" : "_self" } rel={ !slide.link.startsWith("/") && slide.link !== "#" ? "noopener noreferrer" : "" } className="mt-auto pt-2 text-green-600 hover:text-green-700 text-sm font-medium self-start flex items-center gap-1">Learn More<LucideIcons.ArrowRight className="w-4 h-4" /></a>
+                                  <a href={slide.link} onClick={(e) => { if (slide.link.startsWith("/")) { e.preventDefault(); if (onNavigate) onNavigate(slide.link.substring(1)); } else if (slide.link === "#") { e.preventDefault(); } }} target={ !slide.link.startsWith("/") && slide.link !== "#" ? "_blank" : "_self" } rel={ !slide.link.startsWith("/") && slide.link !== "#" ? "noopener noreferrer" : "" } className="mt-auto pt-2 text-green-600 hover:text-green-700 text-xs font-medium self-start flex items-center gap-1">Learn More<LucideIcons.ArrowRight className="w-3 h-3" /></a>
                               )}
-                              {!isPreviewMode && slide.link && (<span className="mt-auto pt-2 text-green-600 text-sm font-medium self-start">Link: {slide.link}</span>)}
+                              {!isPreviewMode && slide.link && (<span className="mt-auto pt-2 text-green-600 text-xs font-medium self-start">Link: {slide.link}</span>)}
                           </div>
                       </div>
                   ))}
               </div>
           </div>
           {showNavigation && totalSlides > effectiveSlidesPerView && (<>
-              <button onClick={handlePrev} disabled={!loop && currentIndex === 0} className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-3 bg-white/80 hover:bg-white text-slate-700 p-2 rounded-full shadow-md z-10 disabled:opacity-40 disabled:cursor-not-allowed transition-all" aria-label="Previous slide"><LucideIcons.ChevronLeft className="w-6 h-6" /></button>
-              <button onClick={handleNext} disabled={ !loop && currentIndex >= totalSlides - effectiveSlidesPerView } className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-3 bg-white/80 hover:bg-white text-slate-700 p-2 rounded-full shadow-md z-10 disabled:opacity-40 disabled:cursor-not-allowed transition-all" aria-label="Next slide"><LucideIcons.ChevronRight className="w-6 h-6" /></button>
+              <button onClick={handlePrev} disabled={!loop && currentIndex === 0} className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-2 bg-white/80 hover:bg-white text-slate-700 p-1.5 rounded-full shadow-md z-10 disabled:opacity-40 disabled:cursor-not-allowed transition-all" aria-label="Previous slide"><LucideIcons.ChevronLeft className="w-5 h-5" /></button>
+              <button onClick={handleNext} disabled={ !loop && currentIndex >= totalSlides - effectiveSlidesPerView } className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-2 bg-white/80 hover:bg-white text-slate-700 p-1.5 rounded-full shadow-md z-10 disabled:opacity-40 disabled:cursor-not-allowed transition-all" aria-label="Next slide"><LucideIcons.ChevronRight className="w-5 h-5" /></button>
           </>)}
           {showPagination && totalSlides > effectiveSlidesPerView && (
-              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2 p-2">
+              <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 flex space-x-1.5 p-2">
                   {Array.from({ length: loop ? totalSlides : Math.max(1, totalSlides - effectiveSlidesPerView + 1), }).map((_, idx) => (
-                      <button key={idx} onClick={() => goToSlide(idx)} className={`w-2.5 h-2.5 rounded-full ${currentIndex === idx ? "bg-green-600 scale-125" : "bg-slate-300 hover:bg-slate-400"} transition-all`} aria-label={`Go to slide ${idx + 1}`} />
+                      <button key={idx} onClick={() => goToSlide(idx)} className={`w-2 h-2 rounded-full ${currentIndex === idx ? "bg-green-600 scale-125" : "bg-slate-300 hover:bg-slate-400"} transition-all`} aria-label={`Go to slide ${idx + 1}`} />
                   ))}
               </div>
           )}
@@ -407,45 +404,45 @@ function NavbarElement({ logoType = "text", logoText = "MySite", logoSrc = img, 
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
     const handleClick = (e) => { if (!isPreviewMode && onSelect && isDraggable) { e.stopPropagation(); onSelect(); } };
     return (
-        <div onClick={handleClick} className={`p-1 relative group ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/5" : !isPreviewMode && path ? "hover:ring-2 hover:ring-green-400/20 rounded-xl" : ""}`}>
-            <nav style={navStyle} className="relative px-4 sm:px-6 py-4 shadow-md rounded-xl">
+        <div onClick={handleClick} className={`p-1 relative group ${!isPreviewMode && isSelected ? "rounded-lg bg-green-500/5" : !isPreviewMode && path ? "hover:ring-1 hover:ring-green-400/20 rounded-lg" : ""}`}>
+            <nav style={navStyle} className="relative px-4 sm:px-6 py-3 shadow-md rounded-lg">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                        {logoType === "image" && logoSrc ? (<img src={logoSrc} alt={logoText || "Logo"} className="h-9 sm:h-10 w-auto mr-4 rounded-sm object-contain" />) : (
-                            <a href={isPreviewMode ? links.find((l) => l.text.toLowerCase() === "home")?.url || "/home" : "#"} onClick={(e) => handleLinkClick(e, links.find((l) => l.text.toLowerCase() === "home")?.url || "/home")} style={textStyle} className="text-xl lg:text-2xl font-bold hover:opacity-80 transition-opacity">{logoText}</a>
+                        {logoType === "image" && logoSrc ? (<img src={logoSrc} alt={logoText || "Logo"} className="h-8 sm:h-9 w-auto mr-3 rounded-sm object-contain" />) : (
+                            <a href={isPreviewMode ? links.find((l) => l.text.toLowerCase() === "home")?.url || "/home" : "#"} onClick={(e) => handleLinkClick(e, links.find((l) => l.text.toLowerCase() === "home")?.url || "/home")} style={textStyle} className="text-lg lg:text-xl font-bold hover:opacity-80 transition-opacity">{logoText}</a>
                         )}
                     </div>
                     <div className={`${forceMobileLayout ? "hidden" : "hidden md:flex"} items-center`}>
-                        <div className="flex items-center space-x-5 lg:space-x-8">
+                        <div className="flex items-center space-x-4 lg:space-x-6">
                             {links.map((link, index) => (
-                                <a key={link.id || index} href={link.url} onClick={(e) => handleLinkClick(e, link.url)} target={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "_blank" : "_self"} rel={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "noopener noreferrer" : ""} style={linkStyle} className="text-sm font-medium hover:opacity-80 transition-opacity">{link.text}</a>
+                                <a key={link.id || index} href={link.url} onClick={(e) => handleLinkClick(e, link.url)} target={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "_blank" : "_self"} rel={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "noopener noreferrer" : ""} style={linkStyle} className="text-xs font-medium hover:opacity-80 transition-opacity">{link.text}</a>
                             ))}
                         </div>
                         {(rightContentType === "userIcon" || rightContentType === "searchIcon") && (
-                            <div className="flex items-center ml-6">{rightContentType === "userIcon" && <LucideIcons.CircleUserRound style={linkStyle} className="h-6 w-6" />}{rightContentType === "searchIcon" && <LucideIcons.Search style={linkStyle} className="h-5 w-5" />}</div>
+                            <div className="flex items-center ml-5">{rightContentType === "userIcon" && <LucideIcons.CircleUserRound style={linkStyle} className="h-5 w-5" />}{rightContentType === "searchIcon" && <LucideIcons.Search style={linkStyle} className="h-4 w-4" />}</div>
                         )}
                     </div>
                     <div className={`${forceMobileLayout ? "flex" : "md:hidden flex"} items-center`}>
-                        {rightContentType === "userIcon" && <LucideIcons.CircleUserRound style={linkStyle} className="h-6 w-6 mr-3" />}
-                        {rightContentType === "searchIcon" && <LucideIcons.Search style={linkStyle} className="h-5 w-5 mr-3" />}
+                        {rightContentType === "userIcon" && <LucideIcons.CircleUserRound style={linkStyle} className="h-5 w-5 mr-3" />}
+                        {rightContentType === "searchIcon" && <LucideIcons.Search style={linkStyle} className="h-4 w-4 mr-3" />}
                         <button onClick={toggleMobileMenu} style={linkStyle} aria-label="Toggle menu" className="p-1">
-                            {isMobileMenuOpen ? (<LucideIcons.X className="h-7 w-7" />) : (<LucideIcons.Menu className="h-7 w-7" />)}
+                            {isMobileMenuOpen ? (<LucideIcons.X className="h-6 w-6" />) : (<LucideIcons.Menu className="h-6 w-6" />)}
                         </button>
                     </div>
                 </div>
                 {isMobileMenuOpen && (
-                    <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-b-xl transition transform origin-top animate-fadeInDown" style={navStyle}>
+                    <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-b-lg transition transform origin-top animate-fadeInDown" style={navStyle}>
                         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                             {links.map((link, index) => (
-                                <a key={link.id || index} href={link.url} onClick={(e) => handleLinkClick(e, link.url)} target={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "_blank" : "_self"} rel={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "noopener noreferrer" : ""} style={linkStyle} className="block px-3 py-3 rounded-lg text-base font-medium hover:bg-white/10 hover:opacity-80 transition-colors">{link.text}</a>
+                                <a key={link.id || index} href={link.url} onClick={(e) => handleLinkClick(e, link.url)} target={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "_blank" : "_self"} rel={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "noopener noreferrer" : ""} style={linkStyle} className="block px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 hover:opacity-80 transition-colors">{link.text}</a>
                             ))}
                         </div>
                     </div>
                 )}
             </nav>
             {!isPreviewMode && isSelected && onDelete && (
-                <button onClick={(e) => { e.stopPropagation(); onDelete(); }} title="Remove Global Navbar" className="absolute -top-3 -right-3 p-1.5 bg-red-600 text-white rounded-full hover:bg-red-700 hover:scale-110 transition-all w-7 h-7 flex items-center justify-center shadow-md z-30 print-hidden">
-                    <LucideIcons.X className="w-4 h-4" strokeWidth={3} />
+                <button onClick={(e) => { e.stopPropagation(); onDelete(); }} title="Remove Global Navbar" className="absolute -top-2.5 -right-2.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 hover:scale-110 transition-all w-6 h-6 flex items-center justify-center shadow-md z-30 print-hidden">
+                    <LucideIcons.X className="w-3 h-3" strokeWidth={3} />
                 </button>
             )}
         </div>
@@ -462,26 +459,25 @@ function FooterElement({ copyrightText = `© ${new Date().getFullYear()} MySite.
     };
     const handleClick = (e) => { if (!isPreviewMode && onSelect && isDraggable) { e.stopPropagation(); onSelect(); } };
     return (
-        <div onClick={handleClick} className={`p-1 relative group ${!isPreviewMode && isSelected ? "rounded-xl bg-green-500/5" : !isPreviewMode && path ? "hover:ring-2 hover:ring-green-400/20 rounded-xl" : ""}`}>
-            <footer style={footerStyle} className="px-6 py-10 text-center border-t border-slate-200/80 rounded-xl">
+        <div onClick={handleClick} className={`p-1 relative group ${!isPreviewMode && isSelected ? "rounded-lg bg-green-500/5" : !isPreviewMode && path ? "hover:ring-1 hover:ring-green-400/20 rounded-lg" : ""}`}>
+            <footer style={footerStyle} className="px-5 py-8 text-center border-t border-slate-200/80 rounded-lg">
                 <div className="max-w-5xl mx-auto">
-                    <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8 mb-6">
+                    <div className="flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-6 mb-5">
                         {links.map((link, index) => (
-                            <a key={link.id || index} href={link.url} onClick={(e) => handleLinkClick(e, link.url)} target={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "_blank" : "_self"} rel={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "noopener noreferrer" : ""} style={linkStyle} className="text-sm sm:text-base hover:underline">{link.text}</a>
+                            <a key={link.id || index} href={link.url} onClick={(e) => handleLinkClick(e, link.url)} target={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "_blank" : "_self"} rel={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "noopener noreferrer" : ""} style={linkStyle} className="text-xs sm:text-sm hover:underline">{link.text}</a>
                         ))}
                     </div>
-                    <p style={textStyle} className="text-sm sm:text-base">{copyrightText}</p>
+                    <p style={textStyle} className="text-xs sm:text-sm">{copyrightText}</p>
                 </div>
             </footer>
             {!isPreviewMode && isSelected && onDelete && (
-                <button onClick={(e) => { e.stopPropagation(); onDelete(); }} title="Remove Global Footer" className="absolute -top-3 -right-3 p-1.5 bg-red-600 text-white rounded-full hover:bg-red-700 hover:scale-110 transition-all w-7 h-7 flex items-center justify-center shadow-md z-30 print-hidden">
-                    <LucideIcons.X className="w-4 h-4" strokeWidth={3} />
+                <button onClick={(e) => { e.stopPropagation(); onDelete(); }} title="Remove Global Footer" className="absolute -top-2.5 -right-2.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 hover:scale-110 transition-all w-6 h-6 flex items-center justify-center shadow-md z-30 print-hidden">
+                    <LucideIcons.X className="w-3 h-3" strokeWidth={3} />
                 </button>
             )}
         </div>
     );
 }
-// --- UI & DATA MANAGERS (UNCHANGED) ---
 function LinkManager({ links, onUpdateLinks, elementId, pages, linkTypeLabel = "Link" }) {
   const [localLinks, setLocalLinks] = useState(links || []);
   useEffect(() => { setLocalLinks(links || []); }, [links]);
@@ -500,23 +496,23 @@ function LinkManager({ links, onUpdateLinks, elementId, pages, linkTypeLabel = "
   };
   const pageOptions = [ { label: "External URL", value: "external" }, ...Object.values(pages).map((p) => ({ label: `${p.name} (/${p.id})`, value: `internal:${p.id}` })) ];
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
         {localLinks.map((link, index) => (
-            <div key={link.id || index} className="p-3 border border-slate-200 rounded-xl space-y-2.5 bg-slate-50/70">
-                <input type="text" placeholder={`${linkTypeLabel} Text`} value={link.text} onChange={(e) => handleLinkChange(index, "text", e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-green-500 focus:border-green-500" />
-                <input type="text" placeholder="URL (e.g. /page-slug or https://...)" value={link.url} onChange={(e) => handleLinkChange(index, "url", e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-green-500 focus:border-green-500 mb-1" />
+            <div key={link.id || index} className="p-2.5 border border-slate-200 rounded-lg space-y-2 bg-slate-50/70">
+                <input type="text" placeholder={`${linkTypeLabel} Text`} value={link.text} onChange={(e) => handleLinkChange(index, "text", e.target.value)} className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md text-xs focus:ring-green-500 focus:border-green-500" />
+                <input type="text" placeholder="URL (e.g. /page-slug or https://...)" value={link.url} onChange={(e) => handleLinkChange(index, "url", e.target.value)} className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md text-xs focus:ring-green-500 focus:border-green-500 mb-1" />
                 <CustomDropdown options={pageOptions} value={ link.url && link.url.startsWith("/") ? `internal:${link.url.substring(1)}` : "external" } onChange={(val) => { if (val.startsWith("internal:")) { handleLinkChange(index, "url", `/${val.split(":")[1]}`); } else { handleLinkChange( index, "url", link.url && link.url.startsWith("/") ? "#" : link.url ); } }} idSuffix={`link-${index}`} />
-                <div className="flex items-center justify-between pt-1.5">
-                    <div className="flex items-center space-x-2">
-                        <input type="checkbox" id={`${elementId}-link-${index}-target`} checked={link.target === "_blank"} onChange={(e) => handleLinkChange( index, "target", e.target.checked ? "_blank" : "_self" )} className="h-4 w-4 rounded border-slate-300 text-green-600 focus:ring-green-500" />
+                <div className="flex items-center justify-between pt-1">
+                    <div className="flex items-center space-x-1.5">
+                        <input type="checkbox" id={`${elementId}-link-${index}-target`} checked={link.target === "_blank"} onChange={(e) => handleLinkChange( index, "target", e.target.checked ? "_blank" : "_self" )} className="h-3.5 w-3.5 rounded border-slate-300 text-green-600 focus:ring-green-500" />
                         <label htmlFor={`${elementId}-link-${index}-target`} className="text-xs text-slate-600">Open in new tab</label>
                     </div>
-                    <button onClick={() => removeLink(index)} className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100"><LucideIcons.Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => removeLink(index)} className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100"><LucideIcons.Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
             </div>
         ))}
-        <button onClick={addLink} className="w-full mt-2 px-3 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-lg hover:bg-green-200 transition-colors flex items-center justify-center space-x-2">
-            <LucideIcons.PlusCircle className="w-4 h-4" />
+        <button onClick={addLink} className="w-full mt-2 px-3 py-1.5 bg-green-100 text-green-800 text-xs font-medium rounded-md hover:bg-green-200 transition-colors flex items-center justify-center space-x-1.5">
+            <LucideIcons.PlusCircle className="w-3.5 h-3.5" />
             <span>Add {linkTypeLabel}</span>
         </button>
     </div>
@@ -536,24 +532,23 @@ function SlideManager({ slides, onUpdateSlides, elementId }) {
     };
     const removeSlide = (index) => { const newSlides = localSlides.filter((_, i) => i !== index); slideImgInputRefs.current.splice(index, 1); setLocalSlides(newSlides); onUpdateSlides(newSlides); };
     return (
-      <div className="space-y-3">
+      <div className="space-y-2">
           {localSlides.map((slide, index) => (
-              <div key={slide.id || index} className="p-3 border border-slate-200 rounded-xl space-y-2.5 bg-slate-50/70">
-                  <div className="flex justify-between items-center mb-1"><p className="text-sm font-medium text-slate-700">Slide {index + 1}</p><button onClick={() => removeSlide(index)} className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100"><LucideIcons.Trash2 className="w-4 h-4" /></button></div>
-                  {slide.imgSrc && (<img src={slide.imgSrc} alt={`Preview ${index}`} className="w-full h-24 object-contain rounded-lg border border-slate-200 bg-white p-1 mb-2" />)}
-                  <button onClick={() => slideImgInputRefs.current[index]?.current?.click()} className="w-full px-3 py-2 bg-slate-200 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-300 transition-colors">Change Image</button>
+              <div key={slide.id || index} className="p-2.5 border border-slate-200 rounded-lg space-y-2 bg-slate-50/70">
+                  <div className="flex justify-between items-center"><p className="text-xs font-medium text-slate-700">Slide {index + 1}</p><button onClick={() => removeSlide(index)} className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100"><LucideIcons.Trash2 className="w-3.5 h-3.5" /></button></div>
+                  {slide.imgSrc && (<img src={slide.imgSrc} alt={`Preview ${index}`} className="w-full h-20 object-contain rounded-md border border-slate-200 bg-white p-1 mb-1.5" />)}
+                  <button onClick={() => slideImgInputRefs.current[index]?.current?.click()} className="w-full px-2 py-1.5 bg-slate-200 text-slate-700 text-xs font-medium rounded-md hover:bg-slate-300 transition-colors">Change Image</button>
                   <input type="file" accept="image/*" ref={slideImgInputRefs.current[index]} className="hidden" onChange={(e) => handleImageFileChange(e, index)} />
-                  <input type="text" placeholder="Image URL" value={slide.imgSrc} onChange={(e) => handleSlideChange(index, "imgSrc", e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-green-500 focus:border-green-500" />
-                  <input type="text" placeholder="Heading" value={slide.heading} onChange={(e) => handleSlideChange(index, "heading", e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-green-500 focus:border-green-500" />
-                  <textarea placeholder="Text" value={slide.text} onChange={(e) => handleSlideChange(index, "text", e.target.value)} rows="3" className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-green-500 focus:border-green-500 whitespace-pre-wrap"></textarea>
-                  <input type="text" placeholder="Link URL (optional)" value={slide.link || ""} onChange={(e) => handleSlideChange(index, "link", e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-green-500 focus:border-green-500" />
+                  <input type="text" placeholder="Image URL" value={slide.imgSrc} onChange={(e) => handleSlideChange(index, "imgSrc", e.target.value)} className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md text-xs focus:ring-green-500 focus:border-green-500" />
+                  <input type="text" placeholder="Heading" value={slide.heading} onChange={(e) => handleSlideChange(index, "heading", e.target.value)} className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md text-xs focus:ring-green-500 focus:border-green-500" />
+                  <textarea placeholder="Text" value={slide.text} onChange={(e) => handleSlideChange(index, "text", e.target.value)} rows="2" className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md text-xs focus:ring-green-500 focus:border-green-500 whitespace-pre-wrap"></textarea>
+                  <input type="text" placeholder="Link URL (optional)" value={slide.link || ""} onChange={(e) => handleSlideChange(index, "link", e.target.value)} className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md text-xs focus:ring-green-500 focus:border-green-500" />
               </div>
           ))}
-          <button onClick={addSlide} className="w-full mt-2 px-3 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-lg hover:bg-green-200 transition-colors flex items-center justify-center space-x-2"><LucideIcons.PlusCircle className="w-4 h-4" /> <span>Add Slide</span></button>
+          <button onClick={addSlide} className="w-full mt-2 px-3 py-1.5 bg-green-100 text-green-800 text-xs font-medium rounded-md hover:bg-green-200 transition-colors flex items-center justify-center space-x-1.5"><LucideIcons.PlusCircle className="w-3.5 h-3.5" /> <span>Add Slide</span></button>
       </div>
     );
 }
-// --- CORE BUILDER COMPONENTS (UNCHANGED) ---
 const ALL_ELEMENT_TYPES = { Heading, TextBlock, ImageElement, ButtonElement, Divider, Spacer, IconElement, GoogleMapsPlaceholder, VideoElement, InnerSectionComponentDisplay, NavbarElement, FooterElement, CardSliderElement, AccordionElement };
 const getDefaultProps = (id) => ({ ...(AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === id)?.defaultProps || {}), style: {} })
 const AVAILABLE_ELEMENTS_CONFIG = [
@@ -586,10 +581,10 @@ function DraggableCanvasElement({ elementData, onUpdateProps, onDelete, onSelect
   const handleUpdate = (newProps) => { if (!isPreviewMode) onUpdateProps(elementData.path, newProps); };
   const handleClick = (e) => { e.stopPropagation(); if (!isPreviewMode && isDraggable) onSelect(elementData.id, "element", elementData.path, elementData); };
   return (
-    <div ref={setNodeRef} style={style} onClick={handleClick} className={`relative group my-2 transition-all duration-150 ease-in-out ${!isPreviewMode && isDragging ? "bg-green-50/80 shadow-2xl ring-2 ring-green-400 scale-[1.01] rounded-lg" : ""}`}>
+    <div ref={setNodeRef} style={style} onClick={handleClick} className={`relative group my-1.5 transition-all duration-150 ease-in-out ${!isPreviewMode && isDragging ? "bg-green-50/80 shadow-2xl ring-2 ring-green-400 scale-[1.01] rounded-lg" : ""}`}>
         {isDraggable && !isPreviewMode && (
-          <div {...attributes} {...listeners} title="Drag element" className="absolute top-1/2 -left-3.5 transform -translate-y-1/2 p-2 cursor-grab bg-white hover:bg-green-600 text-slate-500 hover:text-white rounded-full border border-slate-300 hover:border-green-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 z-20 print-hidden transition-all shadow-md">
-            <LucideIcons.GripVertical className="w-5 h-5" />
+          <div {...attributes} {...listeners} title="Drag element" className="absolute top-1/2 -left-3 transform -translate-y-1/2 p-1.5 cursor-grab bg-white hover:bg-green-600 text-slate-500 hover:text-white rounded-full border border-slate-300 hover:border-green-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 z-20 print-hidden transition-all shadow-md">
+            <LucideIcons.GripVertical className="w-4 h-4" />
           </div>
         )}
         <div className={isPreviewMode || (!isPreviewMode && isSelected) ? "" : "pointer-events-none"}>
@@ -608,8 +603,8 @@ function DraggableCanvasElement({ elementData, onUpdateProps, onDelete, onSelect
             />
         </div>
         {!isPreviewMode && isSelected && isDraggable && (
-          <button onClick={(e) => { e.stopPropagation(); onDelete(elementData.path); }} title="Delete element" className="absolute -top-3.5 -right-3.5 p-1.5 bg-red-600 text-white rounded-full hover:bg-red-700 hover:scale-110 transition-all w-7 h-7 flex items-center justify-center shadow-md z-20 print-hidden">
-              <LucideIcons.X className="w-4 h-4" strokeWidth={3} />
+          <button onClick={(e) => { e.stopPropagation(); onDelete(elementData.path); }} title="Delete element" className="absolute -top-2.5 -right-2.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 hover:scale-110 transition-all w-6 h-6 flex items-center justify-center shadow-md z-20 print-hidden">
+              <LucideIcons.X className="w-3 h-3" strokeWidth={3} />
           </button>
         )}
     </div>
@@ -623,9 +618,9 @@ function ColumnComponent({ parentPath, columnData, columnIndex, onUpdateProps, o
   const elementIds = useMemo(() => columnData.elements.map((el) => el.id), [columnData.elements]);
   const columnStyle = { ...columnData.props?.style, flexBasis: columnData.props.width || "100%" };
   return (
-    <div onClick={handleClick} style={columnStyle} className={`p-2 flex-shrink-0 transition-all ${!isPreviewMode && isDraggable ? 'cursor-pointer' : ''} ${!isPreviewMode && isSelected ? "selected-outline" : !isPreviewMode ? "hover:outline hover:outline-1 hover:outline-offset-1 hover:outline-green-300/70 rounded-2xl" : ""}`}>
+    <div onClick={handleClick} style={columnStyle} className={`p-1.5 flex-shrink-0 transition-all ${!isPreviewMode && isDraggable ? 'cursor-pointer' : ''} ${!isPreviewMode && isSelected ? "selected-outline" : !isPreviewMode ? "hover:outline hover:outline-1 hover:outline-offset-1 hover:outline-green-300/70 rounded-xl" : ""}`}>
         <SortableContext items={elementIds} strategy={verticalListSortingStrategy} disabled={isPreviewMode || !isDraggable}>
-            <div ref={setDroppableRef} className={`min-h-[100px] p-2 rounded-xl transition-all ${!isPreviewMode ? `border ${isOver && isDraggable ? "bg-green-100/90 border-green-400 border-solid ring-2 ring-green-400" : "bg-white/30 border-slate-200/90"} ${columnData.elements.length === 0 && !isOver ? "border-dashed flex items-center justify-center text-slate-400/80 text-sm font-medium" : ""}` : ""}`}>
+            <div ref={setDroppableRef} className={`min-h-[80px] p-1 rounded-lg transition-all ${!isPreviewMode ? `border ${isOver && isDraggable ? "bg-green-100/90 border-green-400 border-solid ring-1 ring-green-400" : "bg-white/30 border-slate-200/90"} ${columnData.elements.length === 0 && !isOver ? "border-dashed flex items-center justify-center text-slate-400/80 text-xs font-medium" : ""}` : ""}`}>
                 {!isPreviewMode && columnData.elements.length === 0 && !isOver && isDraggable ? "Drop Element Here" : null}
                 {columnData.elements.map((el, elIdx) => (
                     <DraggableCanvasElement
@@ -667,10 +662,9 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
       if (isDragging) return `bg-green-50/80 shadow-2xl ring-2 ring-green-400 rounded-2xl`;
       return `${sectionProps.backgroundType !== "image" && sectionProps.backgroundType !== "video" ? "bg-white" : ""} ${editModeBase}`;
   };
-  const sectionRootClasses = ["relative", "group", "transition-all", "duration-200", "ease-in-out", getSectionBaseBgClass(), !isPreviewMode && isSelected ? "selected-outline" : "", !isPreviewMode && !isSelected ? "hover:ring-2 hover:ring-green-300/80 cursor-pointer" : ""].join(" ").replace(/\s+/g, " ").trim();
+  const sectionRootClasses = ["relative", "group", "transition-all", "duration-200", "ease-in-out", getSectionBaseBgClass(), !isPreviewMode && isSelected ? "selected-outline" : "", !isPreviewMode && !isSelected ? "hover:ring-1 hover:ring-green-300/80 cursor-pointer" : ""].join(" ").replace(/\s+/g, " ").trim();
   const sectionPaddingStyle = { paddingTop: sectionProps.paddingTop, paddingBottom: sectionProps.paddingBottom, paddingLeft: sectionProps.paddingLeft, paddingRight: sectionProps.paddingRight };
   
-  // Handle default template structure (content/style based)
   const renderDefaultTemplateSection = () => {
     if (!sectionData.content) return null;
     
@@ -721,11 +715,9 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
     return null;
   };
   
-  // Handle AI-generated structure (props/columns/elements based)
   const renderAIGeneratedSection = () => {
     if (!sectionData.columns && !sectionData.elements && !sectionData.props) return null;
     
-    // If we have columns structure (AI-generated with columns)
     if (sectionData.columns && sectionData.columns.length > 0) {
       return (
         <div className="w-full">
@@ -749,7 +741,6 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
       );
     }
     
-    // If we have elements array (AI-generated with direct elements)
     if (sectionData.elements && sectionData.elements.length > 0) {
       return (
         <div className="w-full">
@@ -850,7 +841,6 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
       );
     }
     
-    // If we have props structure (AI-generated with section props)
     if (sectionData.props) {
       return (
         <div className="w-full" style={{
@@ -892,8 +882,8 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
   return (
       <div ref={setNodeRef} style={effectiveBgStyle} className={sectionRootClasses} onClick={handleClick}>
           {!isPreviewMode && isDraggable && (
-              <div {...attributes} {...listeners} title="Drag section" className="absolute top-4 -left-4 transform p-2.5 cursor-grab bg-white hover:bg-green-600 text-slate-500 hover:text-white rounded-full border border-slate-300 hover:border-green-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 z-30 print-hidden transition-opacity shadow-md">
-                  <LucideIcons.Move className="w-5 h-5" />
+              <div {...attributes} {...listeners} title="Drag section" className="absolute top-4 -left-3.5 transform p-2 cursor-grab bg-white hover:bg-green-600 text-slate-500 hover:text-white rounded-full border border-slate-300 hover:border-green-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 z-30 print-hidden transition-opacity shadow-md">
+                  <LucideIcons.Move className="w-4 h-4" />
               </div>
           )}
           {sectionProps.backgroundType === "image" && sectionProps.backgroundImageSrc && (<div className="absolute inset-0 bg-cover bg-center -z-20 rounded-2xl" style={{ backgroundImage: `url("${sectionProps.backgroundImageSrc}")` }}></div>)}
@@ -902,18 +892,16 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
               <div className="absolute inset-0 -z-10 rounded-2xl" style={{ backgroundColor: sectionProps.backgroundOverlayColor, opacity: sectionProps.backgroundOverlayOpacity }}></div>
           )}
           {!isPreviewMode && isSelected && isDraggable && (
-              <button onClick={(e) => { e.stopPropagation(); onDelete(sectionPath); }} title="Delete section" className="absolute -top-3.5 -right-3.5 p-1.5 bg-red-600 text-white rounded-full hover:bg-red-700 hover:scale-110 transition-all w-7 h-7 flex items-center justify-center shadow-md z-30 print-hidden">
-                  <LucideIcons.Trash2 className="w-4 h-4" strokeWidth={2.5} />
+              <button onClick={(e) => { e.stopPropagation(); onDelete(sectionPath); }} title="Delete section" className="absolute -top-2.5 -right-2.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 hover:scale-110 transition-all w-6 h-6 flex items-center justify-center shadow-md z-30 print-hidden">
+                  <LucideIcons.Trash2 className="w-3.5 h-3.5" strokeWidth={2.5} />
               </button>
           )}
           <div style={sectionPaddingStyle} className="flex flex-wrap -m-1.5 relative z-0">
-              {/* Render based on data structure */}
               {renderDefaultTemplateSection() || renderAIGeneratedSection()}
           </div>
       </div>
   );
 }
-// --- HIGH-LEVEL BUILDER COMPONENTS (Panels, Toolbars, etc. UNCHANGED) ---
 const DEVICE_FRAMES_CONFIG = [ { name: "Mobile", width: 390, icon: LucideIcons.Smartphone }, { name: "Tablet", width: 768, icon: LucideIcons.Tablet }, { name: "Desktop", width: 1440, icon: LucideIcons.Monitor }, ];
 
 function DeviceFrame({ device, page, globalNavbar, globalFooter, onUpdateProps, onDelete, onSelect, selectedItemId, onOpenStructureModal, isPreviewMode, onNavigate, onDeleteGlobalElement, isDraggable, comments, onAddComment, activeTool, }) {
@@ -921,32 +909,31 @@ function DeviceFrame({ device, page, globalNavbar, globalFooter, onUpdateProps, 
     const sectionIds = useMemo(() => page.layout.map((sec) => sec.id), [page.layout]);
     const handleCommentOverlayClick = (e) => { e.stopPropagation(); onAddComment(page.id, device.name, { x: e.clientX, y: e.clientY }); };
     
-    // **NEW**: Added container-type property to enable container queries for responsiveness.
     const containerStyle = {
       width: device.width,
       containerType: 'inline-size',
     };
 
     return (
-        <div className="flex flex-col gap-4 items-center flex-shrink-0">
-            <h3 className="text-white/90 font-semibold px-4 py-1.5 bg-black/20 rounded-lg flex items-center gap-2 text-sm"> <device.icon className="w-4 h-4" /> {device.name} </h3>
+        <div className="flex flex-col gap-3 items-center flex-shrink-0">
+            <h3 className="text-white/90 font-semibold px-3 py-1 bg-black/20 rounded-md flex items-center gap-1.5 text-xs"> <device.icon className="w-3.5 h-3.5" /> {device.name} </h3>
             <div className="relative">
-                <div style={containerStyle} className="bg-white shadow-2xl rounded-2xl border border-slate-200 flex flex-col">
+                <div style={containerStyle} className="bg-white shadow-xl rounded-2xl border border-slate-200 flex flex-col">
                     <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300">
                         {globalNavbar && (
                             <header className="p-2 border-b border-slate-200 shadow-sm z-10 flex-shrink-0 relative">
                                 <NavbarElement {...globalNavbar.props} path="globalNavbar" isSelected={selectedItemId === globalNavbar.id} onSelect={() => onSelect(globalNavbar.id, 'globalElement', 'globalNavbar')} onUpdate={(p) => onUpdateProps("globalNavbar", p)} onDelete={() => onDeleteGlobalElement("navbar")} isDraggable={isDraggable} previewDevice={device.name.toLowerCase()} />
                             </header>
                         )}
-                        <div className="p-4 bg-slate-50/50 min-h-full">
+                        <div className="p-2 bg-slate-50/50 min-h-full">
                         <SortableContext items={sectionIds} strategy={verticalListSortingStrategy} disabled={isPreviewMode || !isDraggable}>
                             <div ref={setPageDroppableRef} className={`rounded-xl transition-all ${isOver && isDraggable ? "bg-green-100/80 ring-2 ring-green-400 ring-dashed" : ""} ${page.layout.length === 0 && !isOver ? "border-2 border-dashed border-slate-300/80 min-h-[50vh]" : "border-transparent"}`}>
                                 {page.layout.map((sec, idx) => ( <SectionComponent key={sec.id} pageId={page.id} sectionData={sec} sectionIndex={idx} onUpdateProps={onUpdateProps} onDelete={onDelete} onSelect={onSelect} selectedItemId={selectedItemId} onOpenStructureModal={onOpenStructureModal} isPreviewMode={isPreviewMode} onNavigate={onNavigate} isDraggable={isDraggable}/> ))}
                                 {!isPreviewMode && page.layout.length === 0 && !isOver && isDraggable && (
-                                    <div className="flex flex-col items-center justify-center h-full text-center py-24 select-none pointer-events-none">
-                                        <LucideIcons.LayoutTemplate className="h-24 w-24 text-slate-300/90 mb-5" strokeWidth={1} />
-                                        <p className="text-slate-500 text-xl font-medium mt-2">Your canvas is empty</p>
-                                        <p className="text-slate-400/90 text-base">Drag elements or add a new section.</p>
+                                    <div className="flex flex-col items-center justify-center h-full text-center py-20 select-none pointer-events-none">
+                                        <LucideIcons.LayoutTemplate className="h-20 w-20 text-slate-300/90 mb-4" strokeWidth={1} />
+                                        <p className="text-slate-500 text-lg font-medium">Your canvas is empty</p>
+                                        <p className="text-slate-400/90 text-sm">Drag elements or add a new section.</p>
                                     </div>
                                 )}
                             </div>
@@ -961,7 +948,7 @@ function DeviceFrame({ device, page, globalNavbar, globalFooter, onUpdateProps, 
                 </div>
                 {activeTool === 'comment' && ( <div className="absolute inset-0 z-30 cursor-crosshair" onClick={handleCommentOverlayClick} /> )}
                 {comments.map((comment, index) => (
-                    <div key={comment.id} style={{ top: `${comment.position.y}px`, left: `${comment.position.x}px`}} className="absolute w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center text-black font-bold text-sm border-2 border-white cursor-pointer z-50 transform -translate-x-1/2 -translate-y-1/2 shadow-lg" title={comment.text}> {index + 1} </div>
+                    <div key={comment.id} style={{ top: `${comment.position.y}px`, left: `${comment.position.x}px`}} className="absolute w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center text-black font-bold text-xs border-2 border-white cursor-pointer z-50 transform -translate-x-1/2 -translate-y-1/2 shadow-lg" title={comment.text}> {index + 1} </div>
                 ))}
             </div>
         </div>
@@ -971,15 +958,15 @@ function StructureSelectorModal({ isOpen, onClose, onSelectStructure, context })
     if (!isOpen) return null;
     return (
         <GeneralModal isOpen={isOpen} onClose={onClose} title="Select a Structure" size="xl">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 pt-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-2">
                 {PREDEFINED_STRUCTURES.map((s) => (
-                    <button key={s.id} onClick={() => { onSelectStructure(s.layout, context); onClose(); }} className="p-3 bg-slate-50 rounded-xl hover:bg-white hover:ring-2 hover:ring-green-500 hover:shadow-lg hover:scale-[1.03] transition-all duration-200 flex flex-col items-center justify-start group focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500">
-                        <div className="flex w-full h-24 mb-3 space-x-2 items-stretch p-2 bg-white ring-1 ring-slate-200 rounded-lg shadow-inner">
+                    <button key={s.id} onClick={() => { onSelectStructure(s.layout, context); onClose(); }} className="p-2.5 bg-slate-50 rounded-lg hover:bg-white hover:ring-2 hover:ring-green-500 hover:shadow-lg hover:scale-[1.03] transition-all duration-200 flex flex-col items-center justify-start group focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500">
+                        <div className="flex w-full h-20 mb-2 space-x-1.5 items-stretch p-1.5 bg-white ring-1 ring-slate-200 rounded-md shadow-inner">
                             {s.layout.map((col, idx) => (
-                                <div key={idx} className="bg-slate-200 border border-slate-300 group-hover:bg-green-200/60 group-hover:border-green-300 rounded-md transition-colors" style={{ flexBasis: col.width }}></div>
+                                <div key={idx} className="bg-slate-200 border border-slate-300 group-hover:bg-green-200/60 group-hover:border-green-300 rounded-sm transition-colors" style={{ flexBasis: col.width }}></div>
                             ))}
                         </div>
-                        <span className="text-sm text-slate-700 group-hover:text-green-800 text-center font-semibold">{s.name}</span>
+                        <span className="text-xs text-slate-700 group-hover:text-green-800 text-center font-semibold">{s.name}</span>
                     </button>
                 ))}
             </div>
@@ -989,40 +976,40 @@ function StructureSelectorModal({ isOpen, onClose, onSelectStructure, context })
 function ElementPaletteItem({ config }) {
     const { attributes, listeners, setNodeRef, isDragging, transform } = useDraggable({ id: `palette-${config.id}`, data: { type: "paletteItem", config } });
     const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 9999, opacity: isDragging ? 0.95 : 1 } : {};
-    let IconToShow = React.cloneElement(elementIcons[config.id] || elementIcons.default, { className: "w-6 h-6" });
+    let IconToShow = React.cloneElement(elementIcons[config.id] || elementIcons.default, { className: "w-5 h-5" });
 
     if (isDragging) {
         return (
-            <div ref={setNodeRef} style={style} className="flex items-center gap-3 p-3 text-left bg-green-100 rounded-lg shadow-xl ring-2 ring-green-400 opacity-95">
+            <div ref={setNodeRef} style={style} className="flex items-center gap-2.5 p-2 text-left bg-green-100 rounded-lg shadow-xl ring-2 ring-green-400 opacity-95">
                 <div className="flex items-center justify-center text-green-600">{IconToShow}</div>
-                <span className="text-sm font-semibold text-green-800">{config.name}</span>
+                <span className="text-xs font-semibold text-green-800">{config.name}</span>
             </div>
         );
     }
     
     return (
-        <div ref={setNodeRef} {...listeners} {...attributes} style={style} className="flex items-center gap-3 p-3 text-left bg-white border border-slate-200 rounded-lg cursor-grab hover:bg-green-50 hover:border-green-300 hover:shadow-md transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500">
+        <div ref={setNodeRef} {...listeners} {...attributes} style={style} className="flex items-center gap-2.5 p-2 text-left bg-white border border-slate-200 rounded-lg cursor-grab hover:bg-green-50 hover:border-green-300 hover:shadow-md transition-all group focus:outline-none focus-visible:ring-1 focus-visible:ring-green-500">
             <div className="text-slate-500 group-hover:text-green-600 transition-colors">{IconToShow}</div>
-            <span className="text-sm font-medium text-slate-700 group-hover:text-green-800">{config.name}</span>
+            <span className="text-xs font-semibold text-slate-700 group-hover:text-green-800">{config.name}</span>
         </div>
     );
 }
 function PaletteItemDragOverlay({ config }) {
-    let IconToShow = React.cloneElement(elementIcons[config.id] || elementIcons.default, { className: "w-6 h-6" });
+    let IconToShow = React.cloneElement(elementIcons[config.id] || elementIcons.default, { className: "w-5 h-5" });
     return (
-        <div className="flex items-center p-3 text-left bg-green-100 rounded-lg shadow-2xl ring-2 ring-green-500 opacity-95 cursor-grabbing">
-            <div className="w-8 h-8 flex items-center justify-center text-green-600 mr-2">{IconToShow}</div>
-            <span className="text-sm font-semibold text-green-800">{config.name}</span>
+        <div className="flex items-center p-2.5 text-left bg-green-100 rounded-lg shadow-2xl ring-2 ring-green-500 opacity-95 cursor-grabbing">
+            <div className="w-7 h-7 flex items-center justify-center text-green-600 mr-2">{IconToShow}</div>
+            <span className="text-xs font-semibold text-green-800">{config.name}</span>
         </div>
     );
 }
 function AiLoader() {
     return (
-        <div className="flex space-x-2 justify-center items-center">
+        <div className="flex space-x-1.5 justify-center items-center">
             <span className="sr-only">Loading...</span>
-            <div className="h-2 w-2 bg-green-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-            <div className="h-2 w-2 bg-green-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-            <div className="h-2 w-2 bg-green-500 rounded-full animate-bounce"></div>
+            <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+            <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+            <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-bounce"></div>
         </div>
     );
 }
@@ -1030,50 +1017,58 @@ function AiModeView({ onBack, onAiSubmit, isAiLoading, aiChatHistory, aiSuggesti
     const handleKeyDown = (e) => {
         if(e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            onAiSubmit(e.target.value);
-            e.target.value = '';
+            const prompt = e.target.value.trim();
+            if (prompt) {
+                onAiSubmit(prompt);
+                e.target.value = '';
+            }
         }
     };
     return (
-        <div className="p-4 flex flex-col h-full bg-white">
-            <div className="flex items-center justify-between mb-4">
-                <button onClick={onBack} className="flex items-center gap-2 text-sm text-slate-600 hover:text-green-700 p-1 rounded-md -ml-1">
-                    <LucideIcons.ArrowLeft className="w-4 h-4" /> Back to Elements
+        <div className="p-3 flex flex-col h-full bg-white">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                <button onClick={onBack} className="flex items-center gap-1 text-xs text-slate-600 hover:text-green-700 p-1 rounded-md -ml-1">
+                    <LucideIcons.ArrowLeft className="w-3.5 h-3.5" /> Back
                 </button>
-                <div className="flex items-center gap-2">
-                    <button onClick={handleUndo} title="Undo" className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors">
-                        <LucideIcons.Undo2 className="w-5 h-5"/>
+                <div className="flex items-center gap-1">
+                    <button onClick={handleUndo} title="Undo" className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors">
+                        <LucideIcons.Undo2 className="w-4 h-4"/>
                     </button>
-                     <button onClick={handleRedo} title="Redo" className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors">
-                        <LucideIcons.Redo2 className="w-5 h-5"/>
+                     <button onClick={handleRedo} title="Redo" className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors">
+                        <LucideIcons.Redo2 className="w-4 h-4"/>
                     </button>
                 </div>
             </div>
-            <div className="relative">
-                <textarea onKeyDown={handleKeyDown} placeholder="e.g., create a sleek corporate landing page..." className="w-full p-3 pr-10 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-green-400 focus:border-green-400" rows="3" />
-                <LucideIcons.CornerDownLeft className="absolute right-3 top-3 w-5 h-5 text-slate-400" />
-            </div>
-            {aiSuggestions && aiSuggestions.length > 0 && (
-                 <div className="pt-3">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Suggestions</p>
-                    <div className="flex flex-wrap gap-2">
-                        {aiSuggestions.map((s, i) => (
-                             <button key={i} onClick={() => onAiSubmit(s.prompt)} className="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full hover:bg-green-200 transition-colors">
-                                {s.shortText}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
-            {isAiLoading && <div className="py-4"><AiLoader /></div>}
-            <div className="mt-4 flex-1 overflow-y-auto space-y-3">
+            
+            <div className="flex-1 overflow-y-auto space-y-2 py-3">
                 {aiChatHistory.map(entry => (
-                    <div key={entry.id} className="text-sm p-2 rounded-lg bg-slate-50">
-                        <p className="font-semibold text-slate-700">{entry.prompt}</p>
-                        {entry.status === 'success' && <p className="text-xs text-green-600 flex items-center gap-1"><LucideIcons.Check className="w-3 h-3"/>✓ Success</p>}
-                        {entry.status === 'error' && <p className="text-xs text-red-600">✗ Error</p>}
+                    <div key={entry.id} className="text-xs p-2 rounded-lg bg-slate-50 border border-slate-200/60">
+                        <p className="font-medium text-slate-700">{entry.prompt}</p>
+                        {entry.status === 'success' && <p className="text-xs text-green-600 flex items-center gap-1 mt-1"><LucideIcons.Check className="w-3 h-3"/>Success</p>}
+                        {entry.status === 'error' && <p className="text-xs text-red-600 mt-1">Error</p>}
                     </div>
                 ))}
+            </div>
+
+            {isAiLoading && <div className="py-2"><AiLoader /></div>}
+            
+            <div className="mt-auto pt-3 border-t border-slate-200">
+                 {aiSuggestions && aiSuggestions.length > 0 && (
+                     <div className="pb-3">
+                        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Suggestions</p>
+                        <div className="flex flex-wrap gap-1.5">
+                            {aiSuggestions.map((s, i) => (
+                                 <button key={i} onClick={() => onAiSubmit(s.prompt)} className="px-2 py-1 bg-green-100 text-green-800 text-[11px] font-medium rounded-full hover:bg-green-200 transition-colors">
+                                    {s.shortText}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+                <div className="relative">
+                    <textarea onKeyDown={handleKeyDown} placeholder="e.g., create a sleek corporate landing page..." className="w-full p-2 pr-8 border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-green-400 focus:border-green-400" rows="2" />
+                    <LucideIcons.CornerDownLeft className="absolute right-2.5 top-2.5 w-4 h-4 text-slate-400" />
+                </div>
             </div>
         </div>
     );
@@ -1097,17 +1092,17 @@ function LayerNode({ node, type, path, depth, onSelect, selectedItemId }) {
 
     return (
         <div>
-            <div onClick={handleSelect} className={`flex items-center p-1.5 my-0.5 rounded-lg cursor-pointer transition-colors ${isSelected ? 'bg-green-100 text-green-800' : 'hover:bg-slate-100'}`}>
-                <div style={{ paddingLeft: `${depth * 18}px` }} className="flex items-center flex-grow truncate">
+            <div onClick={handleSelect} className={`flex items-center p-1 my-0.5 rounded-md cursor-pointer transition-colors ${isSelected ? 'bg-green-100 text-green-800' : 'hover:bg-slate-100'}`}>
+                <div style={{ paddingLeft: `${depth * 14}px` }} className="flex items-center flex-grow truncate">
                     {hasChildren ? (
                         <button onClick={handleToggle} className="p-0.5 mr-1 rounded-sm hover:bg-slate-200">
-                            <LucideIcons.ChevronRight className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+                            <LucideIcons.ChevronRight className={`w-3.5 h-3.5 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
                         </button>
                     ) : (
-                        <span className="w-5 h-5 mr-1"></span>
+                        <span className="w-4 h-4 mr-1"></span>
                     )}
-                    <div className="w-4 h-4 mr-2.5 text-slate-500">{React.cloneElement(Icon, { className: 'w-full h-full' })}</div>
-                    <span className="text-sm truncate">{node.name || config?.name || node.type}</span>
+                    <div className="w-3.5 h-3.5 mr-2 text-slate-500">{React.cloneElement(Icon, { className: 'w-full h-full' })}</div>
+                    <span className="text-xs truncate font-medium">{node.name || config?.name || node.type}</span>
                 </div>
             </div>
             {isOpen && hasChildren && (
@@ -1122,7 +1117,7 @@ function LayerNode({ node, type, path, depth, onSelect, selectedItemId }) {
 function LayersTreeView({ page, pagePath, onSelect, selectedItemId }) {
     if (!page) return <div className="p-4 text-sm text-slate-500">No page selected.</div>;
     return (
-        <div className="p-2 space-y-0.5">
+        <div className="p-2 pb-8 space-y-0.5">
             {page.layout.map((section, idx) => (
                 <LayerNode key={section.id} node={section} type="section" path={`${pagePath}.layout[${idx}]`} depth={0} onSelect={onSelect} selectedItemId={selectedItemId} />
             ))}
@@ -1132,12 +1127,12 @@ function LayersTreeView({ page, pagePath, onSelect, selectedItemId }) {
 const ElementAccordion = ({ title, children, defaultOpen = true }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
     return (
-        <div className="border-b border-slate-200/80 last:border-b-0 pb-4">
-            <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center py-2 rounded-lg hover:bg-slate-100/50 transition-colors -mx-2 px-2">
-                <h3 className="text-sm font-semibold uppercase text-slate-600 tracking-wider">{title}</h3>
-                <LucideIcons.ChevronDown className={`w-5 h-5 text-slate-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}/>
+        <div className="border-b border-slate-200/80 last:border-b-0 pb-3 mb-3">
+            <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center py-1 rounded-md hover:bg-slate-100/50 transition-colors -mx-1 px-1">
+                <h3 className="text-xs font-bold uppercase text-slate-500 tracking-wider">{title}</h3>
+                <LucideIcons.ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}/>
             </button>
-            <div className={`grid overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100 pt-3' : 'grid-rows-[0fr] opacity-0'}`}>
+            <div className={`grid overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100 pt-2' : 'grid-rows-[0fr] opacity-0'}`}>
                 <div className="overflow-hidden">
                     {children}
                 </div>
@@ -1162,70 +1157,70 @@ function LeftPanel({ isOpen, onClose, onAddTopLevelSection, pages, activePageId,
     return AVAILABLE_ELEMENTS_CONFIG.filter(el => el.isGlobalOnly && el.name.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [searchTerm]);
   const TabButton = ({ tabName, icon, label }) => (
-    <button onClick={() => setActiveTab(tabName)} className={`w-full flex-1 flex flex-col items-center justify-center gap-1.5 py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === tabName ? 'border-green-500 text-green-600 bg-green-50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100'}`}>
+    <button onClick={() => setActiveTab(tabName)} className={`w-full flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-xs font-medium transition-colors border-b-2 ${activeTab === tabName ? 'border-green-500 text-green-600 bg-green-50/70' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100'}`}>
         {icon}
         <span>{label}</span>
     </button>
   );
 
   return (
-    <aside className={`absolute top-0 left-0 h-full w-80 bg-white border-r border-slate-200 shadow-xl flex-shrink-0 flex flex-col print-hidden transition-transform duration-300 ease-in-out z-40 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex justify-between items-center p-4 border-b border-slate-200 h-[60px]">
-            <h2 className="text-lg font-bold text-slate-800">Add Content</h2>
+    <aside className={`absolute top-0 left-0 pb-5 h-full w-72 bg-gray-50 border-r border-slate-200 shadow-xl flex-shrink-0 flex flex-col print-hidden transition-transform duration-300 ease-in-out z-40 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex justify-between items-center p-3 border-b border-slate-200 h-[56px] bg-white">
+            <h2 className="text-base font-bold text-slate-800">Add Content</h2>
             <button onClick={onClose} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors">
                 <LucideIcons.PanelLeftClose className="w-5 h-5"/>
             </button>
         </div>
-        <div className="flex border-b border-slate-200">
-            <TabButton tabName="insert" icon={<LucideIcons.PlusSquare className="w-5 h-5" />} label="Insert" />
-            <TabButton tabName="layers" icon={<LucideIcons.Layers3 className="w-5 h-5" />} label="Layers" />
-            <TabButton tabName="pages" icon={<LucideIcons.FileText className="w-5 h-5" />} label="Pages" />
+        <div className="flex border-b border-slate-200 bg-white">
+            <TabButton tabName="insert" icon={<LucideIcons.PlusSquare className="w-4 h-4" />} label="Insert" />
+            <TabButton tabName="layers" icon={<LucideIcons.Layers3 className="w-4 h-4" />} label="Layers" />
+            <TabButton tabName="pages" icon={<LucideIcons.FileText className="w-4 h-4" />} label="Pages" />
         </div>
-        <div className="flex-1 overflow-y-auto bg-slate-50">
+        <div className="flex-1 overflow-y-auto bg-white pb-12">
             {activeTab === 'insert' && isAiMode && <AiModeView onBack={() => setIsAiMode(false)} onAiSubmit={onAiSubmit} isAiLoading={isAiLoading} aiChatHistory={aiChatHistory} aiSuggestions={aiSuggestions} handleUndo={handleUndo} handleRedo={handleRedo} />}
             {activeTab === 'insert' && !isAiMode && (
-                <div className="p-4 space-y-5">
-                    <div className="relative"><LucideIcons.Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" /><input type="text" placeholder="Search elements..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-10 pr-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500" /></div>
-                    <button onClick={() => setIsAiMode(true)} className="w-full flex items-center justify-center gap-2.5 px-3 py-2.5 bg-green-50 text-green-700 font-semibold rounded-lg hover:bg-green-100 transition-colors border border-green-200 hover:border-green-300 relative group">
+                <div className="p-3 space-y-4">
+                    <div className="relative"><LucideIcons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" /><input type="text" placeholder="Search elements..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-md text-sm focus:ring-1 focus:ring-green-500" /></div>
+                    <button onClick={() => setIsAiMode(true)} className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-green-50 text-green-700 font-semibold rounded-lg hover:bg-green-100 transition-colors border border-green-200 hover:border-green-300 relative group">
                         <span className="absolute inset-0 bg-green-400/20 rounded-lg blur-lg opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-opacity duration-300"></span>
-                        <LucideIcons.Sparkles className="w-5 h-5 relative text-green-500"/>
-                        <span className="relative">Build with AI</span>
+                        <LucideIcons.Sparkles className="w-4 h-4 relative text-green-500"/>
+                        <span className="relative text-sm">Build with AI</span>
                     </button>
-                    <ElementAccordion title="Structure">
-                        <div className="grid grid-cols-1 gap-2.5">
-                            <button onClick={onAddTopLevelSection} className="w-full flex items-center justify-center gap-3 p-3 text-left bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-green-50 hover:border-green-300 hover:shadow-md transition-all group focus:outline-none focus-visible:ring-1 focus-visible:ring-green-500">
-                                <LucideIcons.PlusSquare className="w-6 h-6 text-slate-500 group-hover:text-green-600 transition-colors" />
-                                <span className="text-sm font-medium text-slate-700 group-hover:text-green-800">Add Section</span>
+                    <ElementAccordion title="Structure" defaultOpen={true}>
+                        <div className="grid grid-cols-1 gap-2">
+                            <button onClick={onAddTopLevelSection} className="w-full flex items-center justify-center gap-2.5 p-2 text-left bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-green-50 hover:border-green-300 hover:shadow-md transition-all group focus:outline-none focus-visible:ring-1 focus-visible:ring-green-500">
+                                <LucideIcons.PlusSquare className="w-5 h-5 text-slate-500 group-hover:text-green-600 transition-colors" />
+                                <span className="text-xs font-semibold text-slate-700 group-hover:text-green-800">Add Section</span>
                             </button>
                         </div>
                     </ElementAccordion>
                     {Object.entries(categorizedElements).map(([category, elements]) => (
                         elements.length > 0 && <ElementAccordion key={category} title={category}>
-                            <div className="grid grid-cols-1 gap-2.5">{elements.map((elConf) => (<ElementPaletteItem key={elConf.id} config={elConf} />))}</div>
+                            <div className="grid grid-cols-1 gap-2">{elements.map((elConf) => (<ElementPaletteItem key={elConf.id} config={elConf} />))}</div>
                         </ElementAccordion>
                     ))}
                     {globalElements.length > 0 && (
                         <ElementAccordion title="Global">
-                            <div className="grid grid-cols-1 gap-2.5">{globalElements.map((elConf) => (<ElementPaletteItem key={elConf.id} config={elConf} />))}</div>
+                            <div className="grid grid-cols-1 gap-2">{globalElements.map((elConf) => (<ElementPaletteItem key={elConf.id} config={elConf} />))}</div>
                         </ElementAccordion>
                     )}
                 </div>
             )}
             {activeTab === 'layers' && <LayersTreeView page={pages[activePageId]} pagePath={`pages[${activePageId}]`} onSelect={onSelect} selectedItemId={selectedItem?.id} />}
             {activeTab === 'pages' && (
-                <div className="p-4">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-base font-semibold text-slate-800">Your Pages</h3>
-                        <button onClick={onAddPage} title="Add New Page" className="p-1.5 text-green-600 hover:text-green-700 rounded-lg hover:bg-green-100 transition-colors"><LucideIcons.Plus className="w-5 h-5" /></button>
+                <div className="p-3">
+                    <div className="flex justify-between items-center mb-3">
+                        <h3 className="text-sm font-semibold text-slate-800">Your Pages</h3>
+                        <button onClick={onAddPage} title="Add New Page" className="p-1.5 text-green-600 hover:text-green-700 rounded-md hover:bg-green-100 transition-colors"><LucideIcons.Plus className="w-4 h-4" /></button>
                     </div>
                     <ul className="space-y-1.5">
                         {Object.values(pages).map((page) => (
                             <li key={page.id} className="group">
-                                <button onClick={() => onSelectPage(page.id)} className={`w-full text-left px-3 py-2.5 text-sm rounded-lg transition-all duration-150 flex items-center justify-between ${activePageId === page.id ? "bg-green-600 text-white font-semibold shadow-md" : "text-slate-600 hover:bg-white hover:text-slate-900 bg-white border border-slate-200"}`}>
+                                <button onClick={() => onSelectPage(page.id)} className={`w-full text-left px-3 py-2 text-sm rounded-md transition-all duration-150 flex items-center justify-between ${activePageId === page.id ? "bg-green-600 text-white font-semibold shadow-sm" : "text-slate-600 hover:bg-white hover:text-slate-900 bg-white border border-slate-200"}`}>
                                     <span className="truncate">{page.name}</span>
                                     <div className={`flex items-center transition-opacity ${activePageId === page.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                                        <button onClick={(e) => { e.stopPropagation(); onRenamePage(page.id, page.name); }} className="p-1.5 hover:bg-white/20 rounded-md"><LucideIcons.Edit3 className="w-4 h-4" /></button>
-                                        <button onClick={(e) => { e.stopPropagation(); onDeletePage(page.id, page.name); }} className="p-1.5 hover:bg-white/20 rounded-md"><LucideIcons.Trash2 className="w-4 h-4" /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); onRenamePage(page.id, page.name); }} className="p-1 hover:bg-white/20 rounded-md"><LucideIcons.Edit3 className="w-3.5 h-3.5" /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); onDeletePage(page.id, page.name); }} className="p-1 hover:bg-white/20 rounded-md"><LucideIcons.Trash2 className="w-3.5 h-3.5" /></button>
                                     </div>
                                 </button>
                             </li>
@@ -1244,31 +1239,31 @@ function DebouncedTextInput({ label, type, initialValue, onCommit, ...props }) {
   const InputComponent = type === 'textarea' ? 'textarea' : 'input';
   return (
     <div>
-        {label && <label className="block text-xs font-medium text-slate-600 mb-1.5">{label}</label>}
-        <InputComponent type={type} value={value || ''} onChange={e => setValue(e.target.value)} onBlur={handleBlur} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500 focus:border-green-500 shadow-sm" {...props} />
+        {label && <label className="block text-xs font-medium text-slate-600 mb-1">{label}</label>}
+        <InputComponent type={type} value={value || ''} onChange={e => setValue(e.target.value)} onBlur={handleBlur} className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md text-sm focus:ring-1 focus:ring-green-500 focus:border-green-500 shadow-sm" {...props} />
     </div>
   );
 }
-function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePageId, onRenamePage, onAddGlobalElement, comments, onUpdateComment, onDeleteComment }) {
+function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePageId, onRenamePage, onAddGlobalElement, comments, onUpdateComment, onDeleteComment, onClose }) {
   const [activeTab, setActiveTab] = useState('properties');
   const PropertyGroup = ({ title, children, defaultOpen = true }) => {
       const [isOpen, setIsOpen] = useState(defaultOpen);
       return (
-        <div className="border-b border-slate-200/80 last:border-b-0 pb-4 mb-4">
-            <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center py-1">
-                <h3 className="text-xs font-semibold uppercase text-slate-500 tracking-wider">{title}</h3>
-                <LucideIcons.ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <div className="border-b border-slate-200/80 last:border-b-0 py-3">
+            <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center">
+                <h3 className="text-[11px] font-bold uppercase text-slate-400 tracking-widest">{title}</h3>
+                <LucideIcons.ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </button>
-            {isOpen && <div className="space-y-4 pt-4">{children}</div>}
+            {isOpen && <div className="space-y-3 pt-3">{children}</div>}
         </div>
       );
   };
   const ColorInput = ({ label, value, onChange }) => (
     <div className="flex justify-between items-center">
         <label className="text-sm font-medium text-slate-700">{label}</label>
-        <div className="flex items-center gap-2">
-            <input type="text" value={value || '#000000'} onChange={e => onChange(e.target.value)} className="w-24 text-sm border-slate-300 rounded-md px-2 py-1 focus:ring-1 focus:ring-green-500 shadow-sm" />
-            <div className="relative w-8 h-8 rounded-md overflow-hidden border border-slate-300 shadow-sm">
+        <div className="flex items-center gap-1.5">
+            <input type="text" value={value || '#000000'} onChange={e => onChange(e.target.value)} className="w-20 text-xs border-slate-300 rounded-md px-2 py-1 focus:ring-1 focus:ring-green-500 shadow-sm" />
+            <div className="relative w-7 h-7 rounded-md overflow-hidden border border-slate-300 shadow-sm">
                 <div className="absolute inset-0" style={{backgroundColor: value || '#000000'}}></div>
                 <input type="color" value={value || '#000000'} onChange={e => onChange(e.target.value)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
             </div>
@@ -1279,7 +1274,7 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
       const displayValue = parseInt(value, 10) || 0;
       return (
         <div>
-            <div className="flex justify-between items-center mb-1.5"><label className="text-xs font-medium text-slate-600">{label}</label><span className="text-xs text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded">{`${displayValue}${unit}`}</span></div>
+            <div className="flex justify-between items-center mb-1.5"><label className="text-xs font-medium text-slate-600">{label}</label><span className="text-xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-sm">{`${displayValue}${unit}`}</span></div>
             <input type="range" min={min} max={max} step={step} value={displayValue} onChange={(e) => onChange(`${e.target.value}${unit}`)} className="w-full custom-slider" />
         </div>
       );
@@ -1287,28 +1282,28 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
   const ToggleSwitch = ({ label, checked, onChange }) => (
     <div className="flex justify-between items-center">
         <label className="text-sm font-medium text-slate-700">{label}</label>
-        <button onClick={() => onChange(!checked)} className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${checked ? 'bg-green-600' : 'bg-slate-300'}`}><span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} /></button>
+        <button onClick={() => onChange(!checked)} className={`relative inline-flex items-center h-5 rounded-full w-9 transition-colors ${checked ? 'bg-green-600' : 'bg-slate-300'}`}><span className={`inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform ${checked ? 'translate-x-5' : 'translate-x-1'}`} /></button>
     </div>
   );
   const AlignmentButtons = ({ value, onChange }) => (
     <div>
         <label className="block text-xs font-medium text-slate-600 mb-1.5">Alignment</label>
-        <div className="flex items-center bg-slate-100 rounded-lg p-1">{textAlignOptions.map(opt => (<button key={opt.value} onClick={() => onChange(opt.value)} title={opt.label} className={`flex-1 p-2 rounded-md transition-all text-slate-600 ${value === opt.value ? 'bg-white text-green-700 shadow-sm' : 'hover:bg-slate-200/50'}`}>{opt.icon}</button>))}</div>
+        <div className="flex items-center bg-slate-100 rounded-md p-0.5">{textAlignOptions.map(opt => (<button key={opt.value} onClick={() => onChange(opt.value)} title={opt.label} className={`flex-1 p-1.5 rounded-sm transition-all text-slate-600 ${value === opt.value ? 'bg-white text-green-700 shadow-sm' : 'hover:bg-slate-200/50'}`}>{opt.icon}</button>))}</div>
     </div>
   );
   const TabButton = ({ tabName, icon, label }) => (
-    <button onClick={() => setActiveTab(tabName)} className={`w-full flex-1 flex flex-col items-center justify-center gap-1.5 py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === tabName ? 'border-green-500 text-green-600 bg-white' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100'}`}>
+    <button onClick={() => setActiveTab(tabName)} className={`w-full flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-xs font-medium transition-colors border-b-2 ${activeTab === tabName ? 'border-green-500 text-green-600 bg-white' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/70'}`}>
         {icon}
         <span>{label}</span>
     </button>
   );
   const renderPropertiesPanel = () => {
     if (!selectedItemData || !selectedItemData.itemType) {
-        return ( <div className="flex flex-col items-center justify-center h-full text-center p-4 bg-white"><LucideIcons.Pointer className="w-16 h-16 text-slate-300 mb-4"/><h3 className="font-semibold text-slate-700">Nothing Selected</h3><p className="text-sm text-slate-500 mt-1">Click an element on the canvas to edit.</p></div> );
+        return ( <div className="flex flex-col items-center justify-center h-full text-center p-4 bg-white"><LucideIcons.Pointer className="w-12 h-12 text-slate-300 mb-3"/><h3 className="font-semibold text-slate-700">Nothing Selected</h3><p className="text-sm text-slate-500 mt-1">Click an element to edit.</p></div> );
     }
     if (selectedItemData.itemType === 'page') {
       const currentPage = pages[activePageId];
-      return ( <> <div className="flex justify-between items-center px-4 py-3.5 border-b border-slate-200 h-[60px] bg-white"><h2 className="text-lg font-bold text-slate-800">Page Settings</h2></div><div className="p-4 space-y-4 flex-grow bg-slate-50"><DebouncedTextInput label="Page Name" initialValue={currentPage?.name || ""} onCommit={onRenamePage} key={activePageId}/></div> </> );
+      return ( <> <div className="flex justify-between items-center px-3 border-b border-slate-200 h-[56px] bg-white"><h2 className="text-base font-bold text-slate-800">Page Settings</h2><button onClick={onClose} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors -mr-1"><LucideIcons.PanelRightClose className="w-5 h-5"/></button></div><div className="p-3 pb-8 space-y-4 flex-grow bg-slate-50/50"><DebouncedTextInput label="Page Name" initialValue={currentPage?.name || ""} onCommit={onRenamePage} key={activePageId}/></div> </> );
     }
     const { id, path, props, itemType } = selectedItemData;
     const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === itemType) || {};
@@ -1323,9 +1318,9 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
         </PropertyGroup>
         </>
     );
-    return (<> <div className="flex justify-between items-center px-4 py-3.5 border-b border-slate-200/80 h-[60px] bg-white"><h2 className="text-lg font-bold text-slate-800 capitalize">{config?.name || itemType || 'Properties'}</h2></div><div className="overflow-y-auto flex-grow text-sm p-4 bg-slate-50"> {(() => {
+    return (<> <div className="flex justify-between items-center px-3 border-b border-slate-200/80 h-[56px] bg-white"><h2 className="text-base font-bold text-slate-800 capitalize truncate">{config?.name || itemType || 'Properties'}</h2><button onClick={onClose} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors -mr-1"><LucideIcons.PanelRightClose className="w-5 h-5"/></button></div><div className="overflow-y-auto flex-grow text-sm p-3 pb-8 bg-slate-50/50"> {(() => {
         switch(itemType) {
-            case 'header': case 'textBlock': return <><PropertyGroup title="Content"><DebouncedTextInput label="Text" type="textarea" rows={5} initialValue={props.text} onCommit={val => onUpdate({ text: val })} key={id}/></PropertyGroup><PropertyGroup title="Typography"><CustomDropdown label="Size" options={textSizeOptions} value={props.sizeClass} onChange={val => onUpdate({ sizeClass: val })} /><CustomDropdown label="Weight" options={fontWeightOptions} value={props.fontWeight} onChange={val => onUpdate({ fontWeight: val })} /><ColorInput label="Color" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><AlignmentButtons value={props.textAlign} onChange={val => onUpdate({ textAlign: val })} /></PropertyGroup><GeneralStyling/></>;
+            case 'header': case 'textBlock': return <><PropertyGroup title="Content"><DebouncedTextInput label="Text" type="textarea" rows={4} initialValue={props.text} onCommit={val => onUpdate({ text: val })} key={id}/></PropertyGroup><PropertyGroup title="Typography"><CustomDropdown label="Size" options={textSizeOptions} value={props.sizeClass} onChange={val => onUpdate({ sizeClass: val })} /><CustomDropdown label="Weight" options={fontWeightOptions} value={props.fontWeight} onChange={val => onUpdate({ fontWeight: val })} /><ColorInput label="Color" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><AlignmentButtons value={props.textAlign} onChange={val => onUpdate({ textAlign: val })} /></PropertyGroup><GeneralStyling/></>;
             case 'button': return <><PropertyGroup title="Content"><DebouncedTextInput label="Button Text" initialValue={props.buttonText} onCommit={val => onUpdate({ buttonText: val })} key={`${id}-text`} /><DebouncedTextInput label="Link URL" initialValue={props.link} onCommit={val => onUpdate({ link: val })} key={`${id}-link`} /></PropertyGroup><PropertyGroup title="Styling"><ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /><ColorInput label="Text Color" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><StyledSlider label="Border Radius" value={props.borderRadius} onChange={val => onUpdate({ borderRadius: val })} max={50} /><CustomDropdown label="Variant" options={[{label: 'Solid', value: 'solid'}, {label: 'Outline', value: 'outline'}]} value={props.variant} onChange={val => onUpdate({ variant: val })} /></PropertyGroup><PropertyGroup title="Layout"><AlignmentButtons value={props.textAlign} onChange={val => onUpdate({ textAlign: val })} /><ToggleSwitch label="Full Width" checked={props.fullWidth} onChange={val => onUpdate({ fullWidth: val })} /></PropertyGroup><GeneralStyling/></>;
             case 'image': return <><PropertyGroup title="Content"><DebouncedTextInput label="Image Source (URL)" initialValue={props.src} onCommit={val => onUpdate({ src: val })} key={`${id}-src`} /><DebouncedTextInput label="Alt Text" initialValue={props.alt} onCommit={val => onUpdate({ alt: val })} key={`${id}-alt`} /></PropertyGroup><GeneralStyling/></>;
             case 'spacer': return <><PropertyGroup title="Layout"><StyledSlider label="Height" value={props.height} onChange={val => onUpdate({ height: val })} max={300} /></PropertyGroup></>;
@@ -1334,21 +1329,21 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
             case 'navbar': return <><PropertyGroup title="Logo"><DebouncedTextInput label="Logo Text" initialValue={props.logoText} onCommit={val => onUpdate({ logoText: val })} key={`${id}-logo`}/></PropertyGroup><PropertyGroup title="Styling"><ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /><ColorInput label="Text" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><ColorInput label="Link" value={props.linkColor} onChange={val => onUpdate({ linkColor: val })} /></PropertyGroup><PropertyGroup title="Links"><LinkManager links={props.links} onUpdateLinks={links => onUpdate({links})} elementId={id} pages={pages} /></PropertyGroup><GeneralStyling/></>;
             case 'footer': return <><PropertyGroup title="Content"><DebouncedTextInput label="Copyright Text" initialValue={props.copyrightText} onCommit={val => onUpdate({ copyrightText: val })} key={`${id}-copyright`}/></PropertyGroup><PropertyGroup title="Styling"><ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /><ColorInput label="Text" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><ColorInput label="Link" value={props.linkColor} onChange={val => onUpdate({ linkColor: val })} /></PropertyGroup><PropertyGroup title="Links"><LinkManager links={props.links} onUpdateLinks={links => onUpdate({links})} elementId={id} pages={pages} linkTypeLabel="Footer Link"/></PropertyGroup><GeneralStyling/></>;
             case 'cardSlider': return <><PropertyGroup title="Slides"><SlideManager slides={props.slides} onUpdateSlides={slides => onUpdate({slides})} elementId={id} /></PropertyGroup><PropertyGroup title="Settings"><StyledSlider label="Slides Per View" value={props.slidesPerView} onChange={val => onUpdate({ slidesPerView: parseInt(val) })} min={1} max={6} unit=""/><StyledSlider label="Space Between" value={props.spaceBetween} onChange={val => onUpdate({ spaceBetween: parseInt(val) })} max={100} unit="px"/></PropertyGroup><PropertyGroup title="Behavior"><ToggleSwitch label="Autoplay" checked={props.autoplay} onChange={val => onUpdate({ autoplay: val })} /><ToggleSwitch label="Loop" checked={props.loop} onChange={val => onUpdate({ loop: val })} /><ToggleSwitch label="Navigation Arrows" checked={props.showNavigation} onChange={val => onUpdate({ showNavigation: val })} /><ToggleSwitch label="Pagination Dots" checked={props.showPagination} onChange={val => onUpdate({ showPagination: val })} /></PropertyGroup><GeneralStyling/></>;
-            case 'accordion': return <><PropertyGroup title="Content"><DebouncedTextInput label="Title" initialValue={props.title} onCommit={val => onUpdate({ title: val })} key={`${id}-title`} /><DebouncedTextInput label="Content" type="textarea" rows={4} initialValue={props.content} onCommit={val => onUpdate({ content: val })} key={`${id}-content`} /></PropertyGroup><GeneralStyling/></>;
-            default: return <p className="text-sm text-slate-500 text-center py-8">No properties to edit for this '{itemType}'.</p>;
+            case 'accordion': return <><PropertyGroup title="Content"><DebouncedTextInput label="Title" initialValue={props.title} onCommit={val => onUpdate({ title: val })} key={`${id}-title`} /><DebouncedTextInput label="Content" type="textarea" rows={3} initialValue={props.content} onCommit={val => onUpdate({ content: val })} key={`${id}-content`} /></PropertyGroup><GeneralStyling/></>;
+            default: return <p className="text-sm text-slate-500 text-center py-8">No properties to edit for '{itemType}'.</p>;
         }
     })()}</div></>);
   };
   const renderCommentsPanel = () => {
     const pageComments = comments[activePageId] || [];
-    const IconForFrame = ({frame}) => { const DeviceIcon = DEVICE_FRAMES_CONFIG.find(d => d.name === frame)?.icon || LucideIcons.HelpCircle; return <DeviceIcon className="w-4 h-4 text-slate-500"/> };
-    return ( <> <div className="flex justify-between items-center px-4 py-3.5 border-b border-slate-200 h-[60px] bg-white"><h2 className="text-lg font-bold text-slate-800">Comments</h2></div> <div className="overflow-y-auto flex-grow text-sm p-4 space-y-3 bg-slate-50"> {pageComments.length === 0 ? ( <div className="text-center py-10 text-slate-500"><LucideIcons.MessageSquarePlus className="mx-auto w-12 h-12 text-slate-300 mb-2"/><p>No comments on this page.</p><p className="text-xs">Use the Comment tool to add notes.</p></div> ) : ( pageComments.map(comment => ( <div key={comment.id} className="p-3 bg-white border border-slate-200 rounded-lg"><div className="flex justify-between items-start"><textarea value={comment.text} onChange={(e) => onUpdateComment(activePageId, comment.id, e.target.value)} className="w-full bg-transparent border-0 focus:ring-0 p-0 text-sm text-slate-800 resize-none" rows={2}/> <button onClick={() => onDeleteComment(activePageId, comment.id)} className="ml-2 p-1 text-red-500 hover:bg-red-100 rounded-full"><LucideIcons.Trash2 className="w-4 h-4"/></button> </div> <div className="text-xs text-slate-500 mt-2 flex items-center gap-2"> <IconForFrame frame={comment.frame} /> <span>on {comment.frame} view</span> </div></div> )) )} </div> </> )
+    const IconForFrame = ({frame}) => { const DeviceIcon = DEVICE_FRAMES_CONFIG.find(d => d.name === frame)?.icon || LucideIcons.HelpCircle; return <DeviceIcon className="w-3.5 h-3.5 text-slate-500"/> };
+    return ( <> <div className="flex justify-between items-center px-3 border-b border-slate-200 h-[56px] bg-white"><h2 className="text-base font-bold text-slate-800">Comments</h2><button onClick={onClose} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors -mr-1"><LucideIcons.PanelRightClose className="w-5 h-5"/></button></div> <div className="overflow-y-auto flex-grow text-sm p-3 pb-8 space-y-2 bg-slate-50/50"> {pageComments.length === 0 ? ( <div className="text-center py-10 text-slate-500"><LucideIcons.MessageSquarePlus className="mx-auto w-10 h-10 text-slate-300 mb-2"/><p className="text-sm">No comments on this page.</p><p className="text-xs">Use the Comment tool to add notes.</p></div> ) : ( pageComments.map(comment => ( <div key={comment.id} className="p-2.5 bg-white border border-slate-200 rounded-lg"><div className="flex justify-between items-start"><textarea value={comment.text} onChange={(e) => onUpdateComment(activePageId, comment.id, e.target.value)} className="w-full bg-transparent border-0 focus:ring-0 p-0 text-xs text-slate-800 resize-none" rows={2}/> <button onClick={() => onDeleteComment(activePageId, comment.id)} className="ml-2 p-1 text-red-500 hover:bg-red-100 rounded-full"><LucideIcons.Trash2 className="w-3.5 h-3.5"/></button> </div> <div className="text-xs text-slate-500 mt-2 flex items-center gap-1.5"> <IconForFrame frame={comment.frame} /> <span>on {comment.frame} view</span> </div></div> )) )} </div> </> )
   }
   return (
-    <aside className="h-full w-80 bg-slate-50 border-l border-slate-200 shadow-xl flex flex-col print-hidden">
-        <div className="flex border-b border-slate-200">
-            <TabButton tabName="properties" icon={<LucideIcons.SlidersHorizontal className="w-5 h-5"/>} label="Properties"/>
-            <TabButton tabName="comments" icon={<LucideIcons.MessageSquareText className="w-5 h-5"/>} label="Comments"/>
+    <aside className="h-full w-72 bg-white border-l border-slate-200 shadow-xl flex flex-col print-hidden">
+        <div className="flex border-b border-slate-200 bg-gray-50/50">
+            <TabButton tabName="properties" icon={<LucideIcons.SlidersHorizontal className="w-4 h-4"/>} label="Properties"/>
+            <TabButton tabName="comments" icon={<LucideIcons.MessageSquareText className="w-4 h-4"/>} label="Comments"/>
         </div>
         <div className="flex-1 flex flex-col overflow-hidden">
             {activeTab === 'properties' ? renderPropertiesPanel() : renderCommentsPanel()}
@@ -1360,22 +1355,22 @@ function AiCanvasLoader() {
     return (
         <div className="absolute inset-0 bg-gradient-to-br from-green-50/70 via-white to-green-100/80 flex flex-col items-center justify-center z-[1000] overflow-hidden">
             <style>{` @keyframes rotate-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } @keyframes rotate-fast { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } } @keyframes pulse-grow { 0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 20px 10px rgba(52, 211, 153, 0.4); } 50% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 30px 15px rgba(52, 211, 153, 0.6); } } `}</style>
-            <div className="relative w-48 h-48 flex items-center justify-center">
-                <div className="absolute w-20 h-20 bg-green-300 rounded-full flex items-center justify-center" style={{ animation: 'pulse-grow 2.5s ease-in-out infinite' }}>
-                    <LucideIcons.BrainCircuit className="w-12 h-12 text-green-700/90" />
+            <div className="relative w-40 h-40 flex items-center justify-center">
+                <div className="absolute w-16 h-16 bg-green-300 rounded-full flex items-center justify-center" style={{ animation: 'pulse-grow 2.5s ease-in-out infinite' }}>
+                    <LucideIcons.BrainCircuit className="w-10 h-10 text-green-700/90" />
                 </div>
                 <div className="absolute w-full h-full" style={{ animation: 'rotate-slow 10s linear infinite' }}>
-                    <div className="absolute top-0 left-1/2 -ml-2 w-4 h-4 bg-teal-400 rounded-full"></div>
+                    <div className="absolute top-0 left-1/2 -ml-2 w-3.5 h-3.5 bg-teal-400 rounded-full"></div>
                 </div>
-                <div className="absolute w-40 h-40" style={{ animation: 'rotate-fast 8s linear infinite' }}>
-                    <div className="absolute bottom-0 left-1/2 -ml-3 w-6 h-6 border-2 border-green-400 rounded-full"></div>
+                <div className="absolute w-32 h-32" style={{ animation: 'rotate-fast 8s linear infinite' }}>
+                    <div className="absolute bottom-0 left-1/2 -ml-3 w-5 h-5 border-2 border-green-400 rounded-full"></div>
                 </div>
-                <div className="absolute w-32 h-32" style={{ animation: 'rotate-slow 12s linear infinite' }}>
-                    <div className="absolute top-1/2 -mt-2 right-0 w-3 h-3 bg-green-600/80 rounded-full"></div>
+                <div className="absolute w-28 h-28" style={{ animation: 'rotate-slow 12s linear infinite' }}>
+                    <div className="absolute top-1/2 -mt-2 right-0 w-2.5 h-2.5 bg-green-600/80 rounded-full"></div>
                 </div>
             </div>
-            <p className="text-slate-800 text-lg font-semibold mt-8 tracking-wider animate-pulse">Building with AI...</p>
-            <p className="text-green-700 text-sm mt-2">Crafting something amazing for you!</p>
+            <p className="text-slate-800 text-base font-semibold mt-6 tracking-wider animate-pulse">Building with AI...</p>
+            <p className="text-green-700 text-xs mt-1">Crafting something amazing for you!</p>
         </div>
     );
 }
@@ -1383,12 +1378,12 @@ export function PagePreviewRenderer({ pageLayout, globalNavbar, globalFooter, on
     const [device, setDevice] = useState(PREVIEW_DEVICES[2]);
     const containerStyle = device.width === '100%' ? { width: '100%', height: '100%' } : { maxWidth: device.width, width: '100%', height: '100%', containerType: 'inline-size' };
     return (
-        <div className="flex-1 overflow-hidden bg-slate-100 flex flex-col items-center p-4 gap-4">
-            <div className="bg-white rounded-full p-1.5 flex items-center justify-center gap-2 text-sm font-medium text-slate-600 shadow-md">
-                {PREVIEW_DEVICES.map(d => (<button key={d.name} onClick={() => setDevice(d)} className={`px-4 py-2 rounded-full flex items-center gap-2 transition-colors ${device.name === d.name ? 'bg-green-600 text-white' : 'hover:bg-slate-100'}`}><d.icon className="w-5 h-5" /> {d.name}</button>))}
+        <div className="flex-1 overflow-hidden bg-slate-100 flex flex-col items-center p-3 gap-3">
+            <div className="bg-white rounded-full p-1 flex items-center justify-center gap-1 text-sm font-medium text-slate-600 shadow-md">
+                {PREVIEW_DEVICES.map(d => (<button key={d.name} onClick={() => setDevice(d)} className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-colors text-xs ${device.name === d.name ? 'bg-green-600 text-white' : 'hover:bg-slate-100'}`}><d.icon className="w-4 h-4" /> {d.name}</button>))}
             </div>
             <div className="flex-1 w-full flex items-center justify-center overflow-hidden">
-                <div style={containerStyle} className="bg-white shadow-2xl mx-auto transition-all duration-300 rounded-2xl">
+                <div style={containerStyle} className="bg-white shadow-xl mx-auto transition-all duration-300 rounded-xl">
                     <div className="w-full h-full overflow-y-auto scrollbar-thin scrollbar-thumb-slate-400 scrollbar-track-slate-100">
                         {globalNavbar && (<NavbarElement {...globalNavbar.props} isPreviewMode={true} onNavigate={onNavigate} previewDevice={device.name.toLowerCase()} />)}
                         {pageLayout && pageLayout.map((sec, idx) => ( 
@@ -1426,47 +1421,47 @@ function CanvasToolbar({ selectedItem, zoom, onZoomChange, onSelect, pages, acti
     const breadcrumbs = getBreadcrumb();
 
     return (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/70 backdrop-blur-xl h-12 p-1 rounded-full border border-slate-200/80 flex items-center justify-between text-sm z-30 shadow-lg shadow-black/5">
-            <div className="flex items-center gap-1 pl-1">
-                <button onClick={() => onToolChange('select')} title="Select Tool (V)" className={`p-2 rounded-full transition-all ${activeTool === 'select' ? 'bg-green-100 text-green-700 shadow-sm' : 'hover:bg-slate-200/80 text-slate-600'}`}><LucideIcons.MousePointer2 className="w-5 h-5"/></button>
-                <button onClick={() => onToolChange('hand')} title="Hand Tool (H)" className={`p-2 rounded-full transition-all ${activeTool === 'hand' ? 'bg-green-100 text-green-700 shadow-sm' : 'hover:bg-slate-200/80 text-slate-600'}`}><LucideIcons.Hand className="w-5 h-5"/></button>
-                <button onClick={() => onToolChange('comment')} title="Comment (C)" className={`p-2 rounded-full transition-all ${activeTool === 'comment' ? 'bg-green-100 text-green-700 shadow-sm' : 'hover:bg-slate-200/80 text-slate-600'}`}><LucideIcons.MessageSquarePlus className="w-5 h-5"/></button>
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/70 backdrop-blur-xl h-10 p-1 rounded-full border border-slate-200/80 flex items-center justify-between text-sm z-30 shadow-md shadow-black/5">
+            <div className="flex items-center gap-0.5 pl-1">
+                <button onClick={() => onToolChange('select')} title="Select Tool (V)" className={`p-1.5 rounded-full transition-all ${activeTool === 'select' ? 'bg-green-100 text-green-700 shadow-sm' : 'hover:bg-slate-200/80 text-slate-600'}`}><LucideIcons.MousePointer2 className="w-4 h-4"/></button>
+                <button onClick={() => onToolChange('hand')} title="Hand Tool (H)" className={`p-1.5 rounded-full transition-all ${activeTool === 'hand' ? 'bg-green-100 text-green-700 shadow-sm' : 'hover:bg-slate-200/80 text-slate-600'}`}><LucideIcons.Hand className="w-4 h-4"/></button>
+                <button onClick={() => onToolChange('comment')} title="Comment (C)" className={`p-1.5 rounded-full transition-all ${activeTool === 'comment' ? 'bg-green-100 text-green-700 shadow-sm' : 'hover:bg-slate-200/80 text-slate-600'}`}><LucideIcons.MessageSquarePlus className="w-4 h-4"/></button>
             </div>
-            <div className="h-6 w-px bg-slate-300 mx-2"></div>
-            <div className="flex items-center gap-1 text-slate-500 px-2 max-w-md overflow-x-auto">
+            <div className="h-5 w-px bg-slate-300 mx-2"></div>
+            <div className="flex items-center gap-1 text-slate-500 px-1.5 max-w-sm overflow-x-auto text-xs">
                 {breadcrumbs.map((crumb, index) => (
                     <React.Fragment key={index}>
-                        <button onClick={() => onSelect(crumb.id, crumb.type, crumb.path)} className={`px-2 py-1 rounded-md transition-colors whitespace-nowrap ${index === breadcrumbs.length - 1 ? 'text-slate-800 font-semibold bg-slate-200/60' : 'hover:bg-slate-200/50'}`}>{crumb.name}</button>
-                        {index < breadcrumbs.length - 1 && <LucideIcons.ChevronRight className="w-4 h-4 flex-shrink-0" />}
+                        <button onClick={() => onSelect(crumb.id, crumb.type, crumb.path)} className={`px-2 py-0.5 rounded-md transition-colors whitespace-nowrap ${index === breadcrumbs.length - 1 ? 'text-slate-800 font-semibold bg-slate-200/60' : 'hover:bg-slate-200/50'}`}>{crumb.name}</button>
+                        {index < breadcrumbs.length - 1 && <LucideIcons.ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />}
                     </React.Fragment>
                 ))}
             </div>
-            <div className="h-6 w-px bg-slate-300 mx-2"></div>
-            <div className="flex items-center gap-2 px-2">
-                <button onClick={() => onZoomChange(Math.max(0.1, zoom - 0.1))} className="p-1.5 hover:bg-slate-200 rounded-md text-slate-600"><LucideIcons.Minus className="w-4 h-4" /></button>
-                <span className="w-12 text-center font-medium text-slate-700">{Math.round(zoom * 100)}%</span>
-                <button onClick={() => onZoomChange(zoom + 0.1)} className="p-1.5 hover:bg-slate-200 rounded-md text-slate-600"><LucideIcons.Plus className="w-4 h-4" /></button>
+            <div className="h-5 w-px bg-slate-300 mx-2"></div>
+            <div className="flex items-center gap-1 px-1">
+                <button onClick={() => onZoomChange(Math.max(0.1, zoom - 0.1))} className="p-1 hover:bg-slate-200 rounded-md text-slate-600"><LucideIcons.Minus className="w-3 h-3" /></button>
+                <span className="w-10 text-center text-xs font-medium text-slate-700">{Math.round(zoom * 100)}%</span>
+                <button onClick={() => onZoomChange(zoom + 0.1)} className="p-1 hover:bg-slate-200 rounded-md text-slate-600"><LucideIcons.Plus className="w-3 h-3" /></button>
             </div>
         </div>
     );
 }
 function TopBar({ onSave, onTogglePreview, isPreviewMode, onToggleLeftPanel, onToggleFullscreen, isFullscreen }) {
     return (
-        <header className="bg-white h-[60px] p-2.5 border-b border-slate-200/80 shadow-sm print-hidden flex justify-between items-center px-4 z-[50] relative">
-            <div className="flex items-center gap-3">
+        <header className="bg-white h-[56px] border-b border-slate-200/80 shadow-sm print-hidden flex justify-between items-center px-4 z-[50] relative">
+            <div className="flex items-center gap-2">
                 {!isPreviewMode && (
                     <button onClick={onToggleLeftPanel} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors" title="Toggle Content Panel">
-                        <LucideIcons.PanelLeft className="w-6 h-6" />
+                        <LucideIcons.PanelLeft className="w-5 h-5" />
                     </button>
                 )}
-                <div className="flex items-center gap-2.5 text-slate-800 text-lg">
-                    <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-                       <LucideIcons.Feather className="w-5 h-5 text-white" />
+                <div className="flex items-center gap-2 text-slate-800">
+                    <div className="w-7 h-7 bg-green-500 rounded-md flex items-center justify-center">
+                       <LucideIcons.Feather className="w-4 h-4 text-white" />
                     </div>
                     <input 
                         type="text" 
                         defaultValue="Template Editor" 
-                        className="hidden sm:inline font-bold bg-transparent border-none outline-none focus:ring-2 focus:ring-green-500/50 rounded px-1"
+                        className="hidden sm:inline font-bold bg-transparent border-none outline-none focus:ring-1 focus:ring-green-500/50 rounded px-1 text-base"
                         placeholder="Enter title..."
                     />
                 </div>
@@ -1474,32 +1469,27 @@ function TopBar({ onSave, onTogglePreview, isPreviewMode, onToggleLeftPanel, onT
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <div className="relative flex items-center p-1 bg-slate-200/70 rounded-full border border-slate-300/50 shadow-inner">
                      <span className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full bg-white shadow-sm transition-transform duration-300 ease-in-out`} style={{ transform: isPreviewMode ? 'translateX(calc(100% + 4px))' : 'translateX(0)' }}></span>
-                     <button onClick={() => isPreviewMode && onTogglePreview()} className={`relative z-10 px-4 py-1.5 rounded-full flex items-center gap-2 transition-colors duration-300 text-sm font-medium ${!isPreviewMode ? "text-green-700" : "text-slate-500"}`}>
-                        <LucideIcons.Edit3 className="w-4 h-4" />
+                     <button onClick={() => isPreviewMode && onTogglePreview()} className={`relative z-10 px-3 py-1 rounded-full flex items-center gap-1.5 transition-colors duration-300 text-xs font-medium ${!isPreviewMode ? "text-green-700" : "text-slate-500"}`}>
+                        <LucideIcons.Edit3 className="w-3.5 h-3.5" />
                         Editor
                     </button>
-                    <button onClick={() => !isPreviewMode && onTogglePreview()} className={`relative z-10 px-4 py-1.5 rounded-full flex items-center gap-2 transition-colors duration-300 text-sm font-medium ${isPreviewMode ? "text-green-700 " : "text-slate-500"}`}>
-                        <LucideIcons.Eye className="w-4 h-4" />
+                    <button onClick={() => !isPreviewMode && onTogglePreview()} className={`relative z-10 px-3 py-1 rounded-full flex items-center gap-1.5 transition-colors duration-300 text-xs font-medium ${isPreviewMode ? "text-green-700 " : "text-slate-500"}`}>
+                        <LucideIcons.Eye className="w-3.5 h-3.5" />
                         Preview
                     </button>
                 </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
                 {!isPreviewMode && (
                     <button onClick={onToggleFullscreen} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors" title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}>
                         {isFullscreen ? <LucideIcons.Minimize className="w-5 h-5" /> : <LucideIcons.Maximize className="w-5 h-5" />}
                     </button>
                 )}
-                {/* <StyledModalButton onClick={onSave} variant="primary">
-                    <LucideIcons.Save className="w-4 h-4 mr-2" />
-                    Save
-                </StyledModalButton> */}
             </div>
         </header>
     );
 }
-// --- AI DATA PARSERS ---
 function htmlToBuilderJson(htmlString) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
@@ -1634,21 +1624,16 @@ function apiStateToBuilderJson(apiResponse) {
         
         const sectionHtml = sectionsHtml[sectionId];
         
-        // This handles both empty sections and sections with content
         const parsedSections = htmlToBuilderJson(sectionHtml || '<section></section>');
 
         if (parsedSections.length > 0) {
-            // The AI might return multiple sections inside one HTML blob
             parsedSections.forEach((parsedSection, index) => {
-                // For the first parsed section, use the ID from the backend's order
-                // For subsequent ones, keep their generated ID.
                 if (index === 0) {
                     parsedSection.id = sectionId;
                 }
                 newLayout.push(parsedSection);
             });
         } else {
-            // If parsing results in nothing (e.g., an empty <section> tag), add a placeholder
             newLayout.push({
                 id: sectionId, type: 'section', props: { paddingTop: "48px", paddingBottom: "48px", style: {} },
                 columns: [{ id: generateId("col"), type: "column", props: { width: "100%" }, elements: [] }]
@@ -1658,52 +1643,30 @@ function apiStateToBuilderJson(apiResponse) {
     return newLayout;
 }
 
-// --- MAIN PAGE COMPONENT ---
 export default function ElementBuilderPage({ onExternalSave, initialBuilderState, initialData, onDataChange, isFullScreen }) {
   const [newlyAddedElementId, setNewlyAddedElementId] = useState(null);
   const initialPageId = useMemo(() => generateId("page-home"), []);
   
-  // Use initialData if provided, otherwise fall back to initialBuilderState
   const effectiveInitialData = initialData || initialBuilderState;
-  
-
   
   const [pages, setPages] = useState(effectiveInitialData?.pages && Object.keys(effectiveInitialData.pages).length > 0 ? effectiveInitialData.pages : { [initialPageId]: { id: initialPageId, name: "Home", layout: [] } });
   const [activePageId, setActivePageId] = useState(effectiveInitialData?.activePageId && pages[effectiveInitialData.activePageId] ? effectiveInitialData.activePageId : initialPageId);
   const [globalNavbar, setGlobalNavbar] = useState(effectiveInitialData?.globalNavbar || null);
   const [globalFooter, setGlobalFooter] = useState(effectiveInitialData?.globalFooter || null);
-  
-  // Wrapper functions that call onExternalSave when global elements change
-  const updateGlobalNavbar = (newNavbar) => {
-    setGlobalNavbar(newNavbar);
-    // Use setTimeout to ensure state is updated before calling onExternalSave
-    setTimeout(() => {
-      if (onExternalSave) {
-        onExternalSave({ pages, activePageId, globalNavbar: newNavbar, globalFooter, comments });
-      }
-    }, 0);
-  };
-  
-  const updateGlobalFooter = (newFooter) => {
-    setGlobalFooter(newFooter);
-    // Use setTimeout to ensure state is updated before calling onExternalSave
-    setTimeout(() => {
-      if (onExternalSave) {
-        onExternalSave({ pages, activePageId, globalNavbar, globalFooter: newFooter, comments });
-      }
-    }, 0);
-  };
+  const [comments, setComments] = useState(effectiveInitialData?.comments || {});
+
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeDragItem, setActiveDragItem] = useState(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [activeTool, setActiveTool] = useState('select');
-  const [zoom, setZoom] = useState(0.5);
+  const [zoom, setZoom] = useState(0.75);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
-  const [comments, setComments] = useState(effectiveInitialData?.comments || {});
+  
   const canvasRef = useRef(null);
   const builderRef = useRef(null);
   const isPanning = useRef(false);
   const lastMousePos = useRef({ x: 0, y: 0 });
+  
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
   const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
   const [structureModalContext, setStructureModalContext] = useState({ path: null, elementType: null, pageId: null });
@@ -1715,36 +1678,34 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   const [isFullscreen, setIsFullscreen] = useState(false);
 
 
+  useEffect(() => {
+    const currentData = {
+      pages,
+      activePageId,
+      globalNavbar,
+      globalFooter,
+      comments,
+      pageTitle: pages[activePageId]?.name || "Untitled"
+    };
+    if (onDataChange) {
+      onDataChange(currentData);
+    }
+    if (onExternalSave) {
+      onExternalSave(currentData);
+    }
+  }, [pages, activePageId, globalNavbar, globalFooter, comments, onDataChange, onExternalSave]);
 
   const updateLayoutForPage = (pageId, callback) => {
     setPages((p) => { 
       const targetPage = p[pageId]; 
       if (!targetPage) return p; 
       const newLayout = callback(targetPage.layout || []);
-      const updatedPages = { ...p, [pageId]: { ...targetPage, layout: newLayout } };
-      
-      // Call onExternalSave whenever layout changes to keep parent component updated
-      if (onExternalSave) {
-        onExternalSave({ pages: updatedPages, activePageId, globalNavbar, globalFooter, comments });
-      }
-      
-      return updatedPages; 
+      return { ...p, [pageId]: { ...targetPage, layout: newLayout } };
     });
   };
-
-  // Call onDataChange whenever pages, globalNavbar, or globalFooter changes
-  useEffect(() => {
-    if (onDataChange) {
-      const currentData = {
-        pages,
-        activePageId,
-        globalNavbar,
-        globalFooter,
-        pageTitle: pages[activePageId]?.name || "Untitled"
-      };
-      onDataChange(currentData);
-    }
-  }, [pages, activePageId, globalNavbar, globalFooter, onDataChange]);
+  
+  const updateGlobalNavbar = (newNavbar) => setGlobalNavbar(newNavbar);
+  const updateGlobalFooter = (newFooter) => setGlobalFooter(newFooter);
 
   const syncPageWithAI = useCallback(async () => {
       if (!aiSessionId.current || !activePageId) return;
@@ -1886,10 +1847,13 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
         const ref_section = (numSections > 1) ? currentLayout[numSections - 2].id : null;
 
         try {
+            setIsAiLoading(true);
             await apiRequest('post', '/add-section', { session_id: aiSessionId.current, section_name: newSectionId, html: "", position, ref_section });
             await syncPageWithAI();
         } catch (err) {
             console.error("AI: Failed to add and sync section.", err);
+        } finally {
+          setIsAiLoading(false);
         }
     }
     
@@ -2133,9 +2097,9 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   const handleAddComment = (pageId, frameName, clickPosition) => {
     if (!canvasRef.current) return;
     const canvasRect = canvasRef.current.getBoundingClientRect(); const viewX = clickPosition.x - canvasRect.left; const viewY = clickPosition.y - canvasRect.top; const transformedX = (viewX - panOffset.x) / zoom; const transformedY = (viewY - panOffset.y) / zoom;
-    let frameLeftEdge = 0; const paddingLeft = 80; const gap = 80; let currentLeft = paddingLeft;
+    let frameLeftEdge = 0; const paddingLeft = 64; const gap = 64; let currentLeft = paddingLeft;
     for (const device of DEVICE_FRAMES_CONFIG) { if (frameName === device.name) { frameLeftEdge = currentLeft; break; } currentLeft += device.width + gap; }
-    const paddingTop = 80; const finalX = transformedX - frameLeftEdge; const finalY = transformedY - paddingTop;
+    const paddingTop = 64; const finalX = transformedX - frameLeftEdge; const finalY = transformedY - paddingTop;
     const newComment = { id: generateId('comment'), text: 'New comment...', position: { x: finalX, y: finalY }, frame: frameName, author: 'User', createdAt: new Date().toISOString() };
     setComments(prev => ({...prev, [pageId]: [...(prev[pageId] || []), newComment]}));
   };
@@ -2153,15 +2117,15 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   return (
     <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragStart={handleDragStart} onDragEnd={handleDragEnd} disabled={isPreviewMode || activeTool !== 'select'}>
         <div ref={builderRef} className="h-screen bg-white antialiased flex flex-col relative">
-            <style>{`.selected-outline { box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #22c55e; border-radius: 1.25rem; } .custom-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: #e2e8f0; border-radius: 9999px; outline: none; opacity: 0.9; transition: opacity .2s; } .custom-slider:hover { opacity: 1; } .custom-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; background: #16a34a; border-radius: 50%; cursor: pointer; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); } .custom-slider::-moz-range-thumb { width: 18px; height: 18px; background: #16a34a; border-radius: 50%; cursor: pointer; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); }`}</style>
+            <style>{`.selected-outline { box-shadow: 0 0 0 1.5px #ffffff, 0 0 0 3px #22c55e; border-radius: 1rem; } .custom-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; background: #e2e8f0; border-radius: 9999px; outline: none; opacity: 0.9; transition: opacity .2s; } .custom-slider:hover { opacity: 1; } .custom-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; background: #16a34a; border-radius: 50%; cursor: pointer; border: 2.5px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); } .custom-slider::-moz-range-thumb { width: 14px; height: 14px; background: #16a34a; border-radius: 50%; cursor: pointer; border: 2.5px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); }`}</style>
             <TopBar onSave={handleSave} onTogglePreview={togglePreviewMode} isPreviewMode={false} onToggleLeftPanel={() => setIsLeftPanelOpen(p => !p)} onToggleFullscreen={handleToggleFullscreen} isFullscreen={isFullscreen} />
             <div className="flex-1 flex flex-row relative overflow-hidden z-0">
                 <LeftPanel isOpen={isLeftPanelOpen} onClose={() => setIsLeftPanelOpen(false)} onAddTopLevelSection={() => handleOpenStructureModal(null, "section", activePageId)} pages={pages} activePageId={activePageId} onAddPage={handleAddPage} onSelectPage={handleSelectPage} onRenamePage={handleRenamePage} onDeletePage={handleDeletePage} onAiSubmit={handleAiSubmit} isAiLoading={isAiLoading} aiChatHistory={aiChatHistory} onSwitchToAiMode={() => {}} onSelect={handleSelect} selectedItem={selectedItem} aiSuggestions={aiSuggestions} handleUndo={handleUndo} handleRedo={handleRedo} />
-                <main ref={canvasRef} className={`flex-1 flex flex-col relative bg-dots ${isAiLoading ? '' : 'overflow-auto'}`} onMouseDown={handleCanvasMouseDown} onMouseMove={handleCanvasMouseMove} onMouseUp={handleCanvasMouseUpOrLeave} onMouseLeave={handleCanvasMouseUpOrLeave} style={{ cursor: getCanvasCursor(), backgroundSize: '40px 40px', backgroundImage: 'radial-gradient(circle, #d1d5db 1px, rgba(0, 0, 0, 0) 1px)' }}>
+                <main ref={canvasRef} className={`flex-1 flex flex-col relative bg-dots ${isAiLoading ? '' : 'overflow-auto'}`} onMouseDown={handleCanvasMouseDown} onMouseMove={handleCanvasMouseMove} onMouseUp={handleCanvasMouseUpOrLeave} onMouseLeave={handleCanvasMouseUpOrLeave} style={{ cursor: getCanvasCursor(), backgroundSize: '30px 30px', backgroundImage: 'radial-gradient(circle, #e2e8f0 1px, rgba(0, 0, 0, 0) 1px)' }}>
                 {isAiLoading ? ( <AiCanvasLoader /> ) : (
                     <>
                     <CanvasToolbar selectedItem={selectedItem} zoom={zoom} onZoomChange={setZoom} onSelect={handleSelect} pages={pages} activeTool={activeTool} onToolChange={setActiveTool}/>
-                    <div style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`, transformOrigin: "0 0", transition: isPanning.current ? 'none' : "transform 0.2s" }} className="flex-1 flex gap-20 items-start p-20" onClick={(e) => { if (e.target === e.currentTarget && activeTool === 'select') { setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); } }}>
+                    <div style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`, transformOrigin: "0 0", transition: isPanning.current ? 'none' : "transform 0.2s" }} className="flex-1 flex gap-16 items-start p-16" onClick={(e) => { if (e.target === e.currentTarget && activeTool === 'select') { setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); } }}>
                         {activePage && DEVICE_FRAMES_CONFIG.map((device) => (
                             <DeviceFrame key={device.name} device={device} page={activePage} globalNavbar={globalNavbar} globalFooter={globalFooter} onUpdateProps={handleUpdateProps} onDelete={handleDelete} onSelect={handleSelect} selectedItemId={selectedItem?.id} onOpenStructureModal={(path, type) => handleOpenStructureModal(path, type, activePage.id)} isPreviewMode={isPreviewMode} onNavigate={handleNavigate} onDeleteGlobalElement={handleDeleteGlobalElement} isDraggable={activeTool === 'select'} comments={(comments[activePageId] || []).filter(c => c.frame === device.name)} onAddComment={handleAddComment} activeTool={activeTool} />
                         ))}
@@ -2169,8 +2133,8 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
                     </>
                 )}
                 </main>
-                <div className={`absolute top-0 right-0 h-full transition-transform duration-300 ease-in-out z-40 transform ${isRightPanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                  <RightSidebar selectedItemData={selectedItem} onUpdateSelectedProps={handleUpdateProps} pages={pages} activePageId={activePageId} onRenamePage={handleRenameActivePage} onAddGlobalElement={handleAddGlobalElement} comments={comments} onUpdateComment={handleUpdateComment} onDeleteComment={handleDeleteComment} />
+                <div className={`absolute pb-6 top-0 right-0 h-full transition-transform duration-300 ease-in-out z-40 transform ${isRightPanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                  <RightSidebar selectedItemData={selectedItem} onUpdateSelectedProps={handleUpdateProps} pages={pages} activePageId={activePageId} onRenamePage={handleRenameActivePage} onAddGlobalElement={handleAddGlobalElement} comments={comments} onUpdateComment={handleUpdateComment} onDeleteComment={handleDeleteComment} onClose={() => setSelectedItem(null)} />
                 </div>
             </div>
             <DragOverlay dropAnimation={null} zIndex={9999}>{activeDragItem && activeDragItem.data.current?.type === "paletteItem" ? (<PaletteItemDragOverlay config={activeDragItem.data.current.config} />) : null}</DragOverlay>
