@@ -6,6 +6,24 @@ import img from "../../../assets/img/cards/672e98fa2d1ed0b7d1bf2adb_glass.png";
 import * as LucideIcons from "lucide-react";
 import apiRequest from "../../../utils/apiRequestAI";
 
+const AI_HISTORY_STORAGE_KEY = "ai_session_histories";
+
+const getHistoryFromStorage = (sessionId) => {
+    try {
+        const histories = JSON.parse(sessionStorage.getItem(AI_HISTORY_STORAGE_KEY) || "{}");
+        return histories[sessionId] || [];
+    } catch (e) { return []; }
+};
+
+const saveHistoryToStorage = (sessionId, history) => {
+    try {
+        const histories = JSON.parse(sessionStorage.getItem(AI_HISTORY_STORAGE_KEY) || "{}");
+        histories[sessionId] = history;
+        sessionStorage.setItem(AI_HISTORY_STORAGE_KEY, JSON.stringify(histories));
+    } catch (e) { console.error("Failed to save history to session storage:", e); }
+};
+
+
 const StyledModalButton = ({ children, onClick, variant = "primary", className = "" }) => {
   const baseStyle = "inline-flex items-center justify-center px-5 py-2 text-xs font-semibold rounded-lg transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed";
   const variantStyles = {
@@ -646,7 +664,7 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
   const sectionPath = `pages[${pageId}].layout[${sectionIndex}]`;
   const isSelected = selectedItemId === sectionData.id;
   const handleClick = (e) => { e.stopPropagation(); if (!isPreviewMode && isDraggable) { onSelect(sectionData.id, "section", sectionPath, sectionData); } };
-  
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
       id: sectionData.id,
       data: { type: "section", sectionId: sectionData.id, path: sectionPath, sectionData, pageId },
@@ -664,17 +682,17 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
   };
   const sectionRootClasses = ["relative", "group", "transition-all", "duration-200", "ease-in-out", getSectionBaseBgClass(), !isPreviewMode && isSelected ? "selected-outline" : "", !isPreviewMode && !isSelected ? "hover:ring-1 hover:ring-green-300/80 cursor-pointer" : ""].join(" ").replace(/\s+/g, " ").trim();
   const sectionPaddingStyle = { paddingTop: sectionProps.paddingTop, paddingBottom: sectionProps.paddingBottom, paddingLeft: sectionProps.paddingLeft, paddingRight: sectionProps.paddingRight };
-  
+
   const renderDefaultTemplateSection = () => {
     if (!sectionData.content) return null;
-    
+
     const content = sectionData.content;
     const style = sectionData.style || {};
-    
+
     if (sectionData.type === 'header') {
       return (
-        <div className="text-center py-8" style={{ 
-          backgroundColor: content.backgroundColor, 
+        <div className="text-center py-8" style={{
+          backgroundColor: content.backgroundColor,
           color: content.textColor,
           padding: style.padding,
           textAlign: style.textAlign
@@ -684,11 +702,11 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
         </div>
       );
     }
-    
+
     if (sectionData.type === 'content') {
       return (
-        <div className="text-center py-12" style={{ 
-          backgroundColor: content.backgroundColor, 
+        <div className="text-center py-12" style={{
+          backgroundColor: content.backgroundColor,
           color: content.textColor,
           padding: style.padding,
           textAlign: style.textAlign
@@ -698,11 +716,11 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
         </div>
       );
     }
-    
+
     if (sectionData.type === 'footer') {
       return (
-        <div className="text-center py-6" style={{ 
-          backgroundColor: content.backgroundColor, 
+        <div className="text-center py-6" style={{
+          backgroundColor: content.backgroundColor,
           color: content.textColor,
           padding: style.padding,
           textAlign: style.textAlign
@@ -711,43 +729,43 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
         </div>
       );
     }
-    
+
     return null;
   };
-  
+
   const renderAIGeneratedSection = () => {
     if (!sectionData.columns && !sectionData.elements && !sectionData.props) return null;
-    
+
     if (sectionData.columns && sectionData.columns.length > 0) {
       return (
         <div className="w-full">
           {sectionData.columns.map((col, colIdx) => (
-            <ColumnComponent 
-              key={col.id} 
-              parentPath={sectionPath} 
-              columnData={col} 
-              columnIndex={colIdx} 
-              onUpdateProps={onUpdateProps} 
-              onDelete={onDelete} 
-              onSelect={onSelect} 
-              selectedItemId={selectedItemId} 
-              onOpenStructureModal={onOpenStructureModal} 
-              isPreviewMode={isPreviewMode} 
-              onNavigate={onNavigate} 
-              isDraggable={isDraggable} 
+            <ColumnComponent
+              key={col.id}
+              parentPath={sectionPath}
+              columnData={col}
+              columnIndex={colIdx}
+              onUpdateProps={onUpdateProps}
+              onDelete={onDelete}
+              onSelect={onSelect}
+              selectedItemId={selectedItemId}
+              onOpenStructureModal={onOpenStructureModal}
+              isPreviewMode={isPreviewMode}
+              onNavigate={onNavigate}
+              isDraggable={isDraggable}
             />
           ))}
         </div>
       );
     }
-    
+
     if (sectionData.elements && sectionData.elements.length > 0) {
       return (
         <div className="w-full">
           {sectionData.elements.map((element, elementIndex) => (
             <div key={element.id || elementIndex} className="mb-4">
               {element.type === 'heading' && (
-                <div className="text-center" style={{ 
+                <div className="text-center" style={{
                   color: element.props?.textColor || '#000',
                   backgroundColor: element.props?.backgroundColor || 'transparent',
                   padding: element.props?.padding || '1rem'
@@ -757,9 +775,9 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
                   </h1>
                 </div>
               )}
-              
+
               {element.type === 'text' && (
-                <div className="text-center" style={{ 
+                <div className="text-center" style={{
                   color: element.props?.textColor || '#000',
                   backgroundColor: element.props?.backgroundColor || 'transparent',
                   padding: element.props?.padding || '1rem'
@@ -769,13 +787,13 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
                   </p>
                 </div>
               )}
-              
+
               {element.type === 'button' && (
-                <div className="text-center" style={{ 
+                <div className="text-center" style={{
                   backgroundColor: element.props?.backgroundColor || '#3b82f6',
                   padding: element.props?.padding || '1rem'
                 }}>
-                  <button className="px-6 py-3 rounded-lg text-white font-medium" style={{ 
+                  <button className="px-6 py-3 rounded-lg text-white font-medium" style={{
                     backgroundColor: element.props?.buttonColor || '#3b82f6',
                     color: element.props?.textColor || '#ffffff'
                   }}>
@@ -783,36 +801,36 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
                   </button>
                 </div>
               )}
-              
+
               {element.type === 'image' && element.props?.imageSrc && (
-                <div className="text-center" style={{ 
+                <div className="text-center" style={{
                   padding: element.props?.padding || '1rem'
                 }}>
-                  <img 
-                    src={element.props.imageSrc} 
-                    alt={element.props?.altText || 'Image'} 
+                  <img
+                    src={element.props.imageSrc}
+                    alt={element.props?.altText || 'Image'}
                     className="mx-auto max-w-full h-auto rounded-lg"
-                    style={{ 
+                    style={{
                       maxWidth: element.props?.maxWidth || '100%',
                       height: element.props?.height || 'auto'
                     }}
                   />
                 </div>
               )}
-              
+
               {element.type === 'divider' && (
-                <div className="text-center" style={{ 
+                <div className="text-center" style={{
                   padding: element.props?.padding || '1rem'
                 }}>
-                  <hr className="border-t-2 mx-auto" style={{ 
+                  <hr className="border-t-2 mx-auto" style={{
                     width: element.props?.width || '50%',
                     borderColor: element.props?.color || '#e5e7eb'
                   }} />
                 </div>
               )}
-              
+
               {element.type === 'textBlock' && (
-                <div className="text-center" style={{ 
+                <div className="text-center" style={{
                   color: element.props?.textColor || '#000',
                   backgroundColor: element.props?.backgroundColor || 'transparent',
                   padding: element.props?.padding || '1rem'
@@ -822,7 +840,7 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
                   </p>
                 </div>
               )}
-              
+
               {element.type === 'accordion' && (
                 <div className="max-w-2xl mx-auto mb-4">
                   <details className="bg-white border border-gray-200 rounded-lg">
@@ -840,7 +858,7 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
         </div>
       );
     }
-    
+
     if (sectionData.props) {
       return (
         <div className="w-full" style={{
@@ -854,19 +872,19 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
               {sectionData.props.title}
             </h2>
           )}
-          
+
           {sectionData.props.text && (
             <p className="text-base leading-relaxed" style={{ fontSize: sectionData.props.textSize || '1rem' }}>
               {sectionData.props.text}
             </p>
           )}
-          
+
           {sectionData.props.subtitle && (
             <p className="text-lg opacity-80 mt-2" style={{ fontSize: sectionData.props.subtitleSize || '1.125rem' }}>
               {sectionData.props.subtitle}
             </p>
           )}
-          
+
           {sectionData.props.buttonText && (
             <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors mt-4">
               {sectionData.props.buttonText}
@@ -875,7 +893,7 @@ function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, 
         </div>
       );
     }
-    
+
     return null;
   };
 
@@ -908,7 +926,7 @@ function DeviceFrame({ device, page, globalNavbar, globalFooter, onUpdateProps, 
     const { setNodeRef: setPageDroppableRef, isOver } = useDroppable({ id: `page-droppable-${page.id}-${device.name}`, data: { type: "page", accepts: ["paletteItem", "section"], pageId: page.id }, disabled: isPreviewMode || !isDraggable, });
     const sectionIds = useMemo(() => page.layout.map((sec) => sec.id), [page.layout]);
     const handleCommentOverlayClick = (e) => { e.stopPropagation(); onAddComment(page.id, device.name, { x: e.clientX, y: e.clientY }); };
-    
+
     const containerStyle = {
       width: device.width,
       containerType: 'inline-size',
@@ -986,7 +1004,7 @@ function ElementPaletteItem({ config }) {
             </div>
         );
     }
-    
+
     return (
         <div ref={setNodeRef} {...listeners} {...attributes} style={style} className="flex items-center gap-2.5 p-2 text-left bg-white border border-slate-200 rounded-lg cursor-grab hover:bg-green-50 hover:border-green-300 hover:shadow-md transition-all group focus:outline-none focus-visible:ring-1 focus-visible:ring-green-500">
             <div className="text-slate-500 group-hover:text-green-600 transition-colors">{IconToShow}</div>
@@ -1013,7 +1031,7 @@ function AiLoader() {
         </div>
     );
 }
-function AiModeView({ onBack, onAiSubmit, isAiLoading, aiChatHistory, aiSuggestions, handleUndo, handleRedo }) {
+function AiModeView({ onBack, onAiSubmit, isAiLoading, aiChatHistory, aiSuggestions, handleUndo, handleRedo, canUndo, canRedo }) {
     const handleKeyDown = (e) => {
         if(e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -1031,15 +1049,15 @@ function AiModeView({ onBack, onAiSubmit, isAiLoading, aiChatHistory, aiSuggesti
                     <LucideIcons.ArrowLeft className="w-3.5 h-3.5" /> Back
                 </button>
                 <div className="flex items-center gap-1">
-                    <button onClick={handleUndo} title="Undo" className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors">
+                    <button onClick={handleUndo} disabled={!canUndo} title="Undo" className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                         <LucideIcons.Undo2 className="w-4 h-4"/>
                     </button>
-                     <button onClick={handleRedo} title="Redo" className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors">
+                     <button onClick={handleRedo} disabled={!canRedo} title="Redo" className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                         <LucideIcons.Redo2 className="w-4 h-4"/>
                     </button>
                 </div>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto space-y-2 py-3">
                 {aiChatHistory.map(entry => (
                     <div key={entry.id} className="text-xs p-2 rounded-lg bg-slate-50 border border-slate-200/60">
@@ -1051,7 +1069,7 @@ function AiModeView({ onBack, onAiSubmit, isAiLoading, aiChatHistory, aiSuggesti
             </div>
 
             {isAiLoading && <div className="py-2"><AiLoader /></div>}
-            
+
             <div className="mt-auto pt-3 border-t border-slate-200">
                  {aiSuggestions && aiSuggestions.length > 0 && (
                      <div className="pb-3">
@@ -1140,10 +1158,10 @@ const ElementAccordion = ({ title, children, defaultOpen = true }) => {
         </div>
     );
 };
-function LeftPanel({ isOpen, onClose, onAddTopLevelSection, pages, activePageId, onAddPage, onSelectPage, onRenamePage, onDeletePage, onAiSubmit, isAiLoading, aiChatHistory, onSwitchToAiMode, onSelect, selectedItem, aiSuggestions, handleUndo, handleRedo }) {
+function LeftPanel({ isOpen, onClose, onAddTopLevelSection, onEnterAiMode, pages, activePageId, onAddPage, onSelectPage, onRenamePage, onDeletePage, onAiSubmit, isAiLoading, aiChatHistory, onSelect, selectedItem, aiSuggestions, handleUndo, handleRedo, isAiMode, setIsAiMode, canUndo, canRedo }) {
   const [activeTab, setActiveTab] = useState("insert");
   const [searchTerm, setSearchTerm] = useState("");
-  const [isAiMode, setIsAiMode] = useState(false);
+
   const categorizedElements = useMemo(() => {
     const filtered = AVAILABLE_ELEMENTS_CONFIG.filter(el => !el.isGlobalOnly && el.name.toLowerCase().includes(searchTerm.toLowerCase()));
     return filtered.reduce((acc, element) => {
@@ -1153,15 +1171,28 @@ function LeftPanel({ isOpen, onClose, onAddTopLevelSection, pages, activePageId,
         return acc;
     }, {});
   }, [searchTerm]);
+
   const globalElements = useMemo(() => {
     return AVAILABLE_ELEMENTS_CONFIG.filter(el => el.isGlobalOnly && el.name.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [searchTerm]);
+
   const TabButton = ({ tabName, icon, label }) => (
     <button onClick={() => setActiveTab(tabName)} className={`w-full flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-xs font-medium transition-colors border-b-2 ${activeTab === tabName ? 'border-green-500 text-green-600 bg-green-50/70' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100'}`}>
         {icon}
         <span>{label}</span>
     </button>
   );
+
+  useEffect(() => {
+    if (activeTab !== 'insert') {
+        setIsAiMode(false);
+    }
+  }, [activeTab, setIsAiMode]);
+
+  const handleSwitchToAi = () => {
+    onEnterAiMode();
+    setActiveTab('insert');
+  }
 
   return (
     <aside className={`absolute top-0 left-0 pb-5 h-full w-72 bg-gray-50 border-r border-slate-200 shadow-xl flex-shrink-0 flex flex-col print-hidden transition-transform duration-300 ease-in-out z-40 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
@@ -1177,11 +1208,11 @@ function LeftPanel({ isOpen, onClose, onAddTopLevelSection, pages, activePageId,
             <TabButton tabName="pages" icon={<LucideIcons.FileText className="w-4 h-4" />} label="Pages" />
         </div>
         <div className="flex-1 overflow-y-auto bg-white pb-12">
-            {activeTab === 'insert' && isAiMode && <AiModeView onBack={() => setIsAiMode(false)} onAiSubmit={onAiSubmit} isAiLoading={isAiLoading} aiChatHistory={aiChatHistory} aiSuggestions={aiSuggestions} handleUndo={handleUndo} handleRedo={handleRedo} />}
+            {activeTab === 'insert' && isAiMode && <AiModeView onBack={() => setIsAiMode(false)} onAiSubmit={onAiSubmit} isAiLoading={isAiLoading} aiChatHistory={aiChatHistory} aiSuggestions={aiSuggestions} handleUndo={handleUndo} handleRedo={handleRedo} canUndo={canUndo} canRedo={canRedo} />}
             {activeTab === 'insert' && !isAiMode && (
                 <div className="p-3 space-y-4">
                     <div className="relative"><LucideIcons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" /><input type="text" placeholder="Search elements..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-md text-sm focus:ring-1 focus:ring-green-500" /></div>
-                    <button onClick={() => setIsAiMode(true)} className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-green-50 text-green-700 font-semibold rounded-lg hover:bg-green-100 transition-colors border border-green-200 hover:border-green-300 relative group">
+                    <button onClick={handleSwitchToAi} className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-green-50 text-green-700 font-semibold rounded-lg hover:bg-green-100 transition-colors border border-green-200 hover:border-green-300 relative group">
                         <span className="absolute inset-0 bg-green-400/20 rounded-lg blur-lg opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-opacity duration-300"></span>
                         <LucideIcons.Sparkles className="w-4 h-4 relative text-green-500"/>
                         <span className="relative text-sm">Build with AI</span>
@@ -1244,59 +1275,110 @@ function DebouncedTextInput({ label, type, initialValue, onCommit, ...props }) {
     </div>
   );
 }
-function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePageId, onRenamePage, onAddGlobalElement, comments, onUpdateComment, onDeleteComment, onClose }) {
-  const [activeTab, setActiveTab] = useState('properties');
-  const PropertyGroup = ({ title, children, defaultOpen = true }) => {
-      const [isOpen, setIsOpen] = useState(defaultOpen);
-      return (
-        <div className="border-b border-slate-200/80 last:border-b-0 py-3">
-            <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center">
-                <h3 className="text-[11px] font-bold uppercase text-slate-400 tracking-widest">{title}</h3>
-                <LucideIcons.ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-            </button>
-            {isOpen && <div className="space-y-3 pt-3">{children}</div>}
-        </div>
-      );
-  };
-  const ColorInput = ({ label, value, onChange }) => (
+const PropertyGroup = ({ title, children, defaultOpen = true }) => {
+    const [isOpen, setIsOpen] = React.useState(defaultOpen);
+    return (
+      <div className="border-b border-slate-200/80 last:border-b-0 py-3">
+          <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center">
+              <h3 className="text-[11px] font-bold uppercase text-slate-400 tracking-widest">{title}</h3>
+              <LucideIcons.ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {isOpen && <div className="space-y-3 pt-3">{children}</div>}
+      </div>
+    );
+};
+const ColorInput = ({ label, value, onChange }) => {
+    const [localValue, setLocalValue] = React.useState(value);
+
+    React.useEffect(() => {
+        setLocalValue(value);
+    }, [value]);
+
+    const handleTextChange = (e) => {
+        setLocalValue(e.target.value);
+    };
+    const handleTextBlur = () => {
+        if (localValue !== value) {
+            onChange(localValue);
+        }
+    };
+    const handleColorChange = (e) => {
+        const newValue = e.target.value;
+        setLocalValue(newValue);
+        if (newValue !== value) {
+            onChange(newValue);
+        }
+    };
+    return (
+      <div className="flex justify-between items-center">
+          <label className="text-sm font-medium text-slate-700">{label}</label>
+          <div className="flex items-center gap-1.5">
+              <input type="text" value={localValue || ''} onChange={handleTextChange} onBlur={handleTextBlur} className="w-20 text-xs border-slate-300 rounded-md px-2 py-1 focus:ring-1 focus:ring-green-500 shadow-sm" />
+              <div className="relative w-7 h-7 rounded-md overflow-hidden border border-slate-300 shadow-sm">
+                  <div className="absolute inset-0" style={{backgroundColor: localValue || '#000000'}}></div>
+                  <input type="color" value={localValue || '#000000'} onChange={handleColorChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+              </div>
+          </div>
+      </div>
+    );
+};
+const StyledSlider = ({ label, value, onChange, min = 0, max = 200, step = 1, unit = "px" }) => {
+    const [localValue, setLocalValue] = React.useState(value);
+
+    React.useEffect(() => {
+        setLocalValue(value);
+    }, [value]);
+
+    const displayValue = parseInt(localValue, 10) || 0;
+
+    const handleInput = (e) => {
+        setLocalValue(`${e.target.value}${unit}`);
+    };
+
+    const handleCommit = (e) => {
+        const finalValue = `${e.target.value}${unit}`;
+        if (finalValue !== value) {
+            onChange(finalValue);
+        }
+    };
+
+    return (
+      <div>
+          <div className="flex justify-between items-center mb-1.5">
+              <label className="text-xs font-medium text-slate-600">{label}</label>
+              <span className="text-xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-sm">{`${displayValue}${unit}`}</span>
+          </div>
+          <input type="range" min={min} max={max} step={step} value={displayValue} onInput={handleInput} onMouseUp={handleCommit} onTouchEnd={handleCommit} className="w-full custom-slider" />
+      </div>
+    );
+};
+const ToggleSwitch = ({ label, checked, onChange }) => (
     <div className="flex justify-between items-center">
         <label className="text-sm font-medium text-slate-700">{label}</label>
-        <div className="flex items-center gap-1.5">
-            <input type="text" value={value || '#000000'} onChange={e => onChange(e.target.value)} className="w-20 text-xs border-slate-300 rounded-md px-2 py-1 focus:ring-1 focus:ring-green-500 shadow-sm" />
-            <div className="relative w-7 h-7 rounded-md overflow-hidden border border-slate-300 shadow-sm">
-                <div className="absolute inset-0" style={{backgroundColor: value || '#000000'}}></div>
-                <input type="color" value={value || '#000000'} onChange={e => onChange(e.target.value)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-            </div>
-        </div>
+        <button onClick={() => onChange(!checked)} className={`relative inline-flex items-center h-5 rounded-full w-9 transition-colors ${checked ? 'bg-green-600' : 'bg-slate-300'}`}>
+            <span className={`inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform ${checked ? 'translate-x-5' : 'translate-x-1'}`} />
+        </button>
     </div>
-  );
-  const StyledSlider = ({ label, value, onChange, min = 0, max = 200, step = 1, unit = "px" }) => {
-      const displayValue = parseInt(value, 10) || 0;
-      return (
-        <div>
-            <div className="flex justify-between items-center mb-1.5"><label className="text-xs font-medium text-slate-600">{label}</label><span className="text-xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-sm">{`${displayValue}${unit}`}</span></div>
-            <input type="range" min={min} max={max} step={step} value={displayValue} onChange={(e) => onChange(`${e.target.value}${unit}`)} className="w-full custom-slider" />
-        </div>
-      );
-  };
-  const ToggleSwitch = ({ label, checked, onChange }) => (
-    <div className="flex justify-between items-center">
-        <label className="text-sm font-medium text-slate-700">{label}</label>
-        <button onClick={() => onChange(!checked)} className={`relative inline-flex items-center h-5 rounded-full w-9 transition-colors ${checked ? 'bg-green-600' : 'bg-slate-300'}`}><span className={`inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform ${checked ? 'translate-x-5' : 'translate-x-1'}`} /></button>
-    </div>
-  );
-  const AlignmentButtons = ({ value, onChange }) => (
+);
+const AlignmentButtons = ({ value, onChange }) => (
     <div>
         <label className="block text-xs font-medium text-slate-600 mb-1.5">Alignment</label>
-        <div className="flex items-center bg-slate-100 rounded-md p-0.5">{textAlignOptions.map(opt => (<button key={opt.value} onClick={() => onChange(opt.value)} title={opt.label} className={`flex-1 p-1.5 rounded-sm transition-all text-slate-600 ${value === opt.value ? 'bg-white text-green-700 shadow-sm' : 'hover:bg-slate-200/50'}`}>{opt.icon}</button>))}</div>
+        <div className="flex items-center bg-slate-100 rounded-md p-0.5">{textAlignOptions.map(opt => (
+            <button key={opt.value} onClick={() => onChange(opt.value)} title={opt.label} className={`flex-1 p-1.5 rounded-sm transition-all text-slate-600 ${value === opt.value ? 'bg-white text-green-700 shadow-sm' : 'hover:bg-slate-200/50'}`}>
+                {opt.icon}
+            </button>
+        ))}</div>
     </div>
-  );
-  const TabButton = ({ tabName, icon, label }) => (
-    <button onClick={() => setActiveTab(tabName)} className={`w-full flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-xs font-medium transition-colors border-b-2 ${activeTab === tabName ? 'border-green-500 text-green-600 bg-white' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/70'}`}>
+);
+const SidebarTabButton = ({ tabName, icon, label, activeTab, onClick }) => (
+    <button onClick={() => onClick(tabName)} className={`w-full flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-xs font-medium transition-colors border-b-2 ${activeTab === tabName ? 'border-green-500 text-green-600 bg-white' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/70'}`}>
         {icon}
         <span>{label}</span>
     </button>
-  );
+);
+function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePageId, onRenamePage, onAddGlobalElement, comments, onUpdateComment, onDeleteComment, onClose }) {
+  const [activeTab, setActiveTab] = React.useState('properties');
+
   const renderPropertiesPanel = () => {
     if (!selectedItemData || !selectedItemData.itemType) {
         return ( <div className="flex flex-col items-center justify-center h-full text-center p-4 bg-white"><LucideIcons.Pointer className="w-12 h-12 text-slate-300 mb-3"/><h3 className="font-semibold text-slate-700">Nothing Selected</h3><p className="text-sm text-slate-500 mt-1">Click an element to edit.</p></div> );
@@ -1312,7 +1394,7 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
     const GeneralStyling = () => (
         <>
         <PropertyGroup title="Appearance" defaultOpen={false}>
-            <StyledSlider label="Opacity" value={props.style?.opacity * 100 || 100} onChange={val => onUpdate({ style: { opacity: parseInt(val) / 100 } })} max={100} unit="%" />
+            <StyledSlider label="Opacity" value={String(props.style?.opacity * 100 || 100)} onChange={val => onUpdate({ style: { opacity: parseInt(val) / 100 } })} max={100} unit="%" />
             <StyledSlider label="Radius" value={props.style?.borderRadius} onChange={val => onUpdate({ style: { borderRadius: val } })} max={100} />
             <DebouncedTextInput label="Border" initialValue={props.style?.border} onCommit={val => onUpdate({ style: { border: val } })} placeholder="e.g. 1px solid #ccc" />
         </PropertyGroup>
@@ -1328,7 +1410,7 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
             case 'column': return <><PropertyGroup title="Layout"><CustomDropdown label="Direction" options={[{label: 'Vertical', value: 'column'}, {label: 'Horizontal', value: 'row'}]} value={props.style?.flexDirection} onChange={val => onUpdate({ style: { flexDirection: val } })} /><CustomDropdown label="Justify" options={[{label: 'Start', value: 'flex-start'}, {label: 'Center', value: 'center'}, {label: 'End', value: 'flex-end'}, {label: 'Space Between', value: 'space-between'}]} value={props.style?.justifyContent} onChange={val => onUpdate({ style: { justifyContent: val } })} /><CustomDropdown label="Align" options={[{label: 'Start', value: 'flex-start'}, {label: 'Center', value: 'center'}, {label: 'End', value: 'flex-end'}, {label: 'Stretch', value: 'stretch'}]} value={props.style?.alignItems} onChange={val => onUpdate({ style: { alignItems: val } })} /><StyledSlider label="Gap" value={props.style?.gap} onChange={val => onUpdate({ style: { gap: val } })}/></PropertyGroup><GeneralStyling/></>;
             case 'navbar': return <><PropertyGroup title="Logo"><DebouncedTextInput label="Logo Text" initialValue={props.logoText} onCommit={val => onUpdate({ logoText: val })} key={`${id}-logo`}/></PropertyGroup><PropertyGroup title="Styling"><ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /><ColorInput label="Text" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><ColorInput label="Link" value={props.linkColor} onChange={val => onUpdate({ linkColor: val })} /></PropertyGroup><PropertyGroup title="Links"><LinkManager links={props.links} onUpdateLinks={links => onUpdate({links})} elementId={id} pages={pages} /></PropertyGroup><GeneralStyling/></>;
             case 'footer': return <><PropertyGroup title="Content"><DebouncedTextInput label="Copyright Text" initialValue={props.copyrightText} onCommit={val => onUpdate({ copyrightText: val })} key={`${id}-copyright`}/></PropertyGroup><PropertyGroup title="Styling"><ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /><ColorInput label="Text" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><ColorInput label="Link" value={props.linkColor} onChange={val => onUpdate({ linkColor: val })} /></PropertyGroup><PropertyGroup title="Links"><LinkManager links={props.links} onUpdateLinks={links => onUpdate({links})} elementId={id} pages={pages} linkTypeLabel="Footer Link"/></PropertyGroup><GeneralStyling/></>;
-            case 'cardSlider': return <><PropertyGroup title="Slides"><SlideManager slides={props.slides} onUpdateSlides={slides => onUpdate({slides})} elementId={id} /></PropertyGroup><PropertyGroup title="Settings"><StyledSlider label="Slides Per View" value={props.slidesPerView} onChange={val => onUpdate({ slidesPerView: parseInt(val) })} min={1} max={6} unit=""/><StyledSlider label="Space Between" value={props.spaceBetween} onChange={val => onUpdate({ spaceBetween: parseInt(val) })} max={100} unit="px"/></PropertyGroup><PropertyGroup title="Behavior"><ToggleSwitch label="Autoplay" checked={props.autoplay} onChange={val => onUpdate({ autoplay: val })} /><ToggleSwitch label="Loop" checked={props.loop} onChange={val => onUpdate({ loop: val })} /><ToggleSwitch label="Navigation Arrows" checked={props.showNavigation} onChange={val => onUpdate({ showNavigation: val })} /><ToggleSwitch label="Pagination Dots" checked={props.showPagination} onChange={val => onUpdate({ showPagination: val })} /></PropertyGroup><GeneralStyling/></>;
+            case 'cardSlider': return <><PropertyGroup title="Slides"><SlideManager slides={props.slides} onUpdateSlides={slides => onUpdate({slides})} elementId={id} /></PropertyGroup><PropertyGroup title="Settings"><StyledSlider label="Slides Per View" value={String(props.slidesPerView)} onChange={val => onUpdate({ slidesPerView: parseInt(val) })} min={1} max={6} unit=""/><StyledSlider label="Space Between" value={String(props.spaceBetween)} onChange={val => onUpdate({ spaceBetween: parseInt(val) })} max={100} unit="px"/></PropertyGroup><PropertyGroup title="Behavior"><ToggleSwitch label="Autoplay" checked={props.autoplay} onChange={val => onUpdate({ autoplay: val })} /><ToggleSwitch label="Loop" checked={props.loop} onChange={val => onUpdate({ loop: val })} /><ToggleSwitch label="Navigation Arrows" checked={props.showNavigation} onChange={val => onUpdate({ showNavigation: val })} /><ToggleSwitch label="Pagination Dots" checked={props.showPagination} onChange={val => onUpdate({ showPagination: val })} /></PropertyGroup><GeneralStyling/></>;
             case 'accordion': return <><PropertyGroup title="Content"><DebouncedTextInput label="Title" initialValue={props.title} onCommit={val => onUpdate({ title: val })} key={`${id}-title`} /><DebouncedTextInput label="Content" type="textarea" rows={3} initialValue={props.content} onCommit={val => onUpdate({ content: val })} key={`${id}-content`} /></PropertyGroup><GeneralStyling/></>;
             default: return <p className="text-sm text-slate-500 text-center py-8">No properties to edit for '{itemType}'.</p>;
         }
@@ -1342,8 +1424,8 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
   return (
     <aside className="h-full w-72 bg-white border-l border-slate-200 shadow-xl flex flex-col print-hidden">
         <div className="flex border-b border-slate-200 bg-gray-50/50">
-            <TabButton tabName="properties" icon={<LucideIcons.SlidersHorizontal className="w-4 h-4"/>} label="Properties"/>
-            <TabButton tabName="comments" icon={<LucideIcons.MessageSquareText className="w-4 h-4"/>} label="Comments"/>
+            <SidebarTabButton tabName="properties" icon={<LucideIcons.SlidersHorizontal className="w-4 h-4"/>} label="Properties" activeTab={activeTab} onClick={setActiveTab}/>
+            <SidebarTabButton tabName="comments" icon={<LucideIcons.MessageSquareText className="w-4 h-4"/>} label="Comments" activeTab={activeTab} onClick={setActiveTab} />
         </div>
         <div className="flex-1 flex flex-col overflow-hidden">
             {activeTab === 'properties' ? renderPropertiesPanel() : renderCommentsPanel()}
@@ -1613,7 +1695,6 @@ function htmlToBuilderJson(htmlString) {
 
     return sections;
 }
-
 function apiStateToBuilderJson(apiResponse) {
     const { sections: sectionsHtml, section_order } = apiResponse;
     if (!sectionsHtml || !section_order) return [];
@@ -1624,7 +1705,9 @@ function apiStateToBuilderJson(apiResponse) {
         
         const sectionHtml = sectionsHtml[sectionId];
         
-        const parsedSections = htmlToBuilderJson(sectionHtml || '<section></section>');
+        if (!sectionHtml) continue; 
+
+        const parsedSections = htmlToBuilderJson(sectionHtml);
 
         if (parsedSections.length > 0) {
             parsedSections.forEach((parsedSection, index) => {
@@ -1643,161 +1726,183 @@ function apiStateToBuilderJson(apiResponse) {
     return newLayout;
 }
 
-export default function ElementBuilderPage({ onExternalSave, initialBuilderState, initialData, onDataChange, isFullScreen }) {
-  const [newlyAddedElementId, setNewlyAddedElementId] = useState(null);
-  const initialPageId = useMemo(() => generateId("page-home"), []);
-  
-  const effectiveInitialData = initialData || initialBuilderState;
-  
-  const [pages, setPages] = useState(effectiveInitialData?.pages && Object.keys(effectiveInitialData.pages).length > 0 ? effectiveInitialData.pages : { [initialPageId]: { id: initialPageId, name: "Home", layout: [] } });
-  const [activePageId, setActivePageId] = useState(effectiveInitialData?.activePageId && pages[effectiveInitialData.activePageId] ? effectiveInitialData.activePageId : initialPageId);
-  const [globalNavbar, setGlobalNavbar] = useState(effectiveInitialData?.globalNavbar || null);
-  const [globalFooter, setGlobalFooter] = useState(effectiveInitialData?.globalFooter || null);
-  const [comments, setComments] = useState(effectiveInitialData?.comments || {});
+let globalAiSessionId = sessionStorage.getItem('ai_session_id') || null;
 
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [activeDragItem, setActiveDragItem] = useState(null);
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [activeTool, setActiveTool] = useState('select');
-  const [zoom, setZoom] = useState(0.75);
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
-  
-  const canvasRef = useRef(null);
-  const builderRef = useRef(null);
-  const isPanning = useRef(false);
-  const lastMousePos = useRef({ x: 0, y: 0 });
-  
-  const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
-  const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
-  const [structureModalContext, setStructureModalContext] = useState({ path: null, elementType: null, pageId: null });
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const aiSessionId = useRef(null);
-  const [aiChatHistory, setAiChatHistory] = useState([]);
-  const [aiSuggestions, setAiSuggestions] = useState([]);
-  const [modalStates, setModalStates] = useState({ addPage: { isOpen: false }, renamePage: { isOpen: false, pageId: null, currentName: "" }, deletePage: { isOpen: false, pageId: null, pageName: "" }, alert: { isOpen: false, title: "", message: "" }, saveConfirm: { isOpen: false, title: "", message: "" } });
-  const [isFullscreen, setIsFullscreen] = useState(false);
+export default function ElementBuilderPage({ onExternalSave, initialBuilderState, initialData, onDataChange }) {
+    const [newlyAddedElementId, setNewlyAddedElementId] = useState(null);
+    const initialPageId = useMemo(() => generateId("page-home"), []);
+    const effectiveInitialData = initialData || initialBuilderState;
+    const [pages, setPages] = useState(effectiveInitialData?.pages && Object.keys(effectiveInitialData.pages).length > 0 ? effectiveInitialData.pages : { [initialPageId]: { id: initialPageId, name: "Home", layout: [] } });
+    const [activePageId, setActivePageId] = useState(effectiveInitialData?.activePageId && pages[effectiveInitialData.activePageId] ? effectiveInitialData.activePageId : initialPageId);
+    const [globalNavbar, setGlobalNavbar] = useState(effectiveInitialData?.globalNavbar || null);
+    const [globalFooter, setGlobalFooter] = useState(effectiveInitialData?.globalFooter || null);
+    const [comments, setComments] = useState(effectiveInitialData?.comments || {});
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [activeDragItem, setActiveDragItem] = useState(null);
+    const [isPreviewMode, setIsPreviewMode] = useState(false);
+    const [activeTool, setActiveTool] = useState('select');
+    const [zoom, setZoom] = useState(0.75);
+    const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+    const canvasRef = useRef(null);
+    const builderRef = useRef(null);
+    const isPanning = useRef(false);
+    const lastMousePos = useRef({ x: 0, y: 0 });
+    const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
+    const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
+    const [structureModalContext, setStructureModalContext] = useState({ path: null, elementType: null, pageId: null });
+    const [isAiLoading, setIsAiLoading] = useState(false);
+    const [isAiMode, setIsAiMode] = useState(false);
+    const [canUndo, setCanUndo] = useState(false);
+    const [canRedo, setCanRedo] = useState(false);
+    const aiSessionId = useRef(globalAiSessionId);
+    const [aiChatHistory, setAiChatHistory] = useState([]);
+    const [aiSuggestions, setAiSuggestions] = useState([]);
+    const [modalStates, setModalStates] = useState({ addPage: { isOpen: false }, renamePage: { isOpen: false, pageId: null, currentName: "" }, deletePage: { isOpen: false, pageId: null, pageName: "" }, alert: { isOpen: false, title: "", message: "" }, saveConfirm: { isOpen: false, title: "", message: "" } });
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
+    const onDataChangeRef = useRef(onDataChange);
+    const onExternalSaveRef = useRef(onExternalSave);
 
-  useEffect(() => {
-    const currentData = {
-      pages,
-      activePageId,
-      globalNavbar,
-      globalFooter,
-      comments,
-      pageTitle: pages[activePageId]?.name || "Untitled"
-    };
-    if (onDataChange) {
-      onDataChange(currentData);
-    }
-    if (onExternalSave) {
-      onExternalSave(currentData);
-    }
-  }, [pages, activePageId, globalNavbar, globalFooter, comments, onDataChange, onExternalSave]);
-
-  const updateLayoutForPage = (pageId, callback) => {
-    setPages((p) => { 
-      const targetPage = p[pageId]; 
-      if (!targetPage) return p; 
-      const newLayout = callback(targetPage.layout || []);
-      return { ...p, [pageId]: { ...targetPage, layout: newLayout } };
+    useEffect(() => {
+        onDataChangeRef.current = onDataChange;
+        onExternalSaveRef.current = onExternalSave;
     });
-  };
-  
-  const updateGlobalNavbar = (newNavbar) => setGlobalNavbar(newNavbar);
-  const updateGlobalFooter = (newFooter) => setGlobalFooter(newFooter);
 
-  const syncPageWithAI = useCallback(async () => {
-      if (!aiSessionId.current || !activePageId) return;
-      setIsAiLoading(true);
-      try {
-          const pageStateResponse = await apiRequest('get', '/get-page', { session_id: aiSessionId.current });
-          const apiResult = pageStateResponse.data;
-          
-          if (apiResult && apiResult.sections && apiResult.section_order) {
-              const newLayout = apiStateToBuilderJson(apiResult);
-              updateLayoutForPage(activePageId, () => newLayout);
-
-              if (apiResult.suggestions && apiResult.suggestions.length > 0) {
-                  setAiSuggestions(apiResult.suggestions);
-              }
-          } else {
-              throw new Error("Could not retrieve a valid page state from AI.");
-          }
-      } catch (error) {
-          console.error("AI Sync Error:", error);
-          setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Sync Error", message: error.message || `Failed to sync page state with AI.` } }));
-      } finally {
-        setIsAiLoading(false);
-      }
-  }, [activePageId]);
-
-  const getAiSuggestions = useCallback(async () => {
-    if (!aiSessionId.current) return;
-    try {
-        const response = await apiRequest('get', '/suggestions', { session_id: aiSessionId.current });
-        if (response.data && response.data.suggestions) {
-            setAiSuggestions(response.data.suggestions);
-        } else {
-            setAiSuggestions([]);
+    useEffect(() => {
+        const currentData = { pages, activePageId, globalNavbar, globalFooter, comments, pageTitle: pages[activePageId]?.name || "Untitled" };
+        if (onDataChangeRef.current) {
+            onDataChangeRef.current(currentData);
         }
-    } catch (error) {
-        console.error("Failed to fetch AI suggestions:", error);
-    }
-  }, []);
-
-  const startAiSession = useCallback(async () => {
-    if (aiSessionId.current) {
-        await getAiSuggestions();
-        return;
-    }
-    try {
-        const sessionResponse = await apiRequest('post', '/start-session');
-        if (sessionResponse.data.session_id) {
-            aiSessionId.current = sessionResponse.data.session_id;
-            await getAiSuggestions();
-        } else {
-            throw new Error("Received an empty session ID from the API.");
+        if (onExternalSaveRef.current) {
+            onExternalSaveRef.current(currentData);
         }
-    } catch (error) {
-        setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Error", message: "Could not connect to the AI service." } }));
-    }
-  }, [getAiSuggestions]);
-  
+    }, [pages, activePageId, globalNavbar, globalFooter, comments]);
+
+    const updateLayoutForPage = useCallback((pageId, callback) => {
+        setPages((p) => {
+            if (!p[pageId]) return p;
+            const newLayout = callback(p[pageId].layout || []);
+            return { ...p, [pageId]: { ...p[pageId], layout: newLayout } };
+        });
+    }, []);
+
+    const syncPageWithAI = useCallback(async () => {
+        if (!aiSessionId.current || !activePageId) return;
+        setIsAiLoading(true);
+        try {
+            const [summaryResponse, pageStateResponse] = await Promise.all([
+                apiRequest('get', '/session-summary', { session_id: aiSessionId.current }),
+                apiRequest('get', '/get-page', { session_id: aiSessionId.current })
+            ]);
+            const summaryData = summaryResponse.data;
+            if (summaryData) {
+                setCanUndo(summaryData.history_size > 0);
+                setCanRedo(summaryData.future_size > 0);
+            }
+            const pageData = pageStateResponse.data;
+            if (pageData && pageData.sections && pageData.section_order) {
+                const newLayout = apiStateToBuilderJson(pageData);
+                updateLayoutForPage(activePageId, () => newLayout);
+                const combinedSuggestions = [...(pageData.suggestions || []), ...(pageData.follow_up_suggestions || [])].map(s => (typeof s === 'string' ? { prompt: s, shortText: s } : s));
+                setAiSuggestions(combinedSuggestions);
+            } else {
+                updateLayoutForPage(activePageId, () => []);
+                throw new Error("Could not retrieve valid page content from the AI session.");
+            }
+        } catch (error) {
+            console.error("AI Sync Error:", error);
+            setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Sync Error", message: error.message || "Failed to sync page state with AI." } }));
+        } finally {
+            setIsAiLoading(false);
+        }
+    }, [activePageId, updateLayoutForPage]);
+
+    const startAiSession = useCallback(async (forceNew = false) => {
+        if (aiSessionId.current && !forceNew) {
+            await syncPageWithAI();
+            return;
+        }
+        try {
+            setIsAiLoading(true);
+            const sessionResponse = await apiRequest('post', '/start-session');
+            if (sessionResponse.data.session_id) {
+                const newSessionId = sessionResponse.data.session_id;
+                aiSessionId.current = newSessionId;
+                globalAiSessionId = newSessionId;
+                sessionStorage.setItem('ai_session_id', newSessionId);
+                setAiChatHistory([]);
+                saveHistoryToStorage(newSessionId, []);
+                await syncPageWithAI();
+            } else {
+                throw new Error("Received an empty session ID from the API.");
+            }
+        } catch (error) {
+            setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Error", message: "Could not connect to the AI service." } }));
+        } finally {
+            setIsAiLoading(false);
+        }
+    }, [syncPageWithAI]);
+
+    useEffect(() => {
+        const initializeSession = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const step = urlParams.get('step');
+            if (step === '3') {
+                await startAiSession(true);
+                setIsAiMode(true);
+                urlParams.delete('step');
+                const newSearch = urlParams.toString();
+                const newUrl = newSearch ? `${window.location.pathname}?${newSearch}` : window.location.pathname;
+                window.history.replaceState({}, '', newUrl);
+            } else if (globalAiSessionId) {
+                setAiChatHistory(getHistoryFromStorage(globalAiSessionId));
+            }
+        }
+        initializeSession();
+    }, [startAiSession]);
+    
+    const handleEnterAiMode = () => {
+        setIsAiMode(true);
+        if (!aiSessionId.current) {
+            startAiSession(true);
+        } else {
+            syncPageWithAI();
+        }
+    };
+
   const handleToggleFullscreen = () => {
     if (!document.fullscreenElement) {
-        builderRef.current?.requestFullscreen().catch(err => {
-            alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-        });
+      builderRef.current?.requestFullscreen().catch(err => {
+        alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+      });
     } else {
-        document.exitFullscreen();
+      document.exitFullscreen();
     }
   };
-  
+
   useEffect(() => {
-    startAiSession();
     const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, [startAiSession]);
+  }, []);
 
   useEffect(() => {
     if (newlyAddedElementId && pages) {
-        let foundItem = null, foundPath = null;
-        for (const pageId in pages) {
-            const result = findItemAndPathRecursive(pages[pageId].layout, newlyAddedElementId, `pages[${pageId}].layout`);
-            if (result) { foundItem = result.item; foundPath = result.path; break; }
-        }
-        if (foundItem && foundPath) handleSelect(foundItem.id, 'element', foundPath, foundItem);
-        setNewlyAddedElementId(null);
+      let foundItem = null, foundPath = null;
+      for (const pageId in pages) {
+        const result = findItemAndPathRecursive(pages[pageId].layout, newlyAddedElementId, `pages[${pageId}].layout`);
+        if (result) { foundItem = result.item; foundPath = result.path; break; }
+      }
+      if (foundItem && foundPath) handleSelect(foundItem.id, 'element', foundPath, foundItem);
+      setNewlyAddedElementId(null);
     }
   }, [newlyAddedElementId, pages]);
 
   useEffect(() => {
     if (!pages[activePageId] && Object.keys(pages).length > 0) {
-        const firstPageId = Object.keys(pages)[0];
-        setActivePageId(firstPageId);
-        setSelectedItem({ pageId: firstPageId, path: null, type: 'page', id: null });
+      const firstPageId = Object.keys(pages)[0];
+      setActivePageId(firstPageId);
+      setSelectedItem({ pageId: firstPageId, path: null, type: 'page', id: null });
     }
   }, [pages, activePageId]);
 
@@ -1821,7 +1926,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   const handleNavigate = (pageSlugOrId) => { const targetPageId = pageSlugOrId.startsWith("/") ? pageSlugOrId.substring(1) : pageSlugOrId; if (pages[targetPageId]) { setActivePageId(targetPageId); if (!isPreviewMode) { setIsPreviewMode(true); setSelectedItem(null); } } };
 
   const handleOpenStructureModal = (path, type, pageId) => { setStructureModalContext({ path, elementType: type, pageId: pageId }); setIsStructureModalOpen(true); };
-  
+
   const handleSetStructure = async (columnLayouts, context) => {
     const newColumns = columnLayouts.map(layout => ({ id: generateId("col"), type: "column", props: { width: layout.width, style: {} }, elements: [] }));
     const targetPageId = context.pageId || activePageId;
@@ -1878,7 +1983,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   const handleUpdateProps = (path, newProps) => {
     const isGlobal = path.startsWith('global');
     if (isGlobal) {
-        const updater = path === 'globalNavbar' ? updateGlobalNavbar : updateGlobalFooter;
+        const updater = path === 'globalNavbar' ? setGlobalNavbar : setGlobalFooter;
         updater(prev => ({...prev, props: mergeDeep({}, prev.props || {}, newProps)}));
     } else {
         setPages(currentPages => {
@@ -1920,8 +2025,8 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     }
   };
 
-  const handleAddGlobalElement = (type) => { const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === type && c.isGlobalOnly); if(!config) return; const newGlobalElement = { id: `global-${config.id}`, type: config.id, props: getDefaultProps(type) }; if (type === 'navbar') updateGlobalNavbar(newGlobalElement); if (type === 'footer') updateGlobalFooter(newGlobalElement); };
-  const handleDeleteGlobalElement = (elementType) => { const updater = elementType === "navbar" ? updateGlobalNavbar : updateGlobalFooter; updater(null); if (selectedItem?.itemType === elementType) setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); };
+  const handleAddGlobalElement = (type) => { const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === type && c.isGlobalOnly); if(!config) return; const newGlobalElement = { id: `global-${config.id}`, type: config.id, props: getDefaultProps(type) }; if (type === 'navbar') setGlobalNavbar(newGlobalElement); if (type === 'footer') setGlobalFooter(newGlobalElement); };
+  const handleDeleteGlobalElement = (elementType) => { const updater = elementType === "navbar" ? setGlobalNavbar : setGlobalFooter; updater(null); if (selectedItem?.itemType === elementType) setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); };
 
   const findContainerById = (items, id, pathPrefix = '') => {
       for (let i = 0; i < items.length; i++) {
@@ -2050,20 +2155,28 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
 
   const handleAiSubmit = async (prompt) => {
     if (!aiSessionId.current) { setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: "AI session not started. Please try again."}})); startAiSession(); return; }
+    
     setIsAiLoading(true);
     const historyId = generateId('history');
-    setAiChatHistory(prev => [{ id: historyId, prompt, status: 'loading' }, ...prev]);
+    const newHistoryEntry = { id: historyId, prompt, status: 'loading' };
+    const updatedHistory = [newHistoryEntry, ...aiChatHistory];
+    setAiChatHistory(updatedHistory);
+    saveHistoryToStorage(aiSessionId.current, updatedHistory);
+
     try {
-        const pageResponse = await apiRequest('post', '/generate-page', { session_id: aiSessionId.current, prompt: prompt, as_file: false });
-        const apiResult = pageResponse.data;
-        if (apiResult.html || (apiResult.sections && apiResult.section_order)) { 
-            await syncPageWithAI();
-            setAiChatHistory(prev => prev.map(entry => entry.id === historyId ? {...entry, status: 'success'} : entry));
-        } else { 
-            throw new Error("Invalid response from AI. No 'html' or 'sections' data found."); 
-        }
+        await apiRequest('post', '/generate-page', { session_id: aiSessionId.current, prompt: prompt, as_file: false });
+        await syncPageWithAI();
+        setAiChatHistory(prev => {
+            const finalHistory = prev.map(entry => entry.id === historyId ? {...entry, status: 'success'} : entry);
+            saveHistoryToStorage(aiSessionId.current, finalHistory);
+            return finalHistory;
+        });
     } catch (error) {
-        setAiChatHistory(prev => prev.map(entry => entry.id === historyId ? {...entry, status: 'error'} : entry));
+        setAiChatHistory(prev => {
+            const finalHistory = prev.map(entry => entry.id === historyId ? {...entry, status: 'error'} : entry);
+            saveHistoryToStorage(aiSessionId.current, finalHistory);
+            return finalHistory;
+        });
         setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: `Failed to generate content: ${error.message}`}}));
     } finally { setIsAiLoading(false); }
   };
@@ -2075,17 +2188,15 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     }
     setIsAiLoading(true);
     try {
-        const actionResponse = await apiRequest('post', `/${action}`, { session_id: aiSessionId.current });
-        if (!actionResponse.data.success) {
-            throw new Error(`Nothing to ${action}. No action available to ${action}.`);
-        }
+        await apiRequest('post', `/${action}`, { session_id: aiSessionId.current });
         await syncPageWithAI();
     } catch (error) {
         setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Sync Error", message: error.message || `Failed to perform ${action} operation.` } }));
+        await syncPageWithAI();
     } finally {
         setIsAiLoading(false);
     }
-}, [syncPageWithAI]);
+  }, [syncPageWithAI]);
 
   const handleUndo = () => handleAiAction('undo');
   const handleRedo = () => handleAiAction('redo');
@@ -2113,14 +2224,37 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   if (isPreviewMode) {
     return (<div className="flex flex-col h-screen bg-white antialiased"><TopBar onSave={handleSave} onTogglePreview={togglePreviewMode} isPreviewMode={true} onToggleLeftPanel={() => setIsLeftPanelOpen(p => !p)} onToggleFullscreen={handleToggleFullscreen} isFullscreen={isFullscreen} /><PagePreviewRenderer pageLayout={pages[activePageId]?.layout || []} globalNavbar={globalNavbar} globalFooter={globalFooter} onNavigate={handleNavigate} activePageId={activePageId} /></div>);
   }
-  
+
   return (
     <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragStart={handleDragStart} onDragEnd={handleDragEnd} disabled={isPreviewMode || activeTool !== 'select'}>
         <div ref={builderRef} className="h-screen bg-white antialiased flex flex-col relative">
             <style>{`.selected-outline { box-shadow: 0 0 0 1.5px #ffffff, 0 0 0 3px #22c55e; border-radius: 1rem; } .custom-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; background: #e2e8f0; border-radius: 9999px; outline: none; opacity: 0.9; transition: opacity .2s; } .custom-slider:hover { opacity: 1; } .custom-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; background: #16a34a; border-radius: 50%; cursor: pointer; border: 2.5px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); } .custom-slider::-moz-range-thumb { width: 14px; height: 14px; background: #16a34a; border-radius: 50%; cursor: pointer; border: 2.5px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); }`}</style>
             <TopBar onSave={handleSave} onTogglePreview={togglePreviewMode} isPreviewMode={false} onToggleLeftPanel={() => setIsLeftPanelOpen(p => !p)} onToggleFullscreen={handleToggleFullscreen} isFullscreen={isFullscreen} />
             <div className="flex-1 flex flex-row relative overflow-hidden z-0">
-                <LeftPanel isOpen={isLeftPanelOpen} onClose={() => setIsLeftPanelOpen(false)} onAddTopLevelSection={() => handleOpenStructureModal(null, "section", activePageId)} pages={pages} activePageId={activePageId} onAddPage={handleAddPage} onSelectPage={handleSelectPage} onRenamePage={handleRenamePage} onDeletePage={handleDeletePage} onAiSubmit={handleAiSubmit} isAiLoading={isAiLoading} aiChatHistory={aiChatHistory} onSwitchToAiMode={() => {}} onSelect={handleSelect} selectedItem={selectedItem} aiSuggestions={aiSuggestions} handleUndo={handleUndo} handleRedo={handleRedo} />
+                <LeftPanel
+                    isOpen={isLeftPanelOpen}
+                    onClose={() => setIsLeftPanelOpen(false)}
+                    onAddTopLevelSection={() => handleOpenStructureModal(null, "section", activePageId)}
+                    onEnterAiMode={handleEnterAiMode}
+                    pages={pages}
+                    activePageId={activePageId}
+                    onAddPage={handleAddPage}
+                    onSelectPage={handleSelectPage}
+                    onRenamePage={handleRenamePage}
+                    onDeletePage={handleDeletePage}
+                    onAiSubmit={handleAiSubmit}
+                    isAiLoading={isAiLoading}
+                    aiChatHistory={aiChatHistory}
+                    onSelect={handleSelect}
+                    selectedItem={selectedItem}
+                    aiSuggestions={aiSuggestions}
+                    handleUndo={handleUndo}
+                    handleRedo={handleRedo}
+                    isAiMode={isAiMode}
+                    setIsAiMode={setIsAiMode}
+                    canUndo={canUndo}
+                    canRedo={canRedo}
+                />
                 <main ref={canvasRef} className={`flex-1 flex flex-col relative bg-dots ${isAiLoading ? '' : 'overflow-auto'}`} onMouseDown={handleCanvasMouseDown} onMouseMove={handleCanvasMouseMove} onMouseUp={handleCanvasMouseUpOrLeave} onMouseLeave={handleCanvasMouseUpOrLeave} style={{ cursor: getCanvasCursor(), backgroundSize: '30px 30px', backgroundImage: 'radial-gradient(circle, #e2e8f0 1px, rgba(0, 0, 0, 0) 1px)' }}>
                 {isAiLoading ? ( <AiCanvasLoader /> ) : (
                     <>
