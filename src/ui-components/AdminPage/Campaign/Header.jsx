@@ -23,7 +23,6 @@ const saveHistoryToStorage = (sessionId, history) => {
     } catch (e) { console.error("Failed to save history to session storage:", e); }
 };
 
-
 const StyledModalButton = ({ children, onClick, variant = "primary", className = "" }) => {
   const baseStyle = "inline-flex items-center justify-center px-5 py-2 text-xs font-semibold rounded-lg transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed";
   const variantStyles = {
@@ -179,33 +178,59 @@ function findItemAndPathRecursive(data, targetId, currentPathBase = "") {
   }
   return null;
 }
-const textSizeOptions = [ { label: "Tiny", value: "text-xs" }, { label: "Small", value: "text-sm" }, { label: "Base", value: "text-base" }, { label: "Large", value: "text-lg" }, { label: "XL", value: "text-xl" }, { label: "2XL", value: "text-2xl" }, ];
+const textSizeOptions = [ { label: "Tiny", value: "text-xs" }, { label: "Small", value: "text-sm" }, { label: "Base", value: "text-base" }, { label: "Large", value: "text-lg" }, { label: "XL", value: "text-xl" }, { label: "2XL", value: "text-2xl" }, { label: "3XL", value: "text-3xl" }, { label: "4XL", value: "text-4xl" }, { label: "5XL", value: "text-5xl" }, { label: "6XL", value: "text-6xl" }];
 const fontWeightOptions = [ { label: "Light", value: "font-light" }, { label: "Normal", value: "font-normal" }, { label: "Medium", value: "font-medium" }, { label: "Semibold", value: "font-semibold" }, { label: "Bold", value: "font-bold" }, ];
 const textAlignOptions = [ { label: "Left", value: "text-left", icon: <LucideIcons.AlignLeft className="w-4 h-4" /> }, { label: "Center", value: "text-center", icon: <LucideIcons.AlignCenter className="w-4 h-4" /> }, { label: "Right", value: "text-right", icon: <LucideIcons.AlignRight className="w-4 h-4" /> }, ];
 const PREDEFINED_STRUCTURES = [ { name: "1 Column", id: "1col", layout: [{ width: "100%" }] }, { name: "2 Columns", id: "2col5050", layout: [{ width: "50%" }, { width: "50%" }] }, { name: "3 Columns", id: "3col33", layout: [{ width: "33.33%" }, { width: "33.33%" }, { width: "33.33%" }] }, { name: "4 Columns", id: "4col25", layout: [{ width: "25%" }, { width: "25%" }, { width: "25%" }, { width: "25%" }] }, { name: "Left Sidebar", id: "leftsidebar", layout: [{ width: "30%" }, { width: "70%" }] }, { name: "Right Sidebar", id: "rightsidebar", layout: [{ width: "70%" }, { width: "30%" }] }, ];
+
 const PREVIEW_DEVICES = [ { name: "Mobile", width: 390, icon: LucideIcons.Smartphone }, { name: "Tablet", width: 768, icon: LucideIcons.Tablet }, { name: "Desktop", width: "100%", icon: LucideIcons.Monitor }, ];
-function Heading({ text = "Default Heading Title", onUpdate, isSelected, sizeClass, fontWeight, textAlign, textColor, isPreviewMode, isEditable, style }) {
-  const handleBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ text: e.currentTarget.innerText }); };
+
+function Heading({ text = "Default Heading Title", onUpdate, isSelected, sizeClass, fontWeight, textAlign, isPreviewMode, isEditable, style, customClassName = '' }) {
+  const handleBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ text: e.currentTarget.innerHTML }); };
   return (
-    <div className={`p-1 ${!isPreviewMode ? `rounded-md ${isSelected ? "" : "hover:ring-1 hover:ring-green-400/20"}`: ""}`} style={style}>
       <h1
-        style={{ color: textColor || undefined }}
-        className={`${sizeClass || "text-2xl"} ${fontWeight || "font-bold"} ${textAlign || "text-left"} ${!textColor ? "text-slate-800" : ""} ${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-green-500 focus:bg-white/80 p-1 -m-1 rounded-md" : ""} transition-all`}
+        style={style}
+        className={`${customClassName || `${sizeClass || "text-2xl"} ${fontWeight || "font-bold"} ${textAlign || "text-left"}`} ${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-green-500 focus:bg-white/80 p-1 -m-1 rounded-md" : ""} transition-all`}
         contentEditable={!isPreviewMode && isEditable} suppressContentEditableWarning onBlur={handleBlur} dangerouslySetInnerHTML={{ __html: text }}></h1>
-    </div>
   );
 }
-function TextBlock({ text = "Lorem ipsum dolor sit amet...", onUpdate, isSelected, sizeClass, fontWeight, textAlign, textColor, isPreviewMode, isEditable, style }) {
-    const handleBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ text: e.currentTarget.innerText }); };
+function TextBlock({ text = "Lorem ipsum dolor sit amet...", onUpdate, isSelected, sizeClass, fontWeight, textAlign, isPreviewMode, isEditable, style, customClassName = '' }) {
+    const handleBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ text: e.currentTarget.innerHTML }); };
     return (
-        <div className={`p-1 ${!isPreviewMode ? `rounded-md ${isSelected ? "" : "hover:ring-1 hover:ring-green-400/20"}` : ""}`} style={style}>
-            <p
-                style={{ color: textColor || undefined }}
-                className={`${sizeClass || "text-base"} ${fontWeight || "font-normal"} ${textAlign || "text-left"} ${!textColor ? "text-slate-700" : ""} leading-relaxed ${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-green-500 focus:bg-white/80 p-1 -m-1 rounded-md whitespace-pre-wrap" : "whitespace-pre-wrap"} transition-all`}
-                contentEditable={!isPreviewMode && isEditable}
-                suppressContentEditableWarning
-                onBlur={handleBlur}
-                dangerouslySetInnerHTML={{ __html: text }}></p>
+        <p
+            style={style}
+            className={`${customClassName || `${sizeClass || "text-base"} ${fontWeight || "font-normal"} ${textAlign || "text-left"}`} leading-relaxed ${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-green-500 focus:bg-white/80 p-1 -m-1 rounded-md whitespace-pre-wrap" : "whitespace-pre-wrap"} transition-all`}
+            contentEditable={!isPreviewMode && isEditable}
+            suppressContentEditableWarning
+            onBlur={handleBlur}
+            dangerouslySetInnerHTML={{ __html: text }}></p>
+    );
+}
+function ButtonElement({ buttonText = "Click Me", link = "#", onUpdate, isSelected, textAlign, isPreviewMode, onNavigate, isEditable, style, customClassName = '' }) {
+    const handleTextBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ buttonText: e.currentTarget.innerText }); };
+    const handleClick = (e) => {
+        if (!isPreviewMode) { e.preventDefault(); return; }
+        if (link && link.startsWith("/")) { e.preventDefault(); if (onNavigate) onNavigate(link.substring(1)); }
+        else if (link === "#") { e.preventDefault(); }
+    };
+    return (
+        <div className={`${textAlign || ''} ${!isPreviewMode && isSelected ? "rounded-lg" : ""}`} style={style}>
+            <a href={link} onClick={handleClick} target={ isPreviewMode && link && !link.startsWith("/") && link !== "#" ? "_blank" : "_self" } rel={ isPreviewMode && link && !link.startsWith("/") && link !== "#" ? "noopener noreferrer" : "" } className={customClassName}>
+                <span contentEditable={!isPreviewMode && isEditable} suppressContentEditableWarning onBlur={handleTextBlur} dangerouslySetInnerHTML={{ __html: buttonText }} className={`${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-white/50 p-0.5 -m-0.5 rounded-sm" : ""}`}></span>
+            </a>
+        </div>
+    );
+}
+function ImageElement({ src = img, alt = "Placeholder", isSelected, isPreviewMode, style, customClassName = '' }) {
+    return (
+        <img src={src} alt={alt} className={customClassName || `max-w-full h-auto block mx-auto transition-all`} style={style} />
+    );
+}
+function IconElement({ iconName = "Star", size = "32px", color = "currentColor", isSelected, isPreviewMode, style, customClassName = '' }) {
+    const IconComponent = LucideIcons[iconName] || LucideIcons.HelpCircle;
+    return (
+        <div className={`${customClassName} flex justify-center items-center`} style={style}>
+            <IconComponent style={{ fontSize: size, color: color }} strokeWidth={2} />
         </div>
     );
 }
@@ -236,32 +261,6 @@ function AccordionElement({ title = "Accordion Title", content = "Accordion cont
         </div>
     )
 }
-function ImageElement({ src = img, alt = "Placeholder", width = "100%", height = "auto", borderRadius = "8px", boxShadow = "none", isSelected, isPreviewMode, style }) {
-    const getStyleValue = (v) => v === "auto" || (typeof v === "string" && v.endsWith("%")) ? v : `${parseInt(v, 10) || "auto"}px`;
-    return (
-        <div className={`p-1 ${!isPreviewMode ? `rounded-md ${isSelected ? "" : "hover:ring-1 hover:ring-green-400/20"}` : ""}`} style={style}>
-            <img src={src} alt={alt} className={`max-w-full h-auto block mx-auto transition-all`} style={{ width: getStyleValue(width), height: getStyleValue(height), minHeight: "50px", objectFit: "cover", borderRadius: borderRadius, boxShadow: boxShadow }} />
-        </div>
-    );
-}
-function ButtonElement({ buttonText = "Click Me", link = "#", onUpdate, isSelected, sizeClass, textAlign, backgroundColor = "#16a34a", textColor = "#ffffff", borderRadius = "9999px", variant = "solid", fullWidth = false, isPreviewMode, onNavigate, isEditable, style }) {
-    const handleTextBlur = (e) => { if (onUpdate && !isPreviewMode) onUpdate({ buttonText: e.currentTarget.innerText }); };
-    const solidStyle = { backgroundColor: backgroundColor, color: textColor, borderRadius: borderRadius, border: "2px solid transparent" };
-    const outlineStyle = { backgroundColor: "transparent", color: backgroundColor, borderRadius: borderRadius, border: `2px solid ${backgroundColor}` };
-    const buttonStyle = variant === "outline" ? outlineStyle : solidStyle;
-    const handleClick = (e) => {
-        if (!isPreviewMode) { e.preventDefault(); return; }
-        if (link && link.startsWith("/")) { e.preventDefault(); if (onNavigate) onNavigate(link.substring(1)); }
-        else if (link === "#") { e.preventDefault(); }
-    };
-    return (
-        <div className={`py-2 px-1 ${textAlign || "text-center"} ${!isPreviewMode && isSelected ? "rounded-lg bg-green-500/5" : ""}`} style={style}>
-            <a href={link} onClick={handleClick} target={ isPreviewMode && link && !link.startsWith("/") && link !== "#" ? "_blank" : "_self" } rel={ isPreviewMode && link && !link.startsWith("/") && link !== "#" ? "noopener noreferrer" : "" } className={`inline-block px-6 py-2.5 font-semibold shadow-md hover:opacity-90 transition-all transform hover:-translate-y-px active:translate-y-0 text-sm`} style={buttonStyle}>
-                <span contentEditable={!isPreviewMode && isEditable} suppressContentEditableWarning onBlur={handleTextBlur} dangerouslySetInnerHTML={{ __html: buttonText }} className={`${!isPreviewMode ? "focus:outline-none focus:ring-1 focus:ring-white/50 p-0.5 -m-0.5 rounded-sm" : ""}`}></span>
-            </a>
-        </div>
-    );
-}
 function Divider({ isSelected, isPreviewMode, style }) {
     return (
         <div className={`py-3 px-1 ${!isPreviewMode && isSelected ? "rounded-lg bg-green-500/5" : ""}`} style={style}>
@@ -271,15 +270,6 @@ function Divider({ isSelected, isPreviewMode, style }) {
 }
 function Spacer({ height = "20px", onUpdate, isSelected, isPreviewMode, style }) {
     return <div style={{ height, ...style }} className={`w-full transition-all ${!isPreviewMode && isSelected ? "bg-green-200/50" : !isPreviewMode ? "bg-transparent hover:bg-slate-200/50" : ""}`}></div>;
-}
-function IconElement({ iconName = "Star", size = "32px", color = "currentColor", onUpdate, isSelected, isPreviewMode, style }) {
-    const IconComponent = LucideIcons[iconName] || LucideIcons.HelpCircle;
-    const ActualIconComponent = IconComponent || LucideIcons.HelpCircle;
-    return (
-        <div className={`p-2 flex justify-center items-center ${!isPreviewMode && isSelected ? "rounded-lg bg-green-500/5" : ""}`} style={style}>
-            <ActualIconComponent style={{ fontSize: size, color: color }} strokeWidth={color === "currentColor" ? 1.75 : 2} />
-        </div>
-    );
 }
 function GoogleMapsPlaceholder({ address = "1600 Amphitheatre Parkway, Mountain View, CA", zoom = 14, onUpdate, isSelected, isPreviewMode, style }) {
     return (
@@ -407,57 +397,36 @@ function CardSliderElement({ slides = [], slidesPerView = 3, spaceBetween = 16, 
       </div>
   );
 }
-function NavbarElement({ logoType = "text", logoText = "MySite", logoSrc = img, links = [], rightContentType = "none", backgroundColor = "#ffffff", textColor = "#334155", linkColor = "#16a34a", isSelected, isPreviewMode, onUpdate, onNavigate, onSelect, onDelete, path, previewDevice, isDraggable, style }) {
+function NavbarElement({ logoType = "text", logoText = "MySite", logoSrc = img, links = [], rightContentType = "none", isSelected, isPreviewMode, onUpdate, onNavigate, onSelect, onDelete, path, previewDevice, isDraggable, style, customClassName = '' }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const navStyle = { backgroundColor, ...style };
-    const textStyle = { color: textColor };
-    const linkStyle = { color: linkColor };
-    const forceMobileLayout = isPreviewMode && (previewDevice === "mobile" || previewDevice === "tablet");
+    
+    const navContentContainerClasses = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
+    const flexContainerClasses = 'flex justify-between items-center py-6';
+    const navLinksContainerClasses = 'space-x-8';
+    
     const handleLinkClick = (e, linkUrl) => {
         if (isMobileMenuOpen) setIsMobileMenuOpen(false);
         if (!isPreviewMode) { e.preventDefault(); return; }
         if (linkUrl && linkUrl.startsWith("/")) { e.preventDefault(); if (onNavigate) onNavigate(linkUrl.substring(1)); }
         else if (linkUrl === "#") { e.preventDefault(); }
     };
-    const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
     const handleClick = (e) => { if (!isPreviewMode && onSelect && isDraggable) { e.stopPropagation(); onSelect(); } };
+
     return (
-        <div onClick={handleClick} className={`p-1 relative group ${!isPreviewMode && isSelected ? "rounded-lg bg-green-500/5" : !isPreviewMode && path ? "hover:ring-1 hover:ring-green-400/20 rounded-lg" : ""}`}>
-            <nav style={navStyle} className="relative px-4 sm:px-6 py-3 shadow-md rounded-lg">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                        {logoType === "image" && logoSrc ? (<img src={logoSrc} alt={logoText || "Logo"} className="h-8 sm:h-9 w-auto mr-3 rounded-sm object-contain" />) : (
-                            <a href={isPreviewMode ? links.find((l) => l.text.toLowerCase() === "home")?.url || "/home" : "#"} onClick={(e) => handleLinkClick(e, links.find((l) => l.text.toLowerCase() === "home")?.url || "/home")} style={textStyle} className="text-lg lg:text-xl font-bold hover:opacity-80 transition-opacity">{logoText}</a>
-                        )}
-                    </div>
-                    <div className={`${forceMobileLayout ? "hidden" : "hidden md:flex"} items-center`}>
-                        <div className="flex items-center space-x-4 lg:space-x-6">
+        <div onClick={handleClick} className={`relative group ${!isPreviewMode && isSelected ? "selected-outline p-1" : ""}`}>
+             <header className={customClassName}>
+                <div className={navContentContainerClasses}>
+                    <div className={flexContainerClasses}>
+                        <div className="font-bold text-xl text-gray-900">{logoText}</div>
+                        <nav className={navLinksContainerClasses}>
                             {links.map((link, index) => (
-                                <a key={link.id || index} href={link.url} onClick={(e) => handleLinkClick(e, link.url)} target={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "_blank" : "_self"} rel={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "noopener noreferrer" : ""} style={linkStyle} className="text-xs font-medium hover:opacity-80 transition-opacity">{link.text}</a>
+                                <a key={link.id || index} href={link.url} onClick={(e) => handleLinkClick(e, link.url)} className="text-gray-600 hover:text-gray-900 transition-colors">{link.text}</a>
                             ))}
-                        </div>
-                        {(rightContentType === "userIcon" || rightContentType === "searchIcon") && (
-                            <div className="flex items-center ml-5">{rightContentType === "userIcon" && <LucideIcons.CircleUserRound style={linkStyle} className="h-5 w-5" />}{rightContentType === "searchIcon" && <LucideIcons.Search style={linkStyle} className="h-4 w-4" />}</div>
-                        )}
-                    </div>
-                    <div className={`${forceMobileLayout ? "flex" : "md:hidden flex"} items-center`}>
-                        {rightContentType === "userIcon" && <LucideIcons.CircleUserRound style={linkStyle} className="h-5 w-5 mr-3" />}
-                        {rightContentType === "searchIcon" && <LucideIcons.Search style={linkStyle} className="h-4 w-4 mr-3" />}
-                        <button onClick={toggleMobileMenu} style={linkStyle} aria-label="Toggle menu" className="p-1">
-                            {isMobileMenuOpen ? (<LucideIcons.X className="h-6 w-6" />) : (<LucideIcons.Menu className="h-6 w-6" />)}
-                        </button>
+                        </nav>
                     </div>
                 </div>
-                {isMobileMenuOpen && (
-                    <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-b-lg transition transform origin-top animate-fadeInDown" style={navStyle}>
-                        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                            {links.map((link, index) => (
-                                <a key={link.id || index} href={link.url} onClick={(e) => handleLinkClick(e, link.url)} target={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "_blank" : "_self"} rel={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "noopener noreferrer" : ""} style={linkStyle} className="block px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 hover:opacity-80 transition-colors">{link.text}</a>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </nav>
+            </header>
             {!isPreviewMode && isSelected && onDelete && (
                 <button onClick={(e) => { e.stopPropagation(); onDelete(); }} title="Remove Global Navbar" className="absolute -top-2.5 -right-2.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 hover:scale-110 transition-all w-6 h-6 flex items-center justify-center shadow-md z-30 print-hidden">
                     <LucideIcons.X className="w-3 h-3" strokeWidth={3} />
@@ -466,130 +435,263 @@ function NavbarElement({ logoType = "text", logoText = "MySite", logoSrc = img, 
         </div>
     );
 }
-function FooterElement({ copyrightText = `© ${new Date().getFullYear()} MySite. All rights reserved.`, links = [], backgroundColor = "#f1f5f9", textColor = "#64748b", linkColor = "#16a34a", isSelected, isPreviewMode, onUpdate, onNavigate, onSelect, onDelete, path, isDraggable, style }) {
-    const footerStyle = { backgroundColor, ...style };
-    const textStyle = { color: textColor };
-    const linkStyle = { color: linkColor };
-    const handleLinkClick = (e, linkUrl) => {
-        if (!isPreviewMode) { e.preventDefault(); return; }
-        if (linkUrl && linkUrl.startsWith("/")) { e.preventDefault(); if (onNavigate) onNavigate(linkUrl.substring(1)); }
-        else if (linkUrl === "#") { e.preventDefault(); }
-    };
-    const handleClick = (e) => { if (!isPreviewMode && onSelect && isDraggable) { e.stopPropagation(); onSelect(); } };
+function NewsletterElement({ title = "Get Exclusive Updates", subtitle = "Subscribe for weekly tips and special offers", placeholder = "name@email.com", buttonText = "Subscribe", onUpdate, isSelected, isPreviewMode, isEditable, style, customClassName = '' }) {
+    const [email, setEmail] = React.useState('');
+    const handleSubmit = (e) => { e.preventDefault(); };
     return (
-        <div onClick={handleClick} className={`p-1 relative group ${!isPreviewMode && isSelected ? "rounded-lg bg-green-500/5" : !isPreviewMode && path ? "hover:ring-1 hover:ring-green-400/20 rounded-lg" : ""}`}>
-            <footer style={footerStyle} className="px-5 py-8 text-center border-t border-slate-200/80 rounded-lg">
-                <div className="max-w-5xl mx-auto">
-                    <div className="flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-6 mb-5">
-                        {links.map((link, index) => (
-                            <a key={link.id || index} href={link.url} onClick={(e) => handleLinkClick(e, link.url)} target={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "_blank" : "_self"} rel={isPreviewMode && link.target === "_blank" && link.url && !link.url.startsWith("/") ? "noopener noreferrer" : ""} style={linkStyle} className="text-xs sm:text-sm hover:underline">{link.text}</a>
-                        ))}
-                    </div>
-                    <p style={textStyle} className="text-xs sm:text-sm">{copyrightText}</p>
-                </div>
-            </footer>
-            {!isPreviewMode && isSelected && onDelete && (
-                <button onClick={(e) => { e.stopPropagation(); onDelete(); }} title="Remove Global Footer" className="absolute -top-2.5 -right-2.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 hover:scale-110 transition-all w-6 h-6 flex items-center justify-center shadow-md z-30 print-hidden">
-                    <LucideIcons.X className="w-3 h-3" strokeWidth={3} />
-                </button>
-            )}
+        <div className={customClassName} style={style}>
+            <div className="max-w-4xl mx-auto px-4 text-center">
+                <h2 className="text-4xl font-bold mb-4 text-gray-900">{title}</h2>
+                <p className="text-xl text-gray-600 mb-8">{subtitle}</p>
+                <form onSubmit={handleSubmit} className="max-w-md mx-auto">
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={placeholder} className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 mb-4" required />
+                    <button type="submit" className="w-full bg-gray-900 text-white py-3 px-6 rounded-lg hover:bg-gray-800 transition-colors">{buttonText}</button>
+                </form>
+            </div>
         </div>
     );
 }
-function LinkManager({ links, onUpdateLinks, elementId, pages, linkTypeLabel = "Link" }) {
-  const [localLinks, setLocalLinks] = useState(links || []);
-  useEffect(() => { setLocalLinks(links || []); }, [links]);
-  const handleLinkChange = (index, field, value) => {
-      const newLinks = [...localLinks]; newLinks[index] = { ...newLinks[index], [field]: value };
-      if (field === "url" && value.startsWith("/")) { newLinks[index].isInternal = true; }
-      else if (field === "url") { newLinks[index].isInternal = false; }
-      setLocalLinks(newLinks); onUpdateLinks(newLinks);
-  };
-  const addLink = () => {
-      const newLink = { id: generateId("link"), text: `New ${linkTypeLabel}`, url: "#", target: "_self", isInternal: false };
-      const newLinks = [...localLinks, newLink]; setLocalLinks(newLinks); onUpdateLinks(newLinks);
-  };
-  const removeLink = (index) => {
-      const newLinks = localLinks.filter((_, i) => i !== index); setLocalLinks(newLinks); onUpdateLinks(newLinks);
-  };
-  const pageOptions = [ { label: "External URL", value: "external" }, ...Object.values(pages).map((p) => ({ label: `${p.name} (/${p.id})`, value: `internal:${p.id}` })) ];
-  return (
-    <div className="space-y-2">
-        {localLinks.map((link, index) => (
-            <div key={link.id || index} className="p-2.5 border border-slate-200 rounded-lg space-y-2 bg-slate-50/70">
-                <input type="text" placeholder={`${linkTypeLabel} Text`} value={link.text} onChange={(e) => handleLinkChange(index, "text", e.target.value)} className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md text-xs focus:ring-green-500 focus:border-green-500" />
-                <input type="text" placeholder="URL (e.g. /page-slug or https://...)" value={link.url} onChange={(e) => handleLinkChange(index, "url", e.target.value)} className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md text-xs focus:ring-green-500 focus:border-green-500 mb-1" />
-                <CustomDropdown options={pageOptions} value={ link.url && link.url.startsWith("/") ? `internal:${link.url.substring(1)}` : "external" } onChange={(val) => { if (val.startsWith("internal:")) { handleLinkChange(index, "url", `/${val.split(":")[1]}`); } else { handleLinkChange( index, "url", link.url && link.url.startsWith("/") ? "#" : link.url ); } }} idSuffix={`link-${index}`} />
-                <div className="flex items-center justify-between pt-1">
-                    <div className="flex items-center space-x-1.5">
-                        <input type="checkbox" id={`${elementId}-link-${index}-target`} checked={link.target === "_blank"} onChange={(e) => handleLinkChange( index, "target", e.target.checked ? "_blank" : "_self" )} className="h-3.5 w-3.5 rounded border-slate-300 text-green-600 focus:ring-green-500" />
-                        <label htmlFor={`${elementId}-link-${index}-target`} className="text-xs text-slate-600">Open in new tab</label>
-                    </div>
-                    <button onClick={() => removeLink(index)} className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100"><LucideIcons.Trash2 className="w-3.5 h-3.5" /></button>
-                </div>
-            </div>
-        ))}
-        <button onClick={addLink} className="w-full mt-2 px-3 py-1.5 bg-green-100 text-green-800 text-xs font-medium rounded-md hover:bg-green-200 transition-colors flex items-center justify-center space-x-1.5">
-            <LucideIcons.PlusCircle className="w-3.5 h-3.5" />
-            <span>Add {linkTypeLabel}</span>
-        </button>
-    </div>
-  );
-}
-function SlideManager({ slides, onUpdateSlides, elementId }) {
-    const [localSlides, setLocalSlides] = useState(slides || []);
-    const slideImgInputRefs = useRef([]);
-    useEffect(() => { setLocalSlides(slides || []); slideImgInputRefs.current = (slides || []).map( (_, i) => slideImgInputRefs.current[i] || React.createRef() ); }, [slides]);
-    const handleSlideChange = (index, field, value) => { const newSlides = [...localSlides]; newSlides[index] = { ...newSlides[index], [field]: value }; setLocalSlides(newSlides); onUpdateSlides(newSlides); };
-    const handleImageFileChange = (e, index) => {
-        const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onloadend = () => { handleSlideChange(index, "imgSrc", reader.result); }; reader.readAsDataURL(file); } e.target.value = null;
-    };
-    const addSlide = () => {
-        const newSlide = { id: generateId("slide"), imgSrc: img, heading: "New Slide", text: "New slide content.", link: "#" };
-        const newSlides = [...localSlides, newSlide]; slideImgInputRefs.current.push(React.createRef()); setLocalSlides(newSlides); onUpdateSlides(newSlides);
-    };
-    const removeSlide = (index) => { const newSlides = localSlides.filter((_, i) => i !== index); slideImgInputRefs.current.splice(index, 1); setLocalSlides(newSlides); onUpdateSlides(newSlides); };
-    return (
-      <div className="space-y-2">
-          {localSlides.map((slide, index) => (
-              <div key={slide.id || index} className="p-2.5 border border-slate-200 rounded-lg space-y-2 bg-slate-50/70">
-                  <div className="flex justify-between items-center"><p className="text-xs font-medium text-slate-700">Slide {index + 1}</p><button onClick={() => removeSlide(index)} className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100"><LucideIcons.Trash2 className="w-3.5 h-3.5" /></button></div>
-                  {slide.imgSrc && (<img src={slide.imgSrc} alt={`Preview ${index}`} className="w-full h-20 object-contain rounded-md border border-slate-200 bg-white p-1 mb-1.5" />)}
-                  <button onClick={() => slideImgInputRefs.current[index]?.current?.click()} className="w-full px-2 py-1.5 bg-slate-200 text-slate-700 text-xs font-medium rounded-md hover:bg-slate-300 transition-colors">Change Image</button>
-                  <input type="file" accept="image/*" ref={slideImgInputRefs.current[index]} className="hidden" onChange={(e) => handleImageFileChange(e, index)} />
-                  <input type="text" placeholder="Image URL" value={slide.imgSrc} onChange={(e) => handleSlideChange(index, "imgSrc", e.target.value)} className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md text-xs focus:ring-green-500 focus:border-green-500" />
-                  <input type="text" placeholder="Heading" value={slide.heading} onChange={(e) => handleSlideChange(index, "heading", e.target.value)} className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md text-xs focus:ring-green-500 focus:border-green-500" />
-                  <textarea placeholder="Text" value={slide.text} onChange={(e) => handleSlideChange(index, "text", e.target.value)} rows="2" className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md text-xs focus:ring-green-500 focus:border-green-500 whitespace-pre-wrap"></textarea>
-                  <input type="text" placeholder="Link URL (optional)" value={slide.link || ""} onChange={(e) => handleSlideChange(index, "link", e.target.value)} className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md text-xs focus:ring-green-500 focus:border-green-500" />
-              </div>
-          ))}
-          <button onClick={addSlide} className="w-full mt-2 px-3 py-1.5 bg-green-100 text-green-800 text-xs font-medium rounded-md hover:bg-green-200 transition-colors flex items-center justify-center space-x-1.5"><LucideIcons.PlusCircle className="w-3.5 h-3.5" /> <span>Add Slide</span></button>
-      </div>
-    );
-}
-const ALL_ELEMENT_TYPES = { Heading, TextBlock, ImageElement, ButtonElement, Divider, Spacer, IconElement, GoogleMapsPlaceholder, VideoElement, InnerSectionComponentDisplay, NavbarElement, FooterElement, CardSliderElement, AccordionElement };
-const getDefaultProps = (id) => ({ ...(AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === id)?.defaultProps || {}), style: {} })
+
+const ALL_ELEMENT_TYPES = { Heading, TextBlock, ImageElement, ButtonElement, Divider, Spacer, IconElement, GoogleMapsPlaceholder, VideoElement, InnerSectionComponentDisplay, NavbarElement, CardSliderElement, AccordionElement, NewsletterElement };
+const getDefaultProps = (id) => ({ ...(AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === id)?.defaultProps || {}), style: {} });
 const AVAILABLE_ELEMENTS_CONFIG = [
-    { id: "header", name: "Heading", component: "Heading", category: 'Basic', defaultProps: { text: "Powerful Headline Here", sizeClass: "text-4xl", fontWeight: "font-bold", textColor: "#1e293b", textAlign: "text-left" } },
-    { id: "textBlock", name: "Paragraph", component: "TextBlock", category: 'Basic', defaultProps: { text: "This is an engaging paragraph. You can edit this text to share more about your brand, services, or products.", sizeClass: "text-base", textColor: "#475569", textAlign: "text-left" } },
-    { id: "button", name: "Button", component: "ButtonElement", category: 'Basic', defaultProps: { buttonText: "Get Started", link: "#", backgroundColor: "#16a34a", textColor: "#ffffff", borderRadius: "9999px", textAlign: 'text-center' } },
+    { id: "header", name: "Heading", component: "Heading", category: 'Basic', defaultProps: { text: "Powerful Headline Here", customClassName: "text-4xl font-bold text-slate-800 text-left" } },
+    { id: "textBlock", name: "Paragraph", component: "TextBlock", category: 'Basic', defaultProps: { text: "This is an engaging paragraph.", customClassName: "text-base text-slate-700 text-left" } },
+    { id: "button", name: "Button", component: "ButtonElement", category: 'Basic', defaultProps: { buttonText: "Get Started", link: "#", customClassName: "inline-block bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors", textAlign: 'text-center' } },
     { id: "icon", name: "Icon", component: "IconElement", category: 'Basic', defaultProps: { iconName: "Rocket", size: "48px", color: "#16a34a" } },
-    { id: "image", name: "Image", component: "ImageElement", category: 'Media', defaultProps: { src: img, alt: "Placeholder Image", borderRadius: "12px", boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" } },
+    { id: "image", name: "Image", component: "ImageElement", category: 'Media', defaultProps: { src: img, alt: "Placeholder Image", customClassName: 'rounded-lg shadow-md' } },
     { id: "video", name: "Video", component: "VideoElement", category: 'Media', defaultProps: { videoType: "mp4", src: "" } },
     { id: "divider", name: "Divider", component: "Divider", category: 'Layout', defaultProps: {} },
     { id: "spacer", name: "Spacer", component: "Spacer", category: 'Layout', defaultProps: { height: "40px" } },
     { id: "innerSection", name: "Inner Section", component: "InnerSectionComponentDisplay", category: 'Layout', isContainer: true, hasOwnColumns: true, defaultProps: {} },
     { id: "accordion", name: "Accordion", component: "AccordionElement", category: 'Advanced', defaultProps: { title: "Accordion Title", content: "Details of the accordion." } },
     { id: "cardSlider", name: "Card Slider", component: "CardSliderElement", category: 'Advanced', defaultProps: { slides: [{ id: generateId(), imgSrc: img, heading: "Feature One", text: "Description for feature one.", link: "#" }], slidesPerView: 3, spaceBetween: 16 } },
-    { id: "navbar", name: "Navbar", component: "NavbarElement", category: 'Global', isGlobalOnly: true, defaultProps: { logoType: "text", logoText: "SiteName", links: [{ id: generateId(), text: "Home", url: "#" }, { id: generateId(), text: "About", url: "#" }], backgroundColor: "#FFFFFF", linkColor: "#16a34a" } },
-    { id: "footer", name: "Footer", component: "FooterElement", category: 'Global', isGlobalOnly: true, defaultProps: { copyrightText: `© ${new Date().getFullYear()} Your Company.`, links: [{ id: generateId(), text: "Privacy", url: "#" }], backgroundColor: "#0f172a", textColor: "#94a3b8", linkColor: "#ffffff" } },
+    { id: "newsletter", name: "Newsletter", component: "NewsletterElement", category: 'Advanced', defaultProps: { title: "Get Exclusive Updates", subtitle: "Subscribe for weekly tips and special offers", placeholder: "name@email.com", buttonText: "Subscribe", customClassName: "py-20 bg-white" } },
+    { id: "navbar", name: "Navbar", component: "NavbarElement", category: 'Global', isGlobalOnly: true, defaultProps: { logoText: "SiteName", links: [{ id: generateId(), text: "Home", url: "#" }], customClassName: "bg-white border-b border-gray-200 shadow-sm" } },
 ];
-const elementIcons = { header: <LucideIcons.Heading1 />, textBlock: <LucideIcons.Baseline />, image: <LucideIcons.Image />, button: <LucideIcons.MousePointerClick />, divider: <LucideIcons.Minus />, spacer: <LucideIcons.StretchVertical />, icon: <LucideIcons.Star />, video: <LucideIcons.Youtube />, innerSection: <LucideIcons.LayoutPanelLeft />, accordion: <LucideIcons.ChevronsUpDown />, cardSlider: <LucideIcons.GalleryHorizontalEnd />, navbar: <LucideIcons.Navigation />, footer: <LucideIcons.PanelBottom />, default: <LucideIcons.Puzzle />, section: <LucideIcons.LayoutPanelTop />, column: <LucideIcons.View /> };
+const elementIcons = { header: <LucideIcons.Heading1 />, textBlock: <LucideIcons.Baseline />, image: <LucideIcons.Image />, button: <LucideIcons.MousePointerClick />, divider: <LucideIcons.Minus />, spacer: <LucideIcons.StretchVertical />, icon: <LucideIcons.Star />, video: <LucideIcons.Youtube />, innerSection: <LucideIcons.LayoutPanelLeft />, accordion: <LucideIcons.ChevronsUpDown />, cardSlider: <LucideIcons.GalleryHorizontalEnd />, newsletter: <LucideIcons.Mail />, navbar: <LucideIcons.Navigation />, footer: <LucideIcons.PanelBottom />, default: <LucideIcons.Puzzle />, section: <LucideIcons.LayoutPanelTop />, column: <LucideIcons.View /> };
+
+function htmlToBuilderJson(htmlString) {
+    if (!htmlString) return { sections: [], globalNavbar: null, globalFooter: null };
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+
+    const parseNode = (node) => {
+        if (node.nodeType !== Node.ELEMENT_NODE) return null;
+
+        let element = null;
+        const tagName = node.tagName.toLowerCase();
+        
+        if (tagName.match(/^h[1-6]$/)) {
+            element = { type: 'header', props: { text: node.innerHTML.trim(), customClassName: node.className } };
+        } else if (tagName === 'p' || (tagName === 'a' && node.closest('nav, ul'))) {
+             element = { type: 'textBlock', props: { text: node.innerHTML.trim(), customClassName: node.className } };
+        } else if (tagName === 'li') {
+            const link = node.querySelector('a');
+            if (link) {
+                 element = { type: 'textBlock', props: { text: link.outerHTML, customClassName: '' } };
+            } else {
+                 element = { type: 'textBlock', props: { text: node.innerHTML.trim(), customClassName: node.className } };
+            }
+        } else if (tagName === 'button' || (tagName === 'a' && !node.closest('nav, ul'))) {
+            element = { type: 'button', props: { buttonText: node.innerText.trim(), link: node.getAttribute('href') || '#', customClassName: node.className } };
+        } else if (tagName === 'img') {
+            element = { type: 'image', props: { src: node.src, alt: node.alt, customClassName: node.className } };
+        } else if (tagName === 'input' && node.type === 'email') {
+            const formContainer = node.closest('section, div');
+            if (formContainer) {
+                element = { type: 'newsletter', props: {
+                    title: formContainer.querySelector('h2, h3, h4')?.innerText.trim() || "",
+                    subtitle: formContainer.querySelector('p')?.innerText.trim() || "",
+                    placeholder: node.placeholder || 'name@email.com',
+                    buttonText: formContainer.querySelector('button')?.innerText.trim() || 'Subscribe',
+                    customClassName: formContainer.className
+                }};
+                return element;
+            }
+        } else if (node.innerText.trim() === '■' || node.innerText.trim() === '▲' || node.innerText.trim() === '●') {
+             element = { type: 'icon', props: { iconName: "CheckSquare" }};
+        } else if (tagName === 'div' && node.innerText.trim().length > 0 && !node.querySelector('h1, h2, h3, h4, h5, h6, p, img, button, input')) {
+            // Handle divs with text content that might be missed
+            element = { type: 'textBlock', props: { text: node.innerHTML.trim(), customClassName: node.className } };
+        } else if (tagName === 'span' && node.innerText.trim().length > 0) {
+            // Handle spans with text content
+            element = { type: 'textBlock', props: { text: node.innerHTML.trim(), customClassName: node.className } };
+        }
+
+        if (element) {
+            element.id = generateId(element.type);
+            element.props = { 
+                ...getDefaultProps(element.type), 
+                ...element.props,
+            };
+            return element;
+        }
+        return null;
+    };
+    
+    const parseContainer = (containerEl) => {
+        let elements = [];
+        for (const childNode of Array.from(containerEl.childNodes)) {
+            if (childNode.nodeType !== Node.ELEMENT_NODE || ['STYLE', 'SCRIPT'].includes(childNode.tagName)) continue;
+            
+            if (childNode.tagName.toLowerCase() === 'ul') {
+                for(const li of Array.from(childNode.children)) {
+                    const parsedLi = parseNode(li);
+                    if (parsedLi) elements.push(parsedLi);
+                }
+                continue;
+            }
+            
+            let parsedEl = parseNode(childNode);
+            if (parsedEl) {
+                if (parsedEl.type === 'newsletter') return [parsedEl];
+                elements.push(parsedEl);
+            } else if (childNode.hasChildNodes()) {
+                elements.push(...parseContainer(childNode));
+            }
+        }
+        return elements.filter(Boolean);
+    };
+    
+    const parseSection = (sectionEl, isFooter = false) => {
+        const newSection = {
+            id: isFooter ? 'global-footer' : generateId('section'),
+            type: 'section',
+            props: {
+                ...getDefaultProps('section'),
+            },
+            columns: []
+        };
+        
+        if (isFooter) {
+            newSection.props.customClassName = 'bg-slate-50 text-slate-800 py-20'; 
+        } else {
+            newSection.props.customClassName = sectionEl.className;
+        }
+
+        // Enhanced content detection - look for any container with content
+        const mainContentContainer = sectionEl.children[0] || sectionEl;
+        let layoutContainer = mainContentContainer?.querySelector('.grid, .flex:not([class*="items-center"]), [class*="grid"], [class*="flex"]');
+
+        if (isFooter) {
+            newSection.layoutContainerClassName = "grid grid-cols-1 md:grid-cols-5 gap-8";
+        } else if(layoutContainer) {
+            newSection.layoutContainerClassName = layoutContainer.className;
+        }
+        
+        let colNodes = [];
+        if (layoutContainer && layoutContainer.children.length > 0) {
+            colNodes = Array.from(layoutContainer.children);
+        } else if (mainContentContainer && mainContentContainer !== sectionEl) {
+             colNodes = [mainContentContainer];
+        } else {
+            // If no clear structure, treat the entire section as one column
+            colNodes = [sectionEl];
+        }
+
+        colNodes.forEach(colEl => {
+            if (isFooter && colEl.classList.contains('border-t')) {
+                return;
+            }
+
+            const elements = parseContainer(colEl);
+            if (elements.length > 0) {
+                newSection.columns.push({
+                    id: generateId('col'),
+                    type: 'column',
+                    props: { customClassName: isFooter ? '' : colEl.className }, 
+                    elements
+                });
+            }
+        });
+        
+        // If no columns were created, try to parse the section directly
+        if (newSection.columns.length === 0) {
+            const elements = parseContainer(sectionEl);
+            if (elements.length > 0) {
+                newSection.columns.push({
+                    id: generateId('col'),
+                    type: 'column',
+                    props: { customClassName: '' }, 
+                    elements
+                });
+            }
+        }
+        
+        if (isFooter) {
+            const copyrightNode = mainContentContainer?.querySelector('.border-t p, .text-center p');
+            if (copyrightNode) {
+                newSection.props.copyrightText = copyrightNode.innerHTML;
+            } else {
+                const lastP = Array.from(sectionEl.querySelectorAll('p')).pop();
+                if (lastP && lastP.innerText.includes('©')) {
+                    newSection.props.copyrightText = lastP.innerHTML;
+                }
+            }
+        }
+        
+        return newSection.columns.length > 0 ? newSection : null;
+    };
+    
+    function parseNavbar(headerEl) {
+        const newNav = { id: 'global-navbar', type: 'navbar', props: getDefaultProps('navbar') };
+        newNav.props.customClassName = headerEl.className;
+        const logo = headerEl.querySelector('.font-bold');
+        if (logo) newNav.props.logoText = logo.innerText.trim();
+        
+        const navLinks = headerEl.querySelectorAll('nav a');
+        if (navLinks.length > 0) {
+            newNav.props.links = Array.from(navLinks).map(a => ({ id: generateId('link'), text: a.innerText.trim(), url: a.getAttribute('href') || '#' }));
+        }
+        return newNav;
+    }
+
+    let sections = [];
+    let globalNavbar = null;
+    let globalFooter = null;
+
+    // Enhanced section detection - look for ANY container that could be a section
+    for (const node of Array.from(doc.body.children)) {
+        if (node.tagName === 'HEADER') {
+            globalNavbar = parseNavbar(node);
+        } else if (node.tagName === 'FOOTER') {
+            globalFooter = parseSection(node, true);
+        } else {
+            // Look for ANY element that could be a section:
+            // - <section> tags
+            // - <div> tags with substantial content
+            // - Any container with multiple child elements
+            const isSection = node.tagName === 'SECTION' || 
+                             (node.tagName === 'DIV' && (
+                                 node.children.length > 0 || 
+                                 node.innerText.trim().length > 50 ||
+                                 node.querySelector('h1, h2, h3, h4, h5, h6, p, img, button, input')
+                             ));
+            
+            if (isSection) {
+            const parsedSection = parseSection(node);
+                if (parsedSection) {
+                    sections.push(parsedSection);
+                    // Found section
+        }
+    }
+        }
+    }
+    
+    // Final result
+    
+    return { sections, globalNavbar, globalFooter };
+}
+
 function DraggableCanvasElement({ elementData, onUpdateProps, onDelete, onSelect, isSelected, onOpenStructureModal, parentColumnId, isPreviewMode, onNavigate, isDraggable, }) {
   const config = AVAILABLE_ELEMENTS_CONFIG.find((c) => c.id === elementData.type);
-  if (!config) return null;
+  if (!config) return <div className="text-red-500 text-xs">Unknown element type: {elementData.type}</div>;
   const ComponentToRender = ALL_ELEMENT_TYPES[config.component];
   if (!ComponentToRender) return null;
+  
+  // DraggableCanvasElement render
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: elementData.id,
     data: { type: "canvasElement", elementId: elementData.id, parentColumnId, elementType: elementData.type, elementData, path: elementData.path },
@@ -598,8 +700,11 @@ function DraggableCanvasElement({ elementData, onUpdateProps, onDelete, onSelect
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging && !isPreviewMode ? 0.5 : 1, zIndex: isDragging && !isPreviewMode ? 100 : "auto" };
   const handleUpdate = (newProps) => { if (!isPreviewMode) onUpdateProps(elementData.path, newProps); };
   const handleClick = (e) => { e.stopPropagation(); if (!isPreviewMode && isDraggable) onSelect(elementData.id, "element", elementData.path, elementData); };
+  
+  const wrapperClasses = `relative group my-1.5 transition-all duration-150 ease-in-out ${!isPreviewMode && isSelected ? 'selected-outline' : ''} ${!isPreviewMode && isDragging ? "bg-green-50/80 shadow-2xl ring-2 ring-green-400 scale-[1.01] rounded-lg" : ""}`;
+
   return (
-    <div ref={setNodeRef} style={style} onClick={handleClick} className={`relative group my-1.5 transition-all duration-150 ease-in-out ${!isPreviewMode && isDragging ? "bg-green-50/80 shadow-2xl ring-2 ring-green-400 scale-[1.01] rounded-lg" : ""}`}>
+    <div ref={setNodeRef} style={style} onClick={handleClick} className={wrapperClasses}>
         {isDraggable && !isPreviewMode && (
           <div {...attributes} {...listeners} title="Drag element" className="absolute top-1/2 -left-3 transform -translate-y-1/2 p-1.5 cursor-grab bg-white hover:bg-green-600 text-slate-500 hover:text-white rounded-full border border-slate-300 hover:border-green-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 z-20 print-hidden transition-all shadow-md">
             <LucideIcons.GripVertical className="w-4 h-4" />
@@ -620,7 +725,7 @@ function DraggableCanvasElement({ elementData, onUpdateProps, onDelete, onSelect
                 isDraggable={isDraggable}
             />
         </div>
-        {!isPreviewMode && isSelected && isDraggable && (
+        {!isPreviewMode && isSelected && (
           <button onClick={(e) => { e.stopPropagation(); onDelete(elementData.path); }} title="Delete element" className="absolute -top-2.5 -right-2.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 hover:scale-110 transition-all w-6 h-6 flex items-center justify-center shadow-md z-20 print-hidden">
               <LucideIcons.X className="w-3 h-3" strokeWidth={3} />
           </button>
@@ -634,11 +739,16 @@ function ColumnComponent({ parentPath, columnData, columnIndex, onUpdateProps, o
   const handleClick = (e) => { e.stopPropagation(); if (!isPreviewMode && isDraggable) { onSelect(columnData.id, "column", columnPath, columnData); } };
   const { setNodeRef: setDroppableRef, isOver } = useDroppable({ id: `col-${columnData.id}`, data: { type: "column", columnId: columnData.id, path: columnPath, accepts: ["paletteItem", "canvasElement"] }, disabled: isPreviewMode || !isDraggable });
   const elementIds = useMemo(() => columnData.elements.map((el) => el.id), [columnData.elements]);
-  const columnStyle = { ...columnData.props?.style, flexBasis: columnData.props.width || "100%" };
+  
+  // ColumnComponent render
+  
+  const columnProps = columnData.props || {};
+  const columnClassName = columnProps.customClassName || 'p-1.5 flex-shrink-0';
+  
   return (
-    <div onClick={handleClick} style={columnStyle} className={`p-1.5 flex-shrink-0 transition-all ${!isPreviewMode && isDraggable ? 'cursor-pointer' : ''} ${!isPreviewMode && isSelected ? "selected-outline" : !isPreviewMode ? "hover:outline hover:outline-1 hover:outline-offset-1 hover:outline-green-300/70 rounded-xl" : ""}`}>
+    <div onClick={handleClick} className={`${columnClassName} transition-all ${!isPreviewMode && isDraggable ? 'cursor-pointer' : ''} ${!isPreviewMode && isSelected ? "selected-outline" : !isPreviewMode ? "hover:outline hover:outline-1 hover:outline-offset-1 hover:outline-green-300/70 rounded-xl" : ""}`}>
         <SortableContext items={elementIds} strategy={verticalListSortingStrategy} disabled={isPreviewMode || !isDraggable}>
-            <div ref={setDroppableRef} className={`min-h-[80px] p-1 rounded-lg transition-all ${!isPreviewMode ? `border ${isOver && isDraggable ? "bg-green-100/90 border-green-400 border-solid ring-1 ring-green-400" : "bg-white/30 border-slate-200/90"} ${columnData.elements.length === 0 && !isOver ? "border-dashed flex items-center justify-center text-slate-400/80 text-xs font-medium" : ""}` : ""}`}>
+            <div ref={setDroppableRef} className={`min-h-[80px] rounded-lg transition-all ${!isPreviewMode ? `border ${isOver && isDraggable ? "bg-green-100/90 border-green-400 border-solid ring-1 ring-green-400" : "bg-transparent border-transparent"} ${columnData.elements.length === 0 && !isOver ? "border-dashed flex items-center justify-center text-slate-400/80 text-xs font-medium border-slate-300" : ""}` : ""}`}>
                 {!isPreviewMode && columnData.elements.length === 0 && !isOver && isDraggable ? "Drop Element Here" : null}
                 {columnData.elements.map((el, elIdx) => (
                     <DraggableCanvasElement
@@ -661,289 +771,99 @@ function ColumnComponent({ parentPath, columnData, columnIndex, onUpdateProps, o
   );
 };
 function SectionComponent({ sectionData, sectionIndex, onUpdateProps, onDelete, onSelect, selectedItemId, onOpenStructureModal, isPreviewMode, onNavigate, pageId, isDraggable, }) {
-  const sectionPath = `pages[${pageId}].layout[${sectionIndex}]`;
-  const isSelected = selectedItemId === sectionData.id;
-  const handleClick = (e) => { e.stopPropagation(); if (!isPreviewMode && isDraggable) { onSelect(sectionData.id, "section", sectionPath, sectionData); } };
+    const sectionPath = sectionIndex === -1 ? 'globalFooter' : `pages[${pageId}].layout[${sectionIndex}]`;
+    const isSelected = selectedItemId === sectionData.id;
+    const handleClick = (e) => { e.stopPropagation(); if (!isPreviewMode && isDraggable) { onSelect(sectionData.id, "section", sectionPath, sectionData); } };
+    
+    // SectionComponent render
 
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-      id: sectionData.id,
-      data: { type: "section", sectionId: sectionData.id, path: sectionPath, sectionData, pageId },
-      disabled: isPreviewMode || !isDraggable
-  });
-  const sortableStyle = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging && !isPreviewMode ? 0.75 : 1, zIndex: isDragging && !isPreviewMode ? 200 : "auto" };
-  const sectionProps = sectionData.props || {};
-  const effectiveBgStyle = { ...sortableStyle, ...sectionProps.style };
-  if (sectionProps.backgroundType === "color" && sectionProps.backgroundColor) { effectiveBgStyle.backgroundColor = sectionProps.backgroundColor; }
-  const getSectionBaseBgClass = () => {
-      if (isPreviewMode) return sectionProps.backgroundType === "image" || sectionProps.backgroundType === "video" ? "" : "bg-transparent";
-      const editModeBase = "";
-      if (isDragging) return `bg-green-50/80 shadow-2xl ring-2 ring-green-400 rounded-2xl`;
-      return `${sectionProps.backgroundType !== "image" && sectionProps.backgroundType !== "video" ? "bg-white" : ""} ${editModeBase}`;
-  };
-  const sectionRootClasses = ["relative", "group", "transition-all", "duration-200", "ease-in-out", getSectionBaseBgClass(), !isPreviewMode && isSelected ? "selected-outline" : "", !isPreviewMode && !isSelected ? "hover:ring-1 hover:ring-green-300/80 cursor-pointer" : ""].join(" ").replace(/\s+/g, " ").trim();
-  const sectionPaddingStyle = { paddingTop: sectionProps.paddingTop, paddingBottom: sectionProps.paddingBottom, paddingLeft: sectionProps.paddingLeft, paddingRight: sectionProps.paddingRight };
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+        id: sectionData.id,
+        data: { type: "section", sectionId: sectionData.id, path: sectionPath, sectionData, pageId },
+        disabled: isPreviewMode || !isDraggable || sectionIndex === -1
+    });
+    const sortableStyle = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging && !isPreviewMode ? 0.75 : 1, zIndex: isDragging && !isPreviewMode ? 200 : "auto" };
+    
+    const sectionProps = sectionData.props || {};
+    const { copyrightText, ...otherProps } = sectionProps;
+    const sectionClassName = otherProps.customClassName || 'py-16 bg-white';
+    const sectionRootClasses = `relative group transition-all duration-200 ease-in-out ${sectionClassName} ${!isPreviewMode && isSelected ? "selected-outline" : ""} ${!isPreviewMode && !isSelected ? "hover:ring-1 hover:ring-green-300/80 cursor-pointer" : ""}`.trim();
 
-  const renderDefaultTemplateSection = () => {
-    if (!sectionData.content) return null;
+    const mainContentContainerClass = sectionIndex === -1 ? 'max-w-6xl mx-auto px-4' : '';
 
-    const content = sectionData.content;
-    const style = sectionData.style || {};
-
-    if (sectionData.type === 'header') {
-      return (
-        <div className="text-center py-8" style={{
-          backgroundColor: content.backgroundColor,
-          color: content.textColor,
-          padding: style.padding,
-          textAlign: style.textAlign
-        }}>
-          <h1 className="text-3xl font-bold mb-2">{content.title || 'Header Title'}</h1>
-          <p className="text-lg opacity-80">{content.subtitle || 'Header Subtitle'}</p>
-        </div>
-      );
-    }
-
-    if (sectionData.type === 'content') {
-      return (
-        <div className="text-center py-12" style={{
-          backgroundColor: content.backgroundColor,
-          color: content.textColor,
-          padding: style.padding,
-          textAlign: style.textAlign
-        }}>
-          <h2 className="text-2xl font-bold mb-4">{content.title || 'Content Title'}</h2>
-          <p className="text-base max-w-2xl mx-auto leading-relaxed">{content.description || 'Content description goes here.'}</p>
-        </div>
-      );
-    }
-
-    if (sectionData.type === 'footer') {
-      return (
-        <div className="text-center py-6" style={{
-          backgroundColor: content.backgroundColor,
-          color: content.textColor,
-          padding: style.padding,
-          textAlign: style.textAlign
-        }}>
-          <p className="text-sm">{content.text || 'Footer text'}</p>
-        </div>
-      );
-    }
-
-    return null;
-  };
-
-  const renderAIGeneratedSection = () => {
-    if (!sectionData.columns && !sectionData.elements && !sectionData.props) return null;
-
-    if (sectionData.columns && sectionData.columns.length > 0) {
-      return (
-        <div className="w-full">
-          {sectionData.columns.map((col, colIdx) => (
-            <ColumnComponent
-              key={col.id}
-              parentPath={sectionPath}
-              columnData={col}
-              columnIndex={colIdx}
-              onUpdateProps={onUpdateProps}
-              onDelete={onDelete}
-              onSelect={onSelect}
-              selectedItemId={selectedItemId}
-              onOpenStructureModal={onOpenStructureModal}
-              isPreviewMode={isPreviewMode}
-              onNavigate={onNavigate}
-              isDraggable={isDraggable}
-            />
-          ))}
-        </div>
-      );
-    }
-
-    if (sectionData.elements && sectionData.elements.length > 0) {
-      return (
-        <div className="w-full">
-          {sectionData.elements.map((element, elementIndex) => (
-            <div key={element.id || elementIndex} className="mb-4">
-              {element.type === 'heading' && (
-                <div className="text-center" style={{
-                  color: element.props?.textColor || '#000',
-                  backgroundColor: element.props?.backgroundColor || 'transparent',
-                  padding: element.props?.padding || '1rem'
-                }}>
-                  <h1 className="text-4xl font-bold" style={{ fontSize: element.props?.fontSize || '2.25rem' }}>
-                    {element.props?.text || 'Heading'}
-                  </h1>
+    return (
+        <div ref={setNodeRef} style={sortableStyle} className={sectionRootClasses} onClick={handleClick}>
+            {!isPreviewMode && isDraggable && sectionIndex !== -1 && (
+                <div {...attributes} {...listeners} title="Drag section" className="absolute top-4 -left-3.5 transform p-2 cursor-grab bg-white hover:bg-green-600 text-slate-500 hover:text-white rounded-full border border-slate-300 hover:border-green-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 z-30 print-hidden transition-opacity shadow-md">
+                    <LucideIcons.Move className="w-4 h-4" />
                 </div>
-              )}
-
-              {element.type === 'text' && (
-                <div className="text-center" style={{
-                  color: element.props?.textColor || '#000',
-                  backgroundColor: element.props?.backgroundColor || 'transparent',
-                  padding: element.props?.padding || '1rem'
-                }}>
-                  <p className="text-lg" style={{ fontSize: element.props?.fontSize || '1.125rem' }}>
-                    {element.props?.text || 'Text content'}
-                  </p>
+            )}
+            {!isPreviewMode && isSelected && isDraggable && (
+                <button onClick={(e) => { e.stopPropagation(); onDelete(sectionPath); }} title="Delete section" className="absolute -top-2.5 -right-2.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 hover:scale-110 transition-all w-6 h-6 flex items-center justify-center shadow-md z-30 print-hidden">
+                    <LucideIcons.Trash2 className="w-3.5 h-3.5" strokeWidth={2.5} />
+                </button>
+            )}
+            
+            <div className={mainContentContainerClass}>
+                <div className={sectionData.layoutContainerClassName || ''}>
+                    {sectionData.columns && sectionData.columns.map((col, colIdx) => (
+                        <ColumnComponent
+                            key={col.id}
+                            parentPath={sectionPath}
+                            columnData={col}
+                            columnIndex={colIdx}
+                            onUpdateProps={onUpdateProps}
+                            onDelete={onDelete}
+                            onSelect={onSelect}
+                            selectedItemId={selectedItemId}
+                            onOpenStructureModal={onOpenStructureModal}
+                            isPreviewMode={isPreviewMode}
+                            onNavigate={onNavigate}
+                            isDraggable={isDraggable}
+                        />
+                    ))}
                 </div>
-              )}
 
-              {element.type === 'button' && (
-                <div className="text-center" style={{
-                  backgroundColor: element.props?.backgroundColor || '#3b82f6',
-                  padding: element.props?.padding || '1rem'
-                }}>
-                  <button className="px-6 py-3 rounded-lg text-white font-medium" style={{
-                    backgroundColor: element.props?.buttonColor || '#3b82f6',
-                    color: element.props?.textColor || '#ffffff'
-                  }}>
-                    {element.props?.text || 'Button'}
-                  </button>
-                </div>
-              )}
-
-              {element.type === 'image' && element.props?.imageSrc && (
-                <div className="text-center" style={{
-                  padding: element.props?.padding || '1rem'
-                }}>
-                  <img
-                    src={element.props.imageSrc}
-                    alt={element.props?.altText || 'Image'}
-                    className="mx-auto max-w-full h-auto rounded-lg"
-                    style={{
-                      maxWidth: element.props?.maxWidth || '100%',
-                      height: element.props?.height || 'auto'
-                    }}
-                  />
-                </div>
-              )}
-
-              {element.type === 'divider' && (
-                <div className="text-center" style={{
-                  padding: element.props?.padding || '1rem'
-                }}>
-                  <hr className="border-t-2 mx-auto" style={{
-                    width: element.props?.width || '50%',
-                    borderColor: element.props?.color || '#e5e7eb'
-                  }} />
-                </div>
-              )}
-
-              {element.type === 'textBlock' && (
-                <div className="text-center" style={{
-                  color: element.props?.textColor || '#000',
-                  backgroundColor: element.props?.backgroundColor || 'transparent',
-                  padding: element.props?.padding || '1rem'
-                }}>
-                  <p className="text-base leading-relaxed" style={{ fontSize: element.props?.fontSize || '1rem' }}>
-                    {element.props?.text || 'Text content'}
-                  </p>
-                </div>
-              )}
-
-              {element.type === 'accordion' && (
-                <div className="max-w-2xl mx-auto mb-4">
-                  <details className="bg-white border border-gray-200 rounded-lg">
-                    <summary className="px-4 py-3 cursor-pointer font-medium text-gray-900 hover:bg-gray-50">
-                      {element.props?.title || 'Accordion Title'}
-                    </summary>
-                    <div className="px-4 py-3 border-t border-gray-200 text-gray-600">
-                      {element.props?.content || 'Accordion content goes here.'}
+                {copyrightText && sectionIndex === -1 && (
+                    <div className="border-t border-slate-300 mt-12 pt-8 text-center">
+                        <p className="text-sm text-slate-600" dangerouslySetInnerHTML={{ __html: copyrightText }}></p>
                     </div>
-                  </details>
-                </div>
-              )}
+                )}
             </div>
-          ))}
         </div>
-      );
-    }
-
-    if (sectionData.props) {
-      return (
-        <div className="w-full" style={{
-          backgroundColor: sectionData.props.backgroundColor || 'transparent',
-          color: sectionData.props.textColor || '#000',
-          padding: sectionData.props.padding || '2rem',
-          textAlign: sectionData.props.textAlign || 'center'
-        }}>
-          {sectionData.props.title && (
-            <h2 className="text-2xl font-bold mb-4" style={{ fontSize: sectionData.props.fontSize || '1.5rem' }}>
-              {sectionData.props.title}
-            </h2>
-          )}
-
-          {sectionData.props.text && (
-            <p className="text-base leading-relaxed" style={{ fontSize: sectionData.props.textSize || '1rem' }}>
-              {sectionData.props.text}
-            </p>
-          )}
-
-          {sectionData.props.subtitle && (
-            <p className="text-lg opacity-80 mt-2" style={{ fontSize: sectionData.props.subtitleSize || '1.125rem' }}>
-              {sectionData.props.subtitle}
-            </p>
-          )}
-
-          {sectionData.props.buttonText && (
-            <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors mt-4">
-              {sectionData.props.buttonText}
-            </button>
-          )}
-        </div>
-      );
-    }
-
-    return null;
-  };
-
-  return (
-      <div ref={setNodeRef} style={effectiveBgStyle} className={sectionRootClasses} onClick={handleClick}>
-          {!isPreviewMode && isDraggable && (
-              <div {...attributes} {...listeners} title="Drag section" className="absolute top-4 -left-3.5 transform p-2 cursor-grab bg-white hover:bg-green-600 text-slate-500 hover:text-white rounded-full border border-slate-300 hover:border-green-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 z-30 print-hidden transition-opacity shadow-md">
-                  <LucideIcons.Move className="w-4 h-4" />
-              </div>
-          )}
-          {sectionProps.backgroundType === "image" && sectionProps.backgroundImageSrc && (<div className="absolute inset-0 bg-cover bg-center -z-20 rounded-2xl" style={{ backgroundImage: `url("${sectionProps.backgroundImageSrc}")` }}></div>)}
-          {sectionProps.backgroundType === "video" && sectionProps.backgroundVideoSrc && (<video className="absolute inset-0 w-full h-full object-cover -z-20 rounded-2xl" src={sectionProps.backgroundVideoSrc} autoPlay={sectionProps.backgroundVideoAutoplay !== false} loop={sectionProps.backgroundVideoLoop !== false} muted={sectionProps.backgroundVideoMuted !== false} playsInline key={sectionProps.backgroundVideoSrc + (sectionProps.backgroundVideoAutoplay ? "1" : "0")}></video>)}
-          {(sectionProps.backgroundType === "image" || sectionProps.backgroundType === "video") && sectionProps.backgroundOverlayColor && typeof sectionProps.backgroundOverlayOpacity === "number" && sectionProps.backgroundOverlayOpacity > 0 && (
-              <div className="absolute inset-0 -z-10 rounded-2xl" style={{ backgroundColor: sectionProps.backgroundOverlayColor, opacity: sectionProps.backgroundOverlayOpacity }}></div>
-          )}
-          {!isPreviewMode && isSelected && isDraggable && (
-              <button onClick={(e) => { e.stopPropagation(); onDelete(sectionPath); }} title="Delete section" className="absolute -top-2.5 -right-2.5 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 hover:scale-110 transition-all w-6 h-6 flex items-center justify-center shadow-md z-30 print-hidden">
-                  <LucideIcons.Trash2 className="w-3.5 h-3.5" strokeWidth={2.5} />
-              </button>
-          )}
-          <div style={sectionPaddingStyle} className="flex flex-wrap -m-1.5 relative z-0">
-              {renderDefaultTemplateSection() || renderAIGeneratedSection()}
-          </div>
-      </div>
-  );
+    );
 }
+
 const DEVICE_FRAMES_CONFIG = [ { name: "Mobile", width: 390, icon: LucideIcons.Smartphone }, { name: "Tablet", width: 768, icon: LucideIcons.Tablet }, { name: "Desktop", width: 1440, icon: LucideIcons.Monitor }, ];
 
 function DeviceFrame({ device, page, globalNavbar, globalFooter, onUpdateProps, onDelete, onSelect, selectedItemId, onOpenStructureModal, isPreviewMode, onNavigate, onDeleteGlobalElement, isDraggable, comments, onAddComment, activeTool, }) {
     const { setNodeRef: setPageDroppableRef, isOver } = useDroppable({ id: `page-droppable-${page.id}-${device.name}`, data: { type: "page", accepts: ["paletteItem", "section"], pageId: page.id }, disabled: isPreviewMode || !isDraggable, });
     const sectionIds = useMemo(() => page.layout.map((sec) => sec.id), [page.layout]);
+    
+    // DeviceFrame render
     const handleCommentOverlayClick = (e) => { e.stopPropagation(); onAddComment(page.id, device.name, { x: e.clientX, y: e.clientY }); };
 
     const containerStyle = {
       width: device.width,
       containerType: 'inline-size',
     };
+    
+    const DeviceIcon = device.icon;
 
     return (
         <div className="flex flex-col gap-3 items-center flex-shrink-0">
-            <h3 className="text-white/90 font-semibold px-3 py-1 bg-black/20 rounded-md flex items-center gap-1.5 text-xs"> <device.icon className="w-3.5 h-3.5" /> {device.name} </h3>
+            <h3 className="text-white/90 font-semibold px-3 py-1 bg-black/20 rounded-md flex items-center gap-1.5 text-xs">
+                <DeviceIcon className="w-3.5 h-3.5" /> {device.name}
+            </h3>
             <div className="relative">
                 <div style={containerStyle} className="bg-white shadow-xl rounded-2xl border border-slate-200 flex flex-col">
                     <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300">
                         {globalNavbar && (
-                            <header className="p-2 border-b border-slate-200 shadow-sm z-10 flex-shrink-0 relative">
-                                <NavbarElement {...globalNavbar.props} path="globalNavbar" isSelected={selectedItemId === globalNavbar.id} onSelect={() => onSelect(globalNavbar.id, 'globalElement', 'globalNavbar')} onUpdate={(p) => onUpdateProps("globalNavbar", p)} onDelete={() => onDeleteGlobalElement("navbar")} isDraggable={isDraggable} previewDevice={device.name.toLowerCase()} />
+                            <header className="z-10 flex-shrink-0 relative">
+                                <NavbarElement {...globalNavbar.props} path="globalNavbar" isSelected={selectedItemId === globalNavbar.id} onSelect={() => onSelect(globalNavbar.id, 'globalElement', 'globalNavbar')} onUpdate={(p) => onUpdateProps("globalNavbar", p)} onDelete={() => onDeleteGlobalElement("navbar")} isDraggable={isDraggable} previewDevice={device.name.toLowerCase()} isPreviewMode={isPreviewMode}/>
                             </header>
                         )}
-                        <div className="p-2 bg-slate-50/50 min-h-full">
+                        <div className="bg-slate-50/50 min-h-full">
                         <SortableContext items={sectionIds} strategy={verticalListSortingStrategy} disabled={isPreviewMode || !isDraggable}>
                             <div ref={setPageDroppableRef} className={`rounded-xl transition-all ${isOver && isDraggable ? "bg-green-100/80 ring-2 ring-green-400 ring-dashed" : ""} ${page.layout.length === 0 && !isOver ? "border-2 border-dashed border-slate-300/80 min-h-[50vh]" : "border-transparent"}`}>
                                 {page.layout.map((sec, idx) => ( <SectionComponent key={sec.id} pageId={page.id} sectionData={sec} sectionIndex={idx} onUpdateProps={onUpdateProps} onDelete={onDelete} onSelect={onSelect} selectedItemId={selectedItemId} onOpenStructureModal={onOpenStructureModal} isPreviewMode={isPreviewMode} onNavigate={onNavigate} isDraggable={isDraggable}/> ))}
@@ -958,8 +878,19 @@ function DeviceFrame({ device, page, globalNavbar, globalFooter, onUpdateProps, 
                         </SortableContext>
                         </div>
                         {globalFooter && (
-                            <footer className="p-2 border-t border-slate-200 shadow-sm z-10 flex-shrink-0 relative bg-white">
-                                <FooterElement {...globalFooter.props} path="globalFooter" isSelected={selectedItemId === globalFooter.id} onSelect={() => onSelect(globalFooter.id, 'globalElement', 'globalFooter')} onUpdate={(p) => onUpdateProps("globalFooter", p)} onDelete={() => onDeleteGlobalElement("footer")} isDraggable={isDraggable} />
+                            <footer className="z-10 flex-shrink-0 relative">
+                                <SectionComponent
+                                    sectionData={globalFooter}
+                                    sectionIndex={-1}
+                                    pageId={page.id}
+                                    onUpdateProps={(path, props) => onUpdateProps('globalFooter.props', props)}
+                                    onDelete={() => onDeleteGlobalElement('footer')}
+                                    onSelect={() => onSelect(globalFooter.id, 'globalElement', 'globalFooter', globalFooter)}
+                                    selectedItemId={selectedItemId}
+                                    isDraggable={isDraggable}
+                                    isPreviewMode={isPreviewMode}
+                                    onNavigate={onNavigate}
+                                />
                             </footer>
                         )}
                     </div>
@@ -1059,32 +990,33 @@ function AiModeView({ onBack, onAiSubmit, isAiLoading, aiChatHistory, aiSuggesti
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-2 py-3">
-                {aiChatHistory.map(entry => (
-                    <div key={entry.id} className="text-xs p-2 rounded-lg bg-slate-50 border border-slate-200/60">
-                        <p className="font-medium text-slate-700">{entry.prompt}</p>
-                        {entry.status === 'success' && <p className="text-xs text-green-600 flex items-center gap-1 mt-1"><LucideIcons.Check className="w-3 h-3"/>Success</p>}
-                        {entry.status === 'error' && <p className="text-xs text-red-600 mt-1">Error</p>}
+                 {aiChatHistory.map(entry => (
+                    <div key={entry.id} className="text-xs p-2.5 rounded-lg bg-slate-50 border border-slate-200/60">
+                        <p className="font-medium text-slate-800">{entry.prompt}</p>
+                        {entry.summary && <p className="text-xs text-green-700 mt-2 pl-2 border-l-2 border-green-200 italic">{entry.summary}</p>}
+                        {!entry.summary && entry.status === 'success' && <p className="text-xs text-green-600 flex items-center gap-1 mt-1.5"><LucideIcons.Check className="w-3 h-3"/>Success</p>}
+                        {entry.status === 'error' && <p className="text-xs text-red-600 flex items-center gap-1 mt-1.5"><LucideIcons.AlertTriangle className="w-3 h-3"/>Error</p>}
                     </div>
                 ))}
             </div>
 
             {isAiLoading && <div className="py-2"><AiLoader /></div>}
 
-            <div className="mt-auto pt-3 border-t border-slate-200">
+            <div className="pt-3 -mb-14 border-t border-slate-200">
                  {aiSuggestions && aiSuggestions.length > 0 && (
                      <div className="pb-3">
                         <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Suggestions</p>
                         <div className="flex flex-wrap gap-1.5">
                             {aiSuggestions.map((s, i) => (
                                  <button key={i} onClick={() => onAiSubmit(s.prompt)} className="px-2 py-1 bg-green-100 text-green-800 text-[11px] font-medium rounded-full hover:bg-green-200 transition-colors">
-                                    {s.shortText}
+                                    {s.label}
                                 </button>
                             ))}
                         </div>
                     </div>
                 )}
                 <div className="relative">
-                    <textarea onKeyDown={handleKeyDown} placeholder="e.g., create a sleek corporate landing page..." className="w-full p-2 pr-8 border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-green-400 focus:border-green-400" rows="2" />
+                    <textarea onKeyDown={handleKeyDown} placeholder="e.g., add a team section..." className="w-full p-2 pr-8 border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-green-400 focus:border-green-400" rows="2" />
                     <LucideIcons.CornerDownLeft className="absolute right-2.5 top-2.5 w-4 h-4 text-slate-400" />
                 </div>
             </div>
@@ -1195,7 +1127,7 @@ function LeftPanel({ isOpen, onClose, onAddTopLevelSection, onEnterAiMode, pages
   }
 
   return (
-    <aside className={`absolute top-0 left-0 pb-5 h-full w-72 bg-gray-50 border-r border-slate-200 shadow-xl flex-shrink-0 flex flex-col print-hidden transition-transform duration-300 ease-in-out z-40 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+    <aside className={`absolute top-0 left-0 h-full w-72 bg-gray-50 border-r border-slate-200 shadow-xl flex-shrink-0 flex flex-col print-hidden transition-transform duration-300 ease-in-out z-40 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex justify-between items-center p-3 border-b border-slate-200 h-[56px] bg-white">
             <h2 className="text-base font-bold text-slate-800">Add Content</h2>
             <button onClick={onClose} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors">
@@ -1376,6 +1308,113 @@ const SidebarTabButton = ({ tabName, icon, label, activeTab, onClick }) => (
         <span>{label}</span>
     </button>
 );
+
+function LinkManager({ links = [], onUpdateLinks, elementId, pages }) {
+    const handleLinkChange = (index, field, value) => {
+        const newLinks = [...links];
+        newLinks[index] = { ...newLinks[index], [field]: value };
+        onUpdateLinks(newLinks);
+    };
+
+    const handleAddLink = () => {
+        const newLink = { id: generateId('link'), text: 'New Link', url: '#' };
+        onUpdateLinks([...links, newLink]);
+    };
+
+    const handleDeleteLink = (index) => {
+        const newLinks = links.filter((_, i) => i !== index);
+        onUpdateLinks(newLinks);
+    };
+
+    return (
+        <div className="space-y-3">
+            {links.map((link, index) => (
+                <div key={link.id || index} className="p-2.5 bg-white border border-slate-200 rounded-lg space-y-2">
+                    <div className="flex justify-between items-center">
+                        <p className="text-xs font-semibold text-slate-600">Link #{index + 1}</p>
+                        <button onClick={() => handleDeleteLink(index)} className="p-1 text-red-500 hover:bg-red-100 rounded-full">
+                            <LucideIcons.Trash2 className="w-3.5 h-3.5"/>
+                        </button>
+                    </div>
+                    <DebouncedTextInput
+                        label="Text"
+                        initialValue={link.text}
+                        onCommit={val => handleLinkChange(index, 'text', val)}
+                        key={`${elementId}-link-${index}-text`}
+                    />
+                    <DebouncedTextInput
+                        label="URL"
+                        initialValue={link.url}
+                        onCommit={val => handleLinkChange(index, 'url', val)}
+                        key={`${elementId}-link-${index}-url`}
+                    />
+                </div>
+            ))}
+            <button onClick={handleAddLink} className="w-full mt-2 px-3 py-1.5 text-xs font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 transition-colors flex items-center justify-center gap-1.5">
+                <LucideIcons.Plus className="w-3.5 h-3.5"/>
+                Add Link
+            </button>
+        </div>
+    );
+}
+
+function SlideManager({ slides = [], onUpdateSlides, elementId }) {
+    const handleSlideChange = (index, field, value) => {
+        const newSlides = [...slides];
+        newSlides[index] = { ...newSlides[index], [field]: value };
+        onUpdateSlides(newSlides);
+    };
+
+    const handleAddSlide = () => {
+        const newSlide = { id: generateId('slide'), heading: 'New Slide', text: 'Slide content goes here.', link: '#' };
+        onUpdateSlides([...slides, newSlide]);
+    };
+
+    const handleDeleteSlide = (index) => {
+        const newSlides = slides.filter((_, i) => i !== index);
+        onUpdateSlides(newSlides);
+    };
+
+    return (
+        <div className="space-y-3">
+            {slides.map((slide, index) => (
+                <div key={slide.id || index} className="p-2.5 bg-white border border-slate-200 rounded-lg space-y-2">
+                    <div className="flex justify-between items-center">
+                        <p className="text-xs font-semibold text-slate-600">Slide #{index + 1}</p>
+                        <button onClick={() => handleDeleteSlide(index)} className="p-1 text-red-500 hover:bg-red-100 rounded-full">
+                            <LucideIcons.Trash2 className="w-3.5 h-3.5"/>
+                        </button>
+                    </div>
+                    <DebouncedTextInput
+                        label="Heading"
+                        initialValue={slide.heading}
+                        onCommit={val => handleSlideChange(index, 'heading', val)}
+                        key={`${elementId}-slide-${index}-heading`}
+                    />
+                     <DebouncedTextInput
+                        label="Text"
+                        type="textarea"
+                        rows={3}
+                        initialValue={slide.text}
+                        onCommit={val => handleSlideChange(index, 'text', val)}
+                        key={`${elementId}-slide-${index}-text`}
+                    />
+                    <DebouncedTextInput
+                        label="Link URL"
+                        initialValue={slide.link}
+                        onCommit={val => handleSlideChange(index, 'link', val)}
+                        key={`${elementId}-slide-${index}-link`}
+                    />
+                </div>
+            ))}
+            <button onClick={handleAddSlide} className="w-full mt-2 px-3 py-1.5 text-xs font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 transition-colors flex items-center justify-center gap-1.5">
+                <LucideIcons.Plus className="w-3.5 h-3.5"/>
+                Add Slide
+            </button>
+        </div>
+    );
+}
+
 function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePageId, onRenamePage, onAddGlobalElement, comments, onUpdateComment, onDeleteComment, onClose }) {
   const [activeTab, setActiveTab] = React.useState('properties');
 
@@ -1385,7 +1424,7 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
     }
     if (selectedItemData.itemType === 'page') {
       const currentPage = pages[activePageId];
-      return ( <> <div className="flex justify-between items-center px-3 border-b border-slate-200 h-[56px] bg-white"><h2 className="text-base font-bold text-slate-800">Page Settings</h2><button onClick={onClose} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors -mr-1"><LucideIcons.PanelRightClose className="w-5 h-5"/></button></div><div className="p-3 pb-8 space-y-4 flex-grow bg-slate-50/50"><DebouncedTextInput label="Page Name" initialValue={currentPage?.name || ""} onCommit={onRenamePage} key={activePageId}/></div> </> );
+      return ( <> <div className="flex justify-between items-center px-3 border-b border-slate-200 h-[56px] bg-white"><h2 className="text-base font-bold text-slate-800">Page Settings</h2><button onClick={onClose} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors -mr-1"><LucideIcons.PanelRightClose className="w-5 h-5"/></button></div><div className="p-3 space-y-4 flex-grow bg-slate-50/50"><DebouncedTextInput label="Page Name" initialValue={currentPage?.name || ""} onCommit={onRenamePage} key={activePageId}/></div> </> );
     }
     const { id, path, props, itemType } = selectedItemData;
     const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === itemType) || {};
@@ -1393,23 +1432,47 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
 
     const GeneralStyling = () => (
         <>
-        <PropertyGroup title="Appearance" defaultOpen={false}>
-            <StyledSlider label="Opacity" value={String(props.style?.opacity * 100 || 100)} onChange={val => onUpdate({ style: { opacity: parseInt(val) / 100 } })} max={100} unit="%" />
-            <StyledSlider label="Radius" value={props.style?.borderRadius} onChange={val => onUpdate({ style: { borderRadius: val } })} max={100} />
-            <DebouncedTextInput label="Border" initialValue={props.style?.border} onCommit={val => onUpdate({ style: { border: val } })} placeholder="e.g. 1px solid #ccc" />
+        <PropertyGroup title="Custom Classes">
+             <DebouncedTextInput label="Tailwind Classes" type="textarea" rows={3} initialValue={props.customClassName} onCommit={val => onUpdate({ customClassName: val })} key={`${id}-classes`}/>
         </PropertyGroup>
         </>
     );
-    return (<> <div className="flex justify-between items-center px-3 border-b border-slate-200/80 h-[56px] bg-white"><h2 className="text-base font-bold text-slate-800 capitalize truncate">{config?.name || itemType || 'Properties'}</h2><button onClick={onClose} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors -mr-1"><LucideIcons.PanelRightClose className="w-5 h-5"/></button></div><div className="overflow-y-auto flex-grow text-sm p-3 pb-8 bg-slate-50/50"> {(() => {
+    return (<> <div className="flex justify-between items-center px-3 border-b border-slate-200/80 h-[56px] bg-white"><h2 className="text-base font-bold text-slate-800 capitalize truncate">{config?.name || itemType || 'Properties'}</h2><button onClick={onClose} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors -mr-1"><LucideIcons.PanelRightClose className="w-5 h-5"/></button></div><div className="overflow-y-auto flex-grow text-sm p-3 bg-slate-50/50"> {(() => {
         switch(itemType) {
-            case 'header': case 'textBlock': return <><PropertyGroup title="Content"><DebouncedTextInput label="Text" type="textarea" rows={4} initialValue={props.text} onCommit={val => onUpdate({ text: val })} key={id}/></PropertyGroup><PropertyGroup title="Typography"><CustomDropdown label="Size" options={textSizeOptions} value={props.sizeClass} onChange={val => onUpdate({ sizeClass: val })} /><CustomDropdown label="Weight" options={fontWeightOptions} value={props.fontWeight} onChange={val => onUpdate({ fontWeight: val })} /><ColorInput label="Color" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><AlignmentButtons value={props.textAlign} onChange={val => onUpdate({ textAlign: val })} /></PropertyGroup><GeneralStyling/></>;
-            case 'button': return <><PropertyGroup title="Content"><DebouncedTextInput label="Button Text" initialValue={props.buttonText} onCommit={val => onUpdate({ buttonText: val })} key={`${id}-text`} /><DebouncedTextInput label="Link URL" initialValue={props.link} onCommit={val => onUpdate({ link: val })} key={`${id}-link`} /></PropertyGroup><PropertyGroup title="Styling"><ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /><ColorInput label="Text Color" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><StyledSlider label="Border Radius" value={props.borderRadius} onChange={val => onUpdate({ borderRadius: val })} max={50} /><CustomDropdown label="Variant" options={[{label: 'Solid', value: 'solid'}, {label: 'Outline', value: 'outline'}]} value={props.variant} onChange={val => onUpdate({ variant: val })} /></PropertyGroup><PropertyGroup title="Layout"><AlignmentButtons value={props.textAlign} onChange={val => onUpdate({ textAlign: val })} /><ToggleSwitch label="Full Width" checked={props.fullWidth} onChange={val => onUpdate({ fullWidth: val })} /></PropertyGroup><GeneralStyling/></>;
+            case 'header': case 'textBlock': return <><PropertyGroup title="Content"><DebouncedTextInput label="Text" type="textarea" rows={4} initialValue={props.text} onCommit={val => onUpdate({ text: val })} key={id}/></PropertyGroup><GeneralStyling/></>;
+            case 'button': return <><PropertyGroup title="Content"><DebouncedTextInput label="Button Text" initialValue={props.buttonText} onCommit={val => onUpdate({ buttonText: val })} key={`${id}-text`} /><DebouncedTextInput label="Link URL" initialValue={props.link} onCommit={val => onUpdate({ link: val })} key={`${id}-link`} /></PropertyGroup><GeneralStyling/></>;
+            case 'icon':
+                return (
+                    <>
+                        <PropertyGroup title="Icon Settings">
+                            <CustomDropdown
+                                label="Icon"
+                                options={Object.keys(LucideIcons).map(iconName => ({ label: iconName, value: iconName }))}
+                                value={props.iconName}
+                                onChange={val => onUpdate({ iconName: val })}
+                                key={`${id}-icon-name`}
+                            />
+                            <StyledSlider 
+                                label="Size" 
+                                value={props.size} 
+                                onChange={val => onUpdate({ size: val })} 
+                                max={128} 
+                                unit="px" 
+                            />
+                            <ColorInput 
+                                label="Color" 
+                                value={props.color} 
+                                onChange={val => onUpdate({ color: val })} 
+                            />
+                        </PropertyGroup>
+                        <GeneralStyling/>
+                    </>
+                );
             case 'image': return <><PropertyGroup title="Content"><DebouncedTextInput label="Image Source (URL)" initialValue={props.src} onCommit={val => onUpdate({ src: val })} key={`${id}-src`} /><DebouncedTextInput label="Alt Text" initialValue={props.alt} onCommit={val => onUpdate({ alt: val })} key={`${id}-alt`} /></PropertyGroup><GeneralStyling/></>;
             case 'spacer': return <><PropertyGroup title="Layout"><StyledSlider label="Height" value={props.height} onChange={val => onUpdate({ height: val })} max={300} /></PropertyGroup></>;
-            case 'section': return <><PropertyGroup title="Spacing"><StyledSlider label="Padding Top" value={props.paddingTop} onChange={val => onUpdate({ paddingTop: val })} /><StyledSlider label="Padding Bottom" value={props.paddingBottom} onChange={val => onUpdate({ paddingBottom: val })} /><StyledSlider label="Padding Left" value={props.paddingLeft} onChange={val => onUpdate({ paddingLeft: val })} /><StyledSlider label="Padding Right" value={props.paddingRight} onChange={val => onUpdate({ paddingRight: val })} /></PropertyGroup><PropertyGroup title="Background"><ColorInput label="Color" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /></PropertyGroup><GeneralStyling/></>;
-            case 'column': return <><PropertyGroup title="Layout"><CustomDropdown label="Direction" options={[{label: 'Vertical', value: 'column'}, {label: 'Horizontal', value: 'row'}]} value={props.style?.flexDirection} onChange={val => onUpdate({ style: { flexDirection: val } })} /><CustomDropdown label="Justify" options={[{label: 'Start', value: 'flex-start'}, {label: 'Center', value: 'center'}, {label: 'End', value: 'flex-end'}, {label: 'Space Between', value: 'space-between'}]} value={props.style?.justifyContent} onChange={val => onUpdate({ style: { justifyContent: val } })} /><CustomDropdown label="Align" options={[{label: 'Start', value: 'flex-start'}, {label: 'Center', value: 'center'}, {label: 'End', value: 'flex-end'}, {label: 'Stretch', value: 'stretch'}]} value={props.style?.alignItems} onChange={val => onUpdate({ style: { alignItems: val } })} /><StyledSlider label="Gap" value={props.style?.gap} onChange={val => onUpdate({ style: { gap: val } })}/></PropertyGroup><GeneralStyling/></>;
-            case 'navbar': return <><PropertyGroup title="Logo"><DebouncedTextInput label="Logo Text" initialValue={props.logoText} onCommit={val => onUpdate({ logoText: val })} key={`${id}-logo`}/></PropertyGroup><PropertyGroup title="Styling"><ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /><ColorInput label="Text" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><ColorInput label="Link" value={props.linkColor} onChange={val => onUpdate({ linkColor: val })} /></PropertyGroup><PropertyGroup title="Links"><LinkManager links={props.links} onUpdateLinks={links => onUpdate({links})} elementId={id} pages={pages} /></PropertyGroup><GeneralStyling/></>;
-            case 'footer': return <><PropertyGroup title="Content"><DebouncedTextInput label="Copyright Text" initialValue={props.copyrightText} onCommit={val => onUpdate({ copyrightText: val })} key={`${id}-copyright`}/></PropertyGroup><PropertyGroup title="Styling"><ColorInput label="Background" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} /><ColorInput label="Text" value={props.textColor} onChange={val => onUpdate({ textColor: val })} /><ColorInput label="Link" value={props.linkColor} onChange={val => onUpdate({ linkColor: val })} /></PropertyGroup><PropertyGroup title="Links"><LinkManager links={props.links} onUpdateLinks={links => onUpdate({links})} elementId={id} pages={pages} linkTypeLabel="Footer Link"/></PropertyGroup><GeneralStyling/></>;
+            case 'section': return <><GeneralStyling/></>;
+            case 'column': return <><GeneralStyling/></>;
+            case 'navbar': return <><PropertyGroup title="Logo"><DebouncedTextInput label="Logo Text" initialValue={props.logoText} onCommit={val => onUpdate({ logoText: val })} key={`${id}-logo`}/></PropertyGroup><PropertyGroup title="Links"><LinkManager links={props.links} onUpdateLinks={links => onUpdate({links})} elementId={id} pages={pages} /></PropertyGroup><GeneralStyling/></>;
             case 'cardSlider': return <><PropertyGroup title="Slides"><SlideManager slides={props.slides} onUpdateSlides={slides => onUpdate({slides})} elementId={id} /></PropertyGroup><PropertyGroup title="Settings"><StyledSlider label="Slides Per View" value={String(props.slidesPerView)} onChange={val => onUpdate({ slidesPerView: parseInt(val) })} min={1} max={6} unit=""/><StyledSlider label="Space Between" value={String(props.spaceBetween)} onChange={val => onUpdate({ spaceBetween: parseInt(val) })} max={100} unit="px"/></PropertyGroup><PropertyGroup title="Behavior"><ToggleSwitch label="Autoplay" checked={props.autoplay} onChange={val => onUpdate({ autoplay: val })} /><ToggleSwitch label="Loop" checked={props.loop} onChange={val => onUpdate({ loop: val })} /><ToggleSwitch label="Navigation Arrows" checked={props.showNavigation} onChange={val => onUpdate({ showNavigation: val })} /><ToggleSwitch label="Pagination Dots" checked={props.showPagination} onChange={val => onUpdate({ showPagination: val })} /></PropertyGroup><GeneralStyling/></>;
             case 'accordion': return <><PropertyGroup title="Content"><DebouncedTextInput label="Title" initialValue={props.title} onCommit={val => onUpdate({ title: val })} key={`${id}-title`} /><DebouncedTextInput label="Content" type="textarea" rows={3} initialValue={props.content} onCommit={val => onUpdate({ content: val })} key={`${id}-content`} /></PropertyGroup><GeneralStyling/></>;
             default: return <p className="text-sm text-slate-500 text-center py-8">No properties to edit for '{itemType}'.</p>;
@@ -1419,7 +1482,7 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
   const renderCommentsPanel = () => {
     const pageComments = comments[activePageId] || [];
     const IconForFrame = ({frame}) => { const DeviceIcon = DEVICE_FRAMES_CONFIG.find(d => d.name === frame)?.icon || LucideIcons.HelpCircle; return <DeviceIcon className="w-3.5 h-3.5 text-slate-500"/> };
-    return ( <> <div className="flex justify-between items-center px-3 border-b border-slate-200 h-[56px] bg-white"><h2 className="text-base font-bold text-slate-800">Comments</h2><button onClick={onClose} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors -mr-1"><LucideIcons.PanelRightClose className="w-5 h-5"/></button></div> <div className="overflow-y-auto flex-grow text-sm p-3 pb-8 space-y-2 bg-slate-50/50"> {pageComments.length === 0 ? ( <div className="text-center py-10 text-slate-500"><LucideIcons.MessageSquarePlus className="mx-auto w-10 h-10 text-slate-300 mb-2"/><p className="text-sm">No comments on this page.</p><p className="text-xs">Use the Comment tool to add notes.</p></div> ) : ( pageComments.map(comment => ( <div key={comment.id} className="p-2.5 bg-white border border-slate-200 rounded-lg"><div className="flex justify-between items-start"><textarea value={comment.text} onChange={(e) => onUpdateComment(activePageId, comment.id, e.target.value)} className="w-full bg-transparent border-0 focus:ring-0 p-0 text-xs text-slate-800 resize-none" rows={2}/> <button onClick={() => onDeleteComment(activePageId, comment.id)} className="ml-2 p-1 text-red-500 hover:bg-red-100 rounded-full"><LucideIcons.Trash2 className="w-3.5 h-3.5"/></button> </div> <div className="text-xs text-slate-500 mt-2 flex items-center gap-1.5"> <IconForFrame frame={comment.frame} /> <span>on {comment.frame} view</span> </div></div> )) )} </div> </> )
+    return ( <> <div className="flex justify-between items-center px-3 border-b border-slate-200 h-[56px] bg-white"><h2 className="text-base font-bold text-slate-800">Comments</h2><button onClick={onClose} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors -mr-1"><LucideIcons.PanelRightClose className="w-5 h-5"/></button></div> <div className="overflow-y-auto flex-grow text-sm p-3 space-y-2 bg-slate-50/50"> {pageComments.length === 0 ? ( <div className="text-center py-10 text-slate-500"><LucideIcons.MessageSquarePlus className="mx-auto w-10 h-10 text-slate-300 mb-2"/><p className="text-sm">No comments on this page.</p><p className="text-xs">Use the Comment tool to add notes.</p></div> ) : ( pageComments.map(comment => ( <div key={comment.id} className="p-2.5 bg-white border border-slate-200 rounded-lg"><div className="flex justify-between items-start"><textarea value={comment.text} onChange={(e) => onUpdateComment(activePageId, comment.id, e.target.value)} className="w-full bg-transparent border-0 focus:ring-0 p-0 text-xs text-slate-800 resize-none" rows={2}/> <button onClick={() => onDeleteComment(activePageId, comment.id)} className="ml-2 p-1 text-red-500 hover:bg-red-100 rounded-full"><LucideIcons.Trash2 className="w-3.5 h-3.5"/></button> </div> <div className="text-xs text-slate-500 mt-2 flex items-center gap-1.5"> <IconForFrame frame={comment.frame} /> <span>on {comment.frame} view</span> </div></div> )) )} </div> </> )
   }
   return (
     <aside className="h-full w-72 bg-white border-l border-slate-200 shadow-xl flex flex-col print-hidden">
@@ -1456,13 +1519,43 @@ function AiCanvasLoader() {
         </div>
     );
 }
+
+function AiPreview({ html, onAccept, onCancel }) {
+    return (
+        <div className="absolute inset-0 bg-slate-800/50 backdrop-blur-sm z-[1000] flex flex-col items-center justify-center p-4">
+            <div className="w-full max-w-5xl h-[80%] bg-white rounded-lg shadow-2xl flex flex-col overflow-hidden">
+                <div className="flex-1">
+                    <iframe srcDoc={html} title="AI Preview" className="w-full h-full border-0" />
+                </div>
+                <div className="flex-shrink-0 p-3 bg-slate-50 border-t border-slate-200 flex justify-end items-center gap-3">
+                    <p className="text-sm font-medium text-slate-600 mr-auto">Here's what the AI generated. Do you want to use it?</p>
+                    <button onClick={onCancel} className="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 transition-colors">
+                        Cancel
+                    </button>
+                    <button onClick={onAccept} className="px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+                        <LucideIcons.Check className="w-4 h-4"/>
+                        Accept Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function PagePreviewRenderer({ pageLayout, globalNavbar, globalFooter, onNavigate, activePageId }) {
     const [device, setDevice] = useState(PREVIEW_DEVICES[2]);
     const containerStyle = device.width === '100%' ? { width: '100%', height: '100%' } : { maxWidth: device.width, width: '100%', height: '100%', containerType: 'inline-size' };
     return (
         <div className="flex-1 overflow-hidden bg-slate-100 flex flex-col items-center p-3 gap-3">
             <div className="bg-white rounded-full p-1 flex items-center justify-center gap-1 text-sm font-medium text-slate-600 shadow-md">
-                {PREVIEW_DEVICES.map(d => (<button key={d.name} onClick={() => setDevice(d)} className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-colors text-xs ${device.name === d.name ? 'bg-green-600 text-white' : 'hover:bg-slate-100'}`}><d.icon className="w-4 h-4" /> {d.name}</button>))}
+                {PREVIEW_DEVICES.map(d => {
+                    const DeviceIcon = d.icon;
+                    return (
+                        <button key={d.name} onClick={() => setDevice(d)} className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-colors text-xs ${device.name === d.name ? 'bg-green-600 text-white' : 'hover:bg-slate-100'}`}>
+                            <DeviceIcon className="w-4 h-4" /> {d.name}
+                        </button>
+                    )
+                })}
             </div>
             <div className="flex-1 w-full flex items-center justify-center overflow-hidden">
                 <div style={containerStyle} className="bg-white shadow-xl mx-auto transition-all duration-300 rounded-xl">
@@ -1484,7 +1577,7 @@ export function PagePreviewRenderer({ pageLayout, globalNavbar, globalFooter, on
                                 isDraggable={false}
                             />
                         ))}
-                        {globalFooter && (<FooterElement {...globalFooter.props} isPreviewMode={true} onNavigate={onNavigate} />)}
+                        {globalFooter && (<SectionComponent sectionData={globalFooter} sectionIndex={-1} isPreviewMode={true} onNavigate={onNavigate} />)}
                     </div>
                 </div>
             </div>
@@ -1503,7 +1596,7 @@ function CanvasToolbar({ selectedItem, zoom, onZoomChange, onSelect, pages, acti
     const breadcrumbs = getBreadcrumb();
 
     return (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/70 backdrop-blur-xl h-10 p-1 rounded-full border border-slate-200/80 flex items-center justify-between text-sm z-30 shadow-md shadow-black/5">
+        <div className="absolute top-4 left-[21%] -translate-x-[21%] bg-white/70 backdrop-blur-xl h-10 p-1 rounded-full border border-slate-200/80 flex items-center justify-between text-sm z-30 shadow-md shadow-black/5">
             <div className="flex items-center gap-0.5 pl-1">
                 <button onClick={() => onToolChange('select')} title="Select Tool (V)" className={`p-1.5 rounded-full transition-all ${activeTool === 'select' ? 'bg-green-100 text-green-700 shadow-sm' : 'hover:bg-slate-200/80 text-slate-600'}`}><LucideIcons.MousePointer2 className="w-4 h-4"/></button>
                 <button onClick={() => onToolChange('hand')} title="Hand Tool (H)" className={`p-1.5 rounded-full transition-all ${activeTool === 'hand' ? 'bg-green-100 text-green-700 shadow-sm' : 'hover:bg-slate-200/80 text-slate-600'}`}><LucideIcons.Hand className="w-4 h-4"/></button>
@@ -1527,7 +1620,7 @@ function CanvasToolbar({ selectedItem, zoom, onZoomChange, onSelect, pages, acti
         </div>
     );
 }
-function TopBar({ onSave, onTogglePreview, isPreviewMode, onToggleLeftPanel, onToggleFullscreen, isFullscreen }) {
+function TopBar({ onSaveAndClose, onCancel, onTogglePreview, isPreviewMode, onToggleLeftPanel }) {
     return (
         <header className="bg-white h-[56px] border-b border-slate-200/80 shadow-sm print-hidden flex justify-between items-center px-4 z-[50] relative">
             <div className="flex items-center gap-2">
@@ -1548,195 +1641,45 @@ function TopBar({ onSave, onTogglePreview, isPreviewMode, onToggleLeftPanel, onT
                     />
                 </div>
             </div>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                <div className="relative flex items-center p-1 bg-slate-200/70 rounded-full border border-slate-300/50 shadow-inner">
-                     <span className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full bg-white shadow-sm transition-transform duration-300 ease-in-out`} style={{ transform: isPreviewMode ? 'translateX(calc(100% + 4px))' : 'translateX(0)' }}></span>
-                     <button onClick={() => isPreviewMode && onTogglePreview()} className={`relative z-10 px-3 py-1 rounded-full flex items-center gap-1.5 transition-colors duration-300 text-xs font-medium ${!isPreviewMode ? "text-green-700" : "text-slate-500"}`}>
-                        <LucideIcons.Edit3 className="w-3.5 h-3.5" />
-                        Editor
-                    </button>
-                    <button onClick={() => !isPreviewMode && onTogglePreview()} className={`relative z-10 px-3 py-1 rounded-full flex items-center gap-1.5 transition-colors duration-300 text-xs font-medium ${isPreviewMode ? "text-green-700 " : "text-slate-500"}`}>
-                        <LucideIcons.Eye className="w-3.5 h-3.5" />
-                        Preview
-                    </button>
+            {!isPreviewMode && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <div className="relative flex items-center p-1 bg-slate-200/70 rounded-full border border-slate-300/50 shadow-inner">
+                         <span className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full bg-white shadow-sm transition-transform duration-300 ease-in-out`} style={{ transform: isPreviewMode ? 'translateX(calc(100% + 4px))' : 'translateX(0)' }}></span>
+                         <button onClick={() => isPreviewMode && onTogglePreview()} className={`relative z-10 px-3 py-1 rounded-full flex items-center gap-1.5 transition-colors duration-300 text-xs font-medium ${!isPreviewMode ? "text-green-700" : "text-slate-500"}`}>
+                            <LucideIcons.Edit3 className="w-3.5 h-3.5" />
+                            Editor
+                        </button>
+                        <button onClick={() => !isPreviewMode && onTogglePreview()} className={`relative z-10 px-3 py-1 rounded-full flex items-center gap-1.5 transition-colors duration-300 text-xs font-medium ${isPreviewMode ? "text-green-700 " : "text-slate-500"}`}>
+                            <LucideIcons.Eye className="w-3.5 h-3.5" />
+                            Preview
+                        </button>
+                    </div>
                 </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-                {!isPreviewMode && (
-                    <button onClick={onToggleFullscreen} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors" title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}>
-                        {isFullscreen ? <LucideIcons.Minimize className="w-5 h-5" /> : <LucideIcons.Maximize className="w-5 h-5" />}
-                    </button>
-                )}
+            )}
+             <div className="flex items-center gap-2">
+                <button onClick={onCancel} className="px-3 py-1.5 text-sm font-medium rounded-lg text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors flex items-center gap-1.5">
+                    <LucideIcons.X className="w-4 h-4"/>
+                    Cancel
+                </button>
+                <button onClick={onSaveAndClose} className="px-3 py-1.5 text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 transition-colors flex items-center gap-1.5">
+                    <LucideIcons.Save className="w-4 h-4"/>
+                    Save & Close Editor
+                </button>
             </div>
         </header>
     );
 }
-function htmlToBuilderJson(htmlString) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlString, 'text/html');
-    const sections = [];
-    const classToPropMap = {
-        'text-left': { textAlign: 'text-left' }, 'text-center': { textAlign: 'text-center' }, 'text-right': { textAlign: 'text-right' },
-        'font-bold': { fontWeight: 'font-bold' }, 'font-extrabold': { fontWeight: 'font-bold' }, 'font-semibold': { fontWeight: 'font-semibold' }, 'font-medium': { fontWeight: 'font-medium' }, 'font-normal': { fontWeight: 'font-normal' }, 'font-light': { fontWeight: 'font-light' },
-        'text-xs': { sizeClass: 'text-xs' }, 'text-sm': { sizeClass: 'text-sm' }, 'text-base': { sizeClass: 'text-base' }, 'text-lg': { sizeClass: 'text-lg' }, 'text-xl': { sizeClass: 'text-xl' }, 'text-2xl': { sizeClass: 'text-2xl' }, 'text-3xl': { sizeClass: 'text-3xl' }, 'text-4xl': { sizeClass: 'text-4xl' }, 'text-5xl': { sizeClass: 'text-5xl' }
-    };
-    function parseNode(node) {
-        if (node.nodeType !== Node.ELEMENT_NODE) return null;
-        let element = null;
-
-        if (node.tagName.match(/^H[1-6]$/)) {
-            element = { type: 'header', props: { text: node.innerHTML.trim() } };
-        } else if (node.tagName === 'P') {
-            element = { type: 'textBlock', props: { text: node.innerHTML.trim() } };
-        } else if (node.tagName === 'BUTTON') { 
-             element = { type: 'button', props: { buttonText: node.innerHTML.trim() } };
-        } else if (node.tagName === 'A' && node.classList.contains('button')) {
-            element = { type: 'button', props: { buttonText: node.innerHTML.trim(), link: node.getAttribute('href') || '#' } };
-        } else if (node.tagName === 'IMG') {
-            element = { type: 'image', props: { src: node.src, alt: node.alt } };
-        } else if (node.tagName === 'HR') {
-            element = { type: 'divider', props: {} };
-        }
-        
-        if (element) {
-            element.id = generateId(element.type);
-            const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === element.type);
-            if (config) {
-                element.props = { ...getDefaultProps(element.type), ...element.props };
-            }
-            node.classList.forEach(cls => {
-                if (classToPropMap[cls]) {
-                    Object.assign(element.props, classToPropMap[cls]);
-                }
-            });
-            if (!element.props.textAlign && node.parentElement?.classList) {
-                 node.parentElement.classList.forEach(cls => {
-                     if(classToPropMap[cls] && classToPropMap[cls].textAlign) {
-                         Object.assign(element.props, classToPropMap[cls]);
-                     }
-                 });
-            }
-            return element;
-        }
-        return null;
-    }
-    function parseContainer(containerEl) {
-        const elements = [];
-        containerEl.childNodes.forEach(childNode => {
-            if (childNode.nodeType !== Node.ELEMENT_NODE || ['SCRIPT', 'STYLE', 'HEADER', 'FOOTER'].includes(childNode.tagName) || (childNode.id && childNode.id.includes('modal'))) {
-                return;
-            }
-            const parsedEl = parseNode(childNode);
-            if (parsedEl) {
-                elements.push(parsedEl);
-            } else if (childNode.children.length > 0) {
-                elements.push(...parseContainer(childNode));
-            }
-        });
-        return elements;
-    }
-    const body = doc.querySelector('body');
-    const main = doc.querySelector('main');
-    const contentRoot = main || body;
-
-    if (contentRoot) {
-        contentRoot.querySelectorAll(':scope > section').forEach(sectionEl => {
-            if (sectionEl.classList.contains('faq-section')) {
-                const faqBuilderSection = {
-                    id: generateId('section'),
-                    type: 'section',
-                    props: { paddingTop: "48px", paddingBottom: "48px", style: {} },
-                    columns: [{ id: generateId('col'), type: 'column', props: { width: '100%' }, elements: [] }]
-                };
-                const mainHeading = sectionEl.querySelector('h2');
-                if (mainHeading) {
-                    const headingElement = parseNode(mainHeading);
-                    if (headingElement) {
-                        faqBuilderSection.columns[0].elements.push(headingElement);
-                    }
-                }
-                sectionEl.querySelectorAll('.faq-question').forEach(questionButton => {
-                    const title = questionButton.querySelector('span')?.innerText.trim();
-                    const answerDiv = questionButton.nextElementSibling;
-                    const content = answerDiv && answerDiv.classList.contains('faq-answer') ? answerDiv.innerText.trim() : '';
-
-                    if (title && content) {
-                        const accordionEl = {
-                            type: 'accordion',
-                            id: generateId('accordion'),
-                            props: { ...getDefaultProps('accordion'), title, content, }
-                        };
-                        faqBuilderSection.columns[0].elements.push(accordionEl);
-                    }
-                });
-                if (faqBuilderSection.columns[0].elements.length > 0) sections.push(faqBuilderSection);
-                return;
-            }
-            
-            const newSection = { id: generateId('section'), type: 'section', props: {}, columns: [] };
-            const layoutContainers = sectionEl.querySelectorAll('.grid, .flex');
-            
-            if (layoutContainers.length > 0 && Array.from(layoutContainers[0].children).length > 1 && Array.from(layoutContainers[0].children).every(child => child.tagName === 'DIV' || child.tagName === 'ARTICLE')) {
-                const container = layoutContainers[0];
-                const cols = Array.from(container.children);
-                const colWidth = 100 / (cols.length || 1);
-                cols.forEach(colEl => {
-                    const newCol = { id: generateId('col'), type: 'column', props: { width: `${colWidth}%` }, elements: parseContainer(colEl) };
-                    newSection.columns.push(newCol);
-                });
-            } else {
-                const newColumn = { id: generateId('col'), type: 'column', props: { width: '100%' }, elements: parseContainer(sectionEl) };
-                newSection.columns.push(newColumn);
-            }
-            if (newSection.columns.some(col => col.elements.length > 0)) sections.push(newSection);
-        });
-    }
-
-    return sections;
-}
-function apiStateToBuilderJson(apiResponse) {
-    const { sections: sectionsHtml, section_order } = apiResponse;
-    if (!sectionsHtml || !section_order) return [];
-
-    const newLayout = [];
-    for (const sectionId of section_order) {
-        if (sectionId.includes('navbar') || sectionId.includes('navigation_bar') || sectionId.includes('footer')) continue;
-        
-        const sectionHtml = sectionsHtml[sectionId];
-        
-        if (!sectionHtml) continue; 
-
-        const parsedSections = htmlToBuilderJson(sectionHtml);
-
-        if (parsedSections.length > 0) {
-            parsedSections.forEach((parsedSection, index) => {
-                if (index === 0) {
-                    parsedSection.id = sectionId;
-                }
-                newLayout.push(parsedSection);
-            });
-        } else {
-            newLayout.push({
-                id: sectionId, type: 'section', props: { paddingTop: "48px", paddingBottom: "48px", style: {} },
-                columns: [{ id: generateId("col"), type: "column", props: { width: "100%" }, elements: [] }]
-            });
-        }
-    }
-    return newLayout;
-}
-
 let globalAiSessionId = sessionStorage.getItem('ai_session_id') || null;
 
-export default function ElementBuilderPage({ onExternalSave, initialBuilderState, initialData, onDataChange }) {
+
+export default function ElementBuilderPage({ onExternalSave, initialBuilderState, onDataChange, onSaveAndClose, onCancel }) {
     const [newlyAddedElementId, setNewlyAddedElementId] = useState(null);
     const initialPageId = useMemo(() => generateId("page-home"), []);
-    const effectiveInitialData = initialData || initialBuilderState;
-    const [pages, setPages] = useState(effectiveInitialData?.pages && Object.keys(effectiveInitialData.pages).length > 0 ? effectiveInitialData.pages : { [initialPageId]: { id: initialPageId, name: "Home", layout: [] } });
-    const [activePageId, setActivePageId] = useState(effectiveInitialData?.activePageId && pages[effectiveInitialData.activePageId] ? effectiveInitialData.activePageId : initialPageId);
-    const [globalNavbar, setGlobalNavbar] = useState(effectiveInitialData?.globalNavbar || null);
-    const [globalFooter, setGlobalFooter] = useState(effectiveInitialData?.globalFooter || null);
-    const [comments, setComments] = useState(effectiveInitialData?.comments || {});
+    const [pages, setPages] = useState(initialBuilderState?.pages && Object.keys(initialBuilderState.pages).length > 0 ? initialBuilderState.pages : { [initialPageId]: { id: initialPageId, name: "Home", layout: [], version: 1 } });
+    const [activePageId, setActivePageId] = useState(initialBuilderState?.activePageId && pages[initialBuilderState.activePageId] ? initialBuilderState.activePageId : initialPageId);
+    const [globalNavbar, setGlobalNavbar] = useState(initialBuilderState?.globalNavbar || null);
+    const [globalFooter, setGlobalFooter] = useState(initialBuilderState?.globalFooter || null);
+    const [comments, setComments] = useState(initialBuilderState?.comments || {});
     const [selectedItem, setSelectedItem] = useState(null);
     const [activeDragItem, setActiveDragItem] = useState(null);
     const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -1751,21 +1694,21 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
     const [structureModalContext, setStructureModalContext] = useState({ path: null, elementType: null, pageId: null });
     const [isAiLoading, setIsAiLoading] = useState(false);
-    const [isAiMode, setIsAiMode] = useState(false);
+    const [aiPreviewHtml, setAiPreviewHtml] = useState(null); // State for previewing AI changes
     const [canUndo, setCanUndo] = useState(false);
     const [canRedo, setCanRedo] = useState(false);
+    const [undoRedoHistory, setUndoRedoHistory] = useState([]);
+    const [currentHistoryIndex, setCurrentHistoryIndex] = useState(-1);
     const aiSessionId = useRef(globalAiSessionId);
     const [aiChatHistory, setAiChatHistory] = useState([]);
     const [aiSuggestions, setAiSuggestions] = useState([]);
     const [modalStates, setModalStates] = useState({ addPage: { isOpen: false }, renamePage: { isOpen: false, pageId: null, currentName: "" }, deletePage: { isOpen: false, pageId: null, pageName: "" }, alert: { isOpen: false, title: "", message: "" }, saveConfirm: { isOpen: false, title: "", message: "" } });
-    const [isFullscreen, setIsFullscreen] = useState(false);
-
+    const [isInitialPrompt, setIsInitialPrompt] = useState(false);
+    const [isAiMode, setIsAiMode] = useState(false);
     const onDataChangeRef = useRef(onDataChange);
-    const onExternalSaveRef = useRef(onExternalSave);
 
     useEffect(() => {
         onDataChangeRef.current = onDataChange;
-        onExternalSaveRef.current = onExternalSave;
     });
 
     useEffect(() => {
@@ -1773,54 +1716,105 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
         if (onDataChangeRef.current) {
             onDataChangeRef.current(currentData);
         }
-        if (onExternalSaveRef.current) {
-            onExternalSaveRef.current(currentData);
-        }
     }, [pages, activePageId, globalNavbar, globalFooter, comments]);
+    
 
-    const updateLayoutForPage = useCallback((pageId, callback) => {
-        setPages((p) => {
-            if (!p[pageId]) return p;
-            const newLayout = callback(p[pageId].layout || []);
-            return { ...p, [pageId]: { ...p[pageId], layout: newLayout } };
+    const syncPageWithAI = useCallback((responseData) => {
+        // Always auto-apply changes - no modal needed
+        setIsInitialPrompt(false);
+
+        if (responseData.html) {
+            // Always automatically apply the changes
+            const { sections, globalNavbar: parsedNav, globalFooter: parsedFooter } = htmlToBuilderJson(responseData.html);
+            // Parsed sections from new response
+        
+        setPages(currentPages => {
+            const pageToUpdate = currentPages[activePageId];
+            if (!pageToUpdate) return currentPages;
+                
+                // Current page layout before update
+            
+            const newVersion = (pageToUpdate.version || 1) + 1;
+            
+                // Replace with the latest generation
+                const currentLayout = pageToUpdate.layout || [];
+                const mergedLayout = sections; // Use the latest sections from the AI response
+                
+                // Replacing with latest generation
+
+                // Final merged layout
+
+                const updatedPage = {
+                    ...pageToUpdate,
+                    layout: mergedLayout,
+                    version: newVersion
+                };
+                        
+                // Auto-updating pages state
+                
+                return {
+                    ...currentPages,
+                    [activePageId]: updatedPage
+            };
         });
-    }, []);
 
-    const syncPageWithAI = useCallback(async () => {
-        if (!aiSessionId.current || !activePageId) return;
-        setIsAiLoading(true);
-        try {
-            const [summaryResponse, pageStateResponse] = await Promise.all([
-                apiRequest('get', '/session-summary', { session_id: aiSessionId.current }),
-                apiRequest('get', '/get-page', { session_id: aiSessionId.current })
-            ]);
-            const summaryData = summaryResponse.data;
-            if (summaryData) {
-                setCanUndo(summaryData.history_size > 0);
-                setCanRedo(summaryData.future_size > 0);
-            }
-            const pageData = pageStateResponse.data;
-            if (pageData && pageData.sections && pageData.section_order) {
-                const newLayout = apiStateToBuilderJson(pageData);
-                updateLayoutForPage(activePageId, () => newLayout);
-                const combinedSuggestions = [...(pageData.suggestions || []), ...(pageData.follow_up_suggestions || [])].map(s => (typeof s === 'string' ? { prompt: s, shortText: s } : s));
-                setAiSuggestions(combinedSuggestions);
-            } else {
-                updateLayoutForPage(activePageId, () => []);
-                throw new Error("Could not retrieve valid page content from the AI session.");
-            }
-        } catch (error) {
-            console.error("AI Sync Error:", error);
-            setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Sync Error", message: error.message || "Failed to sync page state with AI." } }));
-        } finally {
-            setIsAiLoading(false);
+        if (parsedNav) setGlobalNavbar(parsedNav);
+        if (parsedFooter) setGlobalFooter(parsedFooter);
         }
-    }, [activePageId, updateLayoutForPage]);
+        
+        // Always use follow_up_suggestions since we're not showing modal
+        const suggestionsSource = responseData.follow_up_suggestions;
+        if (Array.isArray(suggestionsSource)) {
+            setAiSuggestions(suggestionsSource.map(s => ({
+                prompt: s.prompt || '',
+                label: s.label || s.shortText || 'Suggestion',
+                shortText: s.shortText || s.label || 'Suggestion'
+            })));
+        }
+
+        // Update undo/redo availability from API response
+        // Undo/Redo state update
+        
+        // Store the current HTML state in history for undo/redo
+        if (responseData.html) {
+            const newHistoryEntry = {
+                id: generateId('history'),
+                timestamp: Date.now(),
+                html: responseData.html,
+                sections: responseData.sections,
+                sectionOrder: responseData.section_order
+            };
+            
+            console.log('Storing new history entry:', newHistoryEntry);
+            console.log('Current state before storing:', { currentHistoryIndex, historyLength: undoRedoHistory.length });
+            
+            setUndoRedoHistory(prev => {
+                // Remove any history after current index (when user made new changes)
+                const newHistory = [...prev];
+                newHistory.push(newHistoryEntry);
+                console.log('Updated history:', newHistory);
+                return newHistory;
+            });
+            
+            setCurrentHistoryIndex(prev => {
+                const newIndex = prev + 1;
+                console.log('New history index:', newIndex);
+                return newIndex;
+            });
+            setCanUndo(true);
+            setCanRedo(false);
+        }
+    }, [activePageId]);
 
     const startAiSession = useCallback(async (forceNew = false) => {
         if (aiSessionId.current && !forceNew) {
-            await syncPageWithAI();
-            return;
+            try {
+                const res = await apiRequest('get', '/get-page', { session_id: aiSessionId.current });
+                syncPageWithAI(res.data);
+                return;
+            } catch (error) {
+                console.warn("Stale AI session, starting a new one.");
+            }
         }
         try {
             setIsAiLoading(true);
@@ -1832,15 +1826,16 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
                 sessionStorage.setItem('ai_session_id', newSessionId);
                 setAiChatHistory([]);
                 saveHistoryToStorage(newSessionId, []);
-                await syncPageWithAI();
-            } else {
-                throw new Error("Received an empty session ID from the API.");
-            }
-        } catch (error) {
-            setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Error", message: "Could not connect to the AI service." } }));
-        } finally {
-            setIsAiLoading(false);
-        }
+                // Initialize undo/redo states for new session
+                setCanUndo(false);
+                setCanRedo(false);
+                setUndoRedoHistory([]);
+                setCurrentHistoryIndex(-1);
+                const res = await apiRequest('get', '/get-page', { session_id: newSessionId });
+                syncPageWithAI(res.data);
+            } else { throw new Error("Received an empty session ID from the API."); }
+        } catch (error) { setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Error", message: "Could not connect to the AI service." } }));
+        } finally { setIsAiLoading(false); }
     }, [syncPageWithAI]);
 
     useEffect(() => {
@@ -1861,30 +1856,175 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
         initializeSession();
     }, [startAiSession]);
     
-    const handleEnterAiMode = () => {
+    const handleEnterAiMode = async () => {
         setIsAiMode(true);
-        if (!aiSessionId.current) {
-            startAiSession(true);
-        } else {
-            syncPageWithAI();
+        if (!aiSessionId.current) { await startAiSession(true); } 
+        else {
+             const res = await apiRequest('get', '/get-page', { session_id: aiSessionId.current });
+             syncPageWithAI(res.data);
         }
     };
+  
+    const handleAiSubmit = useCallback(async (prompt) => {
+        if (!aiSessionId.current) { 
+            setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: "AI session not started. Please try again."}})); 
+            await startAiSession(true); 
+            return; 
+        }
+        
+        setIsAiLoading(true);
+        setAiPreviewHtml(null);
+        const historyId = generateId('history');
+        setAiChatHistory(prev => [{ id: historyId, prompt, status: 'loading' }, ...prev]);
+        saveHistoryToStorage(aiSessionId.current, [{ id: historyId, prompt, status: 'loading' }, ...aiChatHistory]);
 
-  const handleToggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      builderRef.current?.requestFullscreen().catch(err => {
-        alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-      });
-    } else {
-      document.exitFullscreen();
+        try {
+            const response = await apiRequest('post', '/generate-page', { session_id: aiSessionId.current, prompt: prompt, as_file: false });
+            syncPageWithAI(response.data);
+            const summary = response.data.summary;
+            setAiChatHistory(prev => {
+                const finalHistory = prev.map(entry => entry.id === historyId ? {...entry, status: 'success', summary: summary || "Content updated successfully."} : entry);
+                saveHistoryToStorage(aiSessionId.current, finalHistory);
+                return finalHistory;
+            });
+            
+            // Ensure undo is available after successful generation
+            setCanUndo(true);
+            setCanRedo(false);
+        } catch (error) {
+            setAiChatHistory(prev => {
+                const finalHistory = prev.map(entry => entry.id === historyId ? {...entry, status: 'error'} : entry);
+                saveHistoryToStorage(aiSessionId.current, finalHistory);
+                return finalHistory;
+            });
+            setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: `Failed to generate content: ${error.message}`}}));
+        } finally { setIsAiLoading(false); }
+    }, [aiChatHistory, startAiSession, syncPageWithAI]);
+
+    const handleAiAction = useCallback(async (action) => {
+        // AI Action called
+        
+        if (!aiSessionId.current) { 
+            setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Error", message: "AI session not started. Please try again." } })); 
+            return; 
+        }
+        setIsAiLoading(true);
+        setAiPreviewHtml(null);
+        try {
+            const response = await apiRequest('post', `/${action}`, { session_id: aiSessionId.current });
+            // Action response
+            
+            // For undo/redo, we need to get the updated page state
+            if (response.data.success) {
+                // Get the updated page after undo/redo
+                const pageResponse = await apiRequest('get', '/get-page', { session_id: aiSessionId.current });
+                syncPageWithAI(pageResponse.data);
+                
+                // Update undo/redo states based on API response
+                // The API should return can_undo and can_redo in the response
+                if (typeof response.data.can_undo !== 'undefined') {
+                    setCanUndo(response.data.can_undo);
+                }
+                if (typeof response.data.can_redo !== 'undefined') {
+                    setCanRedo(response.data.can_redo);
+                }
+            } else {
+                // Action failed
+            }
+        } catch (error) {
+            // Action error
+            setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Sync Error", message: error.message || `Failed to perform ${action} operation.` } }));
+        } finally {
+            setIsAiLoading(false);
+        }
+    }, [syncPageWithAI, canUndo, canRedo]);
+
+  const handleUndo = () => {
+    // Undo clicked
+    console.log('Undo clicked:', { canUndo, currentHistoryIndex, historyLength: undoRedoHistory.length });
+    
+    if (canUndo && currentHistoryIndex > 0) {
+      // Move to previous history entry
+      const newIndex = currentHistoryIndex - 1;
+      const previousState = undoRedoHistory[newIndex];
+      
+      console.log('Undoing to state:', { newIndex, previousState });
+      
+      if (previousState) {
+        // Update the page with previous HTML state
+        const { sections } = htmlToBuilderJson(previousState.html);
+        console.log('Parsed sections for undo:', sections);
+        
+        setPages(prev => {
+          const updatedPages = {
+            ...prev,
+            [activePageId]: {
+              ...prev[activePageId],
+              layout: sections
+            }
+          };
+          console.log('Updated pages state:', updatedPages[activePageId]);
+          return updatedPages;
+        });
+        
+        setCurrentHistoryIndex(newIndex);
+        setCanUndo(newIndex > 0);
+        setCanRedo(true);
+        
+        // Call API for backend record keeping
+        handleAiAction('undo');
+      }
+    }
+  };
+  
+  const handleRedo = () => {
+    // Redo clicked
+    console.log('Redo clicked:', { canRedo, currentHistoryIndex, historyLength: undoRedoHistory.length });
+    
+    if (canRedo && currentHistoryIndex < undoRedoHistory.length - 1) {
+      // Move to next history entry
+      const newIndex = currentHistoryIndex + 1;
+      const nextState = undoRedoHistory[newIndex];
+      
+      console.log('Redoing to state:', { newIndex, nextState });
+      
+      if (nextState) {
+        // Update the page with next HTML state
+        const { sections } = htmlToBuilderJson(nextState.html);
+        console.log('Parsed sections for redo:', sections);
+        
+        setPages(prev => {
+          const updatedPages = {
+            ...prev,
+            [activePageId]: {
+              ...prev[activePageId],
+              layout: sections
+            }
+          };
+          console.log('Updated pages state:', updatedPages[activePageId]);
+          return updatedPages;
+        });
+        
+        setCurrentHistoryIndex(newIndex);
+        setCanUndo(true);
+        setCanRedo(newIndex < undoRedoHistory.length - 1);
+        
+        // Call API for backend record keeping
+        handleAiAction('redo');
+      }
     }
   };
 
+  // Debug effect to track undo/redo state changes
   useEffect(() => {
-    const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, []);
+    console.log('Undo/Redo state changed:', { 
+      canUndo, 
+      canRedo, 
+      historyLength: undoRedoHistory.length, 
+      currentIndex: currentHistoryIndex,
+      history: undoRedoHistory.map(h => ({ id: h.id, timestamp: h.timestamp }))
+    });
+  }, [canUndo, canRedo, undoRedoHistory, currentHistoryIndex]);
 
   useEffect(() => {
     if (newlyAddedElementId && pages) {
@@ -1911,7 +2051,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
 
   const handleAddPage = () => { setModalStates((prev) => ({ ...prev, addPage: { isOpen: true } })); };
   const submitAddPage = (newPageName) => {
-    if (newPageName?.trim()) { const newId = generateId(newPageName.trim().toLowerCase().replace(/\s+/g, "-")); setPages((p) => ({ ...p, [newId]: { id: newId, name: newPageName.trim(), layout: [] } })); setActivePageId(newId); setSelectedItem({ pageId: newId, path: null, type: 'page', id: null }); }
+    if (newPageName?.trim()) { const newId = generateId(newPageName.trim().toLowerCase().replace(/\s+/g, "-")); setPages((p) => ({ ...p, [newId]: { id: newId, name: newPageName.trim(), layout: [], version: 1 } })); setActivePageId(newId); setSelectedItem({ pageId: newId, path: null, type: 'page', id: null }); }
   };
   const handleSelectPage = (pageId) => { if (pages[pageId] && pageId !== activePageId) { setActivePageId(pageId); setSelectedItem({ pageId: pageId, path: null, type: 'page', id: null }); } };
   const handleRenamePage = (pageId, currentName) => { setModalStates(prev => ({ ...prev, renamePage: { isOpen: true, pageId, currentName } })); };
@@ -1927,41 +2067,23 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
 
   const handleOpenStructureModal = (path, type, pageId) => { setStructureModalContext({ path, elementType: type, pageId: pageId }); setIsStructureModalOpen(true); };
 
-  const handleSetStructure = async (columnLayouts, context) => {
+  const handleSetStructure = (columnLayouts, context) => {
     const newColumns = columnLayouts.map(layout => ({ id: generateId("col"), type: "column", props: { width: layout.width, style: {} }, elements: [] }));
     const targetPageId = context.pageId || activePageId;
-    let newSectionId = null;
-
-    if (context.path === null) {
-        const newSection = { id: generateId("section"), type: "section", props: { paddingTop: "48px", paddingBottom: "48px", style: {} }, columns: newColumns };
-        newSectionId = newSection.id;
-        updateLayoutForPage(targetPageId, layout => [...layout, newSection]);
-    } else {
-        updateLayoutForPage(targetPageId, layout => {
-            const newLayout = JSON.parse(JSON.stringify(layout));
+    
+    setPages(currentPages => {
+        const pageToUpdate = currentPages[targetPageId];
+        if (!pageToUpdate) return currentPages;
+        const newLayout = JSON.parse(JSON.stringify(pageToUpdate.layout || []));
+        if (context.path === null) {
+            const newSection = { id: generateId("section"), type: "section", props: { paddingTop: "48px", paddingBottom: "48px", style: {} }, columns: newColumns };
+            newLayout.push(newSection);
+        } else {
             const item = getItemByPath({ layout: newLayout }, context.path.replace(`pages[${targetPageId}].`, ''));
             if (item) item.columns = newColumns;
-            return newLayout;
-        });
-    }
-
-    if (newSectionId && aiSessionId.current) {
-        const currentLayout = pages[targetPageId]?.layout || [];
-        const numSections = currentLayout.length + 1;
-        const position = (numSections === 1) ? 'at_beginning' : 'after';
-        const ref_section = (numSections > 1) ? currentLayout[numSections - 2].id : null;
-
-        try {
-            setIsAiLoading(true);
-            await apiRequest('post', '/add-section', { session_id: aiSessionId.current, section_name: newSectionId, html: "", position, ref_section });
-            await syncPageWithAI();
-        } catch (err) {
-            console.error("AI: Failed to add and sync section.", err);
-        } finally {
-          setIsAiLoading(false);
         }
-    }
-    
+        return { ...currentPages, [targetPageId]: { ...pageToUpdate, layout: newLayout } };
+    });
     setIsLeftPanelOpen(false);
   };
   
@@ -1969,8 +2091,12 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     if (activeTool !== 'select') return;
     if (type === 'page') { setSelectedItem({ pageId: activePageId, id: null, type: 'page', itemType: 'page', path: null, props: {} }); return; }
     if (type === 'globalElement') {
-        const globalItem = path === 'globalNavbar' ? globalNavbar : globalFooter;
-        if (globalItem) setSelectedItem({ pageId: activePageId, id: globalItem.id, type: 'globalElement', itemType: globalItem.type, path: path, props: globalItem.props });
+        const isFooter = path === 'globalFooter';
+        const globalItem = isFooter ? globalFooter : globalNavbar;
+        if (globalItem) {
+            const itemTypeForPanel = isFooter ? 'section' : 'navbar';
+            setSelectedItem({ pageId: activePageId, id: globalItem.id, type: 'globalElement', itemType: itemTypeForPanel, path: path, props: globalItem.props });
+        }
         return;
     }
     if (itemData) {
@@ -1983,7 +2109,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   const handleUpdateProps = (path, newProps) => {
     const isGlobal = path.startsWith('global');
     if (isGlobal) {
-        const updater = path === 'globalNavbar' ? setGlobalNavbar : setGlobalFooter;
+        const updater = path.includes('Navbar') ? setGlobalNavbar : setGlobalFooter;
         updater(prev => ({...prev, props: mergeDeep({}, prev.props || {}, newProps)}));
     } else {
         setPages(currentPages => {
@@ -1999,11 +2125,6 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   };
 
   const handleDelete = (path) => {
-    const itemToDelete = getItemByPath({ pages }, path);
-    if (!itemToDelete) return;
-
-    const isSection = itemToDelete.type === 'section';
-
     setPages(currentPages => {
         const stateWrapper = { pages: JSON.parse(JSON.stringify(currentPages)) };
         if (deleteItemByPath(stateWrapper, path)) {
@@ -2014,19 +2135,10 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
         }
         return currentPages;
     });
-
-    if (isSection && aiSessionId.current) {
-        apiRequest('post', '/remove-section', { session_id: aiSessionId.current, section_name: itemToDelete.id })
-            .then(() => syncPageWithAI())
-            .catch(err => {
-                console.error("AI Section Delete Error:", err);
-                setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Sync Error", message: "Failed to delete section via AI. The action was performed locally."}}));
-            });
-    }
   };
 
-  const handleAddGlobalElement = (type) => { const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === type && c.isGlobalOnly); if(!config) return; const newGlobalElement = { id: `global-${config.id}`, type: config.id, props: getDefaultProps(type) }; if (type === 'navbar') setGlobalNavbar(newGlobalElement); if (type === 'footer') setGlobalFooter(newGlobalElement); };
-  const handleDeleteGlobalElement = (elementType) => { const updater = elementType === "navbar" ? setGlobalNavbar : setGlobalFooter; updater(null); if (selectedItem?.itemType === elementType) setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); };
+  const handleAddGlobalElement = (type) => { const config = AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === type && c.isGlobalOnly); if(!config) return; const newGlobalElement = { id: `global-${config.id}`, type: config.id, props: getDefaultProps(type) }; if (type === 'navbar') setGlobalNavbar(newGlobalElement); if (type === 'footer') setGlobalFooter({ id: 'global-footer', type: 'section', columns: [], props: { ...getDefaultProps('section'), ...config.defaultProps } }); };
+  const handleDeleteGlobalElement = (elementType) => { const updater = elementType === "navbar" ? setGlobalNavbar : setGlobalFooter; updater(null); if (selectedItem?.itemType === elementType || (elementType === 'footer' && selectedItem?.path === 'globalFooter')) setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); };
 
   const findContainerById = (items, id, pathPrefix = '') => {
       for (let i = 0; i < items.length; i++) {
@@ -2067,24 +2179,25 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     const activeType = active.data.current?.type;
     const overId = over.id;
     const overData = over.data.current;
+    
+    setPages(currentPages => {
+        const pageToUpdate = currentPages[activePageId];
+        if (!pageToUpdate) return currentPages;
+        const newLayout = JSON.parse(JSON.stringify(pageToUpdate.layout || []));
 
-    if (activeType === 'paletteItem') {
-        const config = active.data.current.config;
-        if (config.isGlobalOnly) {
-            handleAddGlobalElement(config.id);
-            return;
-        }
+        if (activeType === 'paletteItem') {
+            const config = active.data.current.config;
+            if (config.isGlobalOnly) {
+                handleAddGlobalElement(config.id);
+                return currentPages;
+            }
+            const newElement = {
+                id: generateId(config.id), type: config.id, props: getDefaultProps(config.id),
+                ...(config.hasOwnColumns && { columns: [] })
+            };
+            setNewlyAddedElementId(newElement.id);
 
-        const newElement = {
-            id: generateId(config.id), type: config.id, props: getDefaultProps(config.id),
-            ...(config.hasOwnColumns && { columns: [] })
-        };
-        setNewlyAddedElementId(newElement.id);
-
-        updateLayoutForPage(activePageId, (layout) => {
-            const newLayout = JSON.parse(JSON.stringify(layout));
             let dropTarget = findContainerById(newLayout, overId);
-
             if (dropTarget?.container) {
                 dropTarget.container.splice(dropTarget.index, 0, newElement);
             } else if (overData?.type === 'section' && dropTarget === null) {
@@ -2100,16 +2213,9 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
                 const overSectionIndex = overData.type === 'section' ? newLayout.findIndex(s => s.id === overId) : -1;
                 newLayout.splice(overSectionIndex !== -1 ? overSectionIndex + 1 : newLayout.length, 0, newSection);
             }
-            return newLayout;
-        });
-        return;
-    }
-
-    if (activeType === 'canvasElement') {
-        updateLayoutForPage(activePageId, layout => {
-            const newLayout = JSON.parse(JSON.stringify(layout));
+        } else if (activeType === 'canvasElement') {
             const sourceInfo = findContainerById(newLayout, active.id);
-            if (!sourceInfo) return layout;
+            if (!sourceInfo) return currentPages;
             const [movedElement] = sourceInfo.container.splice(sourceInfo.index, 1);
             const destInfo = findContainerById(newLayout, over.id);
             if (destInfo?.container) {
@@ -2117,89 +2223,19 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
             } else {
                  sourceInfo.container.splice(sourceInfo.index, 0, movedElement);
             }
-            return newLayout;
-        });
-    }
-
-    if (activeType === 'section') {
-        updateLayoutForPage(activePageId, layout => {
-            if (!layout) return [];
-            const activeIndex = layout.findIndex(s => s.id === active.id);
-            const overIndex = layout.findIndex(s => s.id === overId);
-            if (activeIndex === -1 || overIndex === -1) return layout;
-            
-            const newLayout = arrayMove(layout, activeIndex, overIndex);
-            
-            if (aiSessionId.current) {
-                const position = (overIndex === 0) ? 'at_beginning' : 'after';
-                const ref_section = (overIndex > 0) ? newLayout[overIndex - 1].id : null;
-                
-                apiRequest('post', '/move-section', { session_id: aiSessionId.current, section_name: active.id, new_position: position, ref_section: ref_section })
-                    .then(() => syncPageWithAI())
-                    .catch(err => {
-                        console.error("AI Section Move Error:", err);
-                        setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Sync Error", message: "Failed to move section with AI. The action was performed locally."}}));
-                    });
+        } else if (activeType === 'section') {
+            const activeIndex = newLayout.findIndex(s => s.id === active.id);
+            const overIndex = newLayout.findIndex(s => s.id === overId);
+            if (activeIndex !== -1 && overIndex !== -1) {
+                const movedLayout = arrayMove(newLayout, activeIndex, overIndex);
+                return { ...currentPages, [activePageId]: { ...pageToUpdate, layout: movedLayout } };
             }
-            return newLayout;
-        });
-    }
+        }
+        return { ...currentPages, [activePageId]: { ...pageToUpdate, layout: newLayout } };
+    });
   };
 
   const togglePreviewMode = () => { setSelectedItem(null); setIsPreviewMode((prev) => !prev); };
-  const handleSave = () => {
-    setIsAiLoading(false);
-    if (onExternalSave) onExternalSave({ pages, activePageId, globalNavbar, globalFooter, comments });
-    setModalStates(p => ({ ...p, saveConfirm: { isOpen: true, title: "Save Successful", message: "Your project has been saved." } }));
-  };
-
-  const handleAiSubmit = async (prompt) => {
-    if (!aiSessionId.current) { setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: "AI session not started. Please try again."}})); startAiSession(); return; }
-    
-    setIsAiLoading(true);
-    const historyId = generateId('history');
-    const newHistoryEntry = { id: historyId, prompt, status: 'loading' };
-    const updatedHistory = [newHistoryEntry, ...aiChatHistory];
-    setAiChatHistory(updatedHistory);
-    saveHistoryToStorage(aiSessionId.current, updatedHistory);
-
-    try {
-        await apiRequest('post', '/generate-page', { session_id: aiSessionId.current, prompt: prompt, as_file: false });
-        await syncPageWithAI();
-        setAiChatHistory(prev => {
-            const finalHistory = prev.map(entry => entry.id === historyId ? {...entry, status: 'success'} : entry);
-            saveHistoryToStorage(aiSessionId.current, finalHistory);
-            return finalHistory;
-        });
-    } catch (error) {
-        setAiChatHistory(prev => {
-            const finalHistory = prev.map(entry => entry.id === historyId ? {...entry, status: 'error'} : entry);
-            saveHistoryToStorage(aiSessionId.current, finalHistory);
-            return finalHistory;
-        });
-        setModalStates(p => ({...p, alert: {isOpen: true, title: "AI Error", message: `Failed to generate content: ${error.message}`}}));
-    } finally { setIsAiLoading(false); }
-  };
-
-  const handleAiAction = useCallback(async (action) => {
-    if (!aiSessionId.current) {
-        setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Error", message: "AI session not started. Please try again." } }));
-        return;
-    }
-    setIsAiLoading(true);
-    try {
-        await apiRequest('post', `/${action}`, { session_id: aiSessionId.current });
-        await syncPageWithAI();
-    } catch (error) {
-        setModalStates(p => ({ ...p, alert: { isOpen: true, title: "AI Sync Error", message: error.message || `Failed to perform ${action} operation.` } }));
-        await syncPageWithAI();
-    } finally {
-        setIsAiLoading(false);
-    }
-  }, [syncPageWithAI]);
-
-  const handleUndo = () => handleAiAction('undo');
-  const handleRedo = () => handleAiAction('redo');
 
   const handleCanvasMouseDown = (e) => { if (activeTool === 'hand') { isPanning.current = true; lastMousePos.current = { x: e.clientX, y: e.clientY }; e.currentTarget.style.cursor = 'grabbing'; } };
   const handleCanvasMouseMove = (e) => { if (activeTool === 'hand' && isPanning.current) { const dx = e.clientX - lastMousePos.current.x; const dy = e.clientY - lastMousePos.current.y; lastMousePos.current = { x: e.clientX, y: e.clientY }; setPanOffset(prev => ({ x: prev.x + dx, y: prev.y + dy })); } };
@@ -2218,23 +2254,29 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   const handleDeleteComment = (pageId, commentId) => setComments(prev => ({ ...prev, [pageId]: prev[pageId].filter(c => c.id !== commentId) }));
 
   const activePage = pages[activePageId];
+  // ActivePage render
   const getCanvasCursor = () => { switch(activeTool) { case 'hand': return 'grab'; case 'comment': return 'crosshair'; default: return 'default'; } }
   const isRightPanelOpen = !!selectedItem;
 
   if (isPreviewMode) {
-    return (<div className="flex flex-col h-screen bg-white antialiased"><TopBar onSave={handleSave} onTogglePreview={togglePreviewMode} isPreviewMode={true} onToggleLeftPanel={() => setIsLeftPanelOpen(p => !p)} onToggleFullscreen={handleToggleFullscreen} isFullscreen={isFullscreen} /><PagePreviewRenderer pageLayout={pages[activePageId]?.layout || []} globalNavbar={globalNavbar} globalFooter={globalFooter} onNavigate={handleNavigate} activePageId={activePageId} /></div>);
+    return (
+        <div className="flex flex-col h-screen bg-white antialiased">
+            <TopBar onSaveAndClose={onSaveAndClose} onCancel={onCancel} onTogglePreview={togglePreviewMode} isPreviewMode={true} onToggleLeftPanel={() => setIsLeftPanelOpen(p => !p)} />
+            <PagePreviewRenderer pageLayout={pages[activePageId]?.layout || []} globalNavbar={globalNavbar} globalFooter={globalFooter} onNavigate={handleNavigate} activePageId={activePageId} />
+        </div>
+    );
   }
 
   return (
     <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragStart={handleDragStart} onDragEnd={handleDragEnd} disabled={isPreviewMode || activeTool !== 'select'}>
         <div ref={builderRef} className="h-screen bg-white antialiased flex flex-col relative">
-            <style>{`.selected-outline { box-shadow: 0 0 0 1.5px #ffffff, 0 0 0 3px #22c55e; border-radius: 1rem; } .custom-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; background: #e2e8f0; border-radius: 9999px; outline: none; opacity: 0.9; transition: opacity .2s; } .custom-slider:hover { opacity: 1; } .custom-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; background: #16a34a; border-radius: 50%; cursor: pointer; border: 2.5px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); } .custom-slider::-moz-range-thumb { width: 14px; height: 14px; background: #16a34a; border-radius: 50%; cursor: pointer; border: 2.5px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); }`}</style>
-            <TopBar onSave={handleSave} onTogglePreview={togglePreviewMode} isPreviewMode={false} onToggleLeftPanel={() => setIsLeftPanelOpen(p => !p)} onToggleFullscreen={handleToggleFullscreen} isFullscreen={isFullscreen} />
+            <style>{`.selected-outline { box-shadow: 0 0 0 1.5px #ffffff, 0 0 0 3px #22c55e; border-radius: 0.5rem; } .custom-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; background: #e2e8f0; border-radius: 9999px; outline: none; opacity: 0.9; transition: opacity .2s; } .custom-slider:hover { opacity: 1; } .custom-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; background: #16a34a; border-radius: 50%; cursor: pointer; border: 2.5px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); } .custom-slider::-moz-range-thumb { width: 14px; height: 14px; background: #16a34a; border-radius: 50%; cursor: pointer; border: 2.5px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.2); }`}</style>
+            <TopBar onSaveAndClose={onSaveAndClose} onCancel={onCancel} onTogglePreview={togglePreviewMode} isPreviewMode={false} onToggleLeftPanel={() => setIsLeftPanelOpen(p => !p)} />
             <div className="flex-1 flex flex-row relative overflow-hidden z-0">
                 <LeftPanel
                     isOpen={isLeftPanelOpen}
                     onClose={() => setIsLeftPanelOpen(false)}
-                    onAddTopLevelSection={() => handleOpenStructureModal(null, "section", activePageId)}
+                    onAddTopLevelSection={() => handleSetStructure([], { path: null, pageId: activePageId })}
                     onEnterAiMode={handleEnterAiMode}
                     pages={pages}
                     activePageId={activePageId}
@@ -2255,19 +2297,21 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
                     canUndo={canUndo}
                     canRedo={canRedo}
                 />
-                <main ref={canvasRef} className={`flex-1 flex flex-col relative bg-dots ${isAiLoading ? '' : 'overflow-auto'}`} onMouseDown={handleCanvasMouseDown} onMouseMove={handleCanvasMouseMove} onMouseUp={handleCanvasMouseUpOrLeave} onMouseLeave={handleCanvasMouseUpOrLeave} style={{ cursor: getCanvasCursor(), backgroundSize: '30px 30px', backgroundImage: 'radial-gradient(circle, #e2e8f0 1px, rgba(0, 0, 0, 0) 1px)' }}>
-                {isAiLoading ? ( <AiCanvasLoader /> ) : (
-                    <>
+                <div className="flex-1 flex flex-col relative">
                     <CanvasToolbar selectedItem={selectedItem} zoom={zoom} onZoomChange={setZoom} onSelect={handleSelect} pages={pages} activeTool={activeTool} onToolChange={setActiveTool}/>
-                    <div style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`, transformOrigin: "0 0", transition: isPanning.current ? 'none' : "transform 0.2s" }} className="flex-1 flex gap-16 items-start p-16" onClick={(e) => { if (e.target === e.currentTarget && activeTool === 'select') { setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); } }}>
-                        {activePage && DEVICE_FRAMES_CONFIG.map((device) => (
-                            <DeviceFrame key={device.name} device={device} page={activePage} globalNavbar={globalNavbar} globalFooter={globalFooter} onUpdateProps={handleUpdateProps} onDelete={handleDelete} onSelect={handleSelect} selectedItemId={selectedItem?.id} onOpenStructureModal={(path, type) => handleOpenStructureModal(path, type, activePage.id)} isPreviewMode={isPreviewMode} onNavigate={handleNavigate} onDeleteGlobalElement={handleDeleteGlobalElement} isDraggable={activeTool === 'select'} comments={(comments[activePageId] || []).filter(c => c.frame === device.name)} onAddComment={handleAddComment} activeTool={activeTool} />
-                        ))}
-                    </div>
-                    </>
-                )}
-                </main>
-                <div className={`absolute pb-6 top-0 right-0 h-full transition-transform duration-300 ease-in-out z-40 transform ${isRightPanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                    <main ref={canvasRef} className="flex-1 flex flex-col relative bg-dots overflow-auto" onMouseDown={handleCanvasMouseDown} onMouseMove={handleCanvasMouseMove} onMouseUp={handleCanvasMouseUpOrLeave} onMouseLeave={handleCanvasMouseUpOrLeave} style={{ cursor: getCanvasCursor(), backgroundSize: '30px 30px', backgroundImage: 'radial-gradient(circle, #e2e8f0 1px, rgba(0, 0, 0, 0) 1px)' }}>
+                    {isAiLoading && <AiCanvasLoader />}
+
+                    {!isAiLoading && !aiPreviewHtml && (
+                        <div key={`${activePageId}-${activePage?.version || 1}`} style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`, transformOrigin: "0 0", transition: isPanning.current ? 'none' : "transform 0.2s" }} className="flex-1 flex gap-16 items-start p-16" onClick={(e) => { if (e.target === e.currentTarget && activeTool === 'select') { setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); } }}>
+                            {activePage && DEVICE_FRAMES_CONFIG.map((device) => (
+                                <DeviceFrame key={device.name} device={device} page={activePage} globalNavbar={globalNavbar} globalFooter={globalFooter} onUpdateProps={handleUpdateProps} onDelete={handleDelete} onSelect={handleSelect} selectedItemId={selectedItem?.id} onOpenStructureModal={(path, type) => handleOpenStructureModal(path, type, activePage.id)} isPreviewMode={isPreviewMode} onNavigate={handleNavigate} onDeleteGlobalElement={handleDeleteGlobalElement} isDraggable={activeTool === 'select'} comments={(comments[activePageId] || []).filter(c => c.frame === device.name)} onAddComment={handleAddComment} activeTool={activeTool} />
+                            ))}
+                        </div>
+                    )}
+                    </main>
+                </div>
+                <div className={`absolute top-0 right-0 h-full transition-transform duration-300 ease-in-out z-40 transform ${isRightPanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                   <RightSidebar selectedItemData={selectedItem} onUpdateSelectedProps={handleUpdateProps} pages={pages} activePageId={activePageId} onRenamePage={handleRenameActivePage} onAddGlobalElement={handleAddGlobalElement} comments={comments} onUpdateComment={handleUpdateComment} onDeleteComment={handleDeleteComment} onClose={() => setSelectedItem(null)} />
                 </div>
             </div>
