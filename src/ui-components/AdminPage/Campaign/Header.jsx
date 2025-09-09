@@ -84,12 +84,51 @@ function InputModal({ isOpen, onClose, onSubmit, title, message, inputLabel, ini
     </GeneralModal>
   );
 }
+function NumberInput({ label, value, onChange, min = 0, max = 1000, unit = "px", placeholder = "0" }) {
+  const [inputValue, setInputValue] = useState(value || 0);
+  
+  const handleChange = (e) => {
+    const newValue = parseInt(e.target.value) || 0;
+    setInputValue(newValue);
+    onChange(newValue + unit);
+  };
+  
+  return (
+    <div className="space-y-1">
+      {label && <label className="block text-xs font-medium text-slate-600">{label}</label>}
+      <div className="relative">
+        <input
+          type="number"
+          value={inputValue}
+          onChange={handleChange}
+          min={min}
+          max={max}
+          placeholder={placeholder}
+          className="w-full px-2.5 py-1.5 border border-slate-300 rounded-md text-sm focus:ring-1 focus:ring-green-500 focus:border-green-500 transition-all shadow-sm bg-white"
+        />
+        <span className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-xs text-slate-500">{unit}</span>
+      </div>
+    </div>
+  );
+}
+
 function CustomDropdown({ options, value, onChange, placeholder = "Select an option", label, disabled = false, idSuffix = "" }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const selectedOption = options.find((opt) => opt.value === value);
-  useEffect(() => { const handleClickOutside = (event) => { if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setIsOpen(false); }; document.addEventListener("mousedown", handleClickOutside); return () => document.removeEventListener("mousedown", handleClickOutside); }, []);
-  const handleSelect = (optionValue) => { onChange(optionValue); setIsOpen(false); };
+  useEffect(() => { 
+    const handleClickOutside = (event) => { 
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false); 
+      }
+    }; 
+    document.addEventListener("mousedown", handleClickOutside); 
+    return () => document.removeEventListener("mousedown", handleClickOutside); 
+  }, []);
+  const handleSelect = (optionValue) => { 
+    onChange(optionValue); 
+    setIsOpen(false); 
+  };
   return (
     <div className="relative w-full" ref={dropdownRef}>
       {label && (<label className="block text-xs font-medium text-slate-600 mb-1">{label}</label>)}
@@ -111,18 +150,40 @@ function generateId(prefix = "id") { return `${prefix}-${Date.now()}-${Math.rand
 function isObject(item) { return (item && typeof item === 'object' && !Array.isArray(item)); }
 function mergeDeep(target, ...sources) {
   if (!sources.length) return target;
-  const source = sources.shift();
-  if (isObject(target) && isObject(source)) {
+  
+  const result = { ...target };
+  const visited = new WeakSet();
+  
+  function deepMerge(obj, source) {
+    if (!isObject(obj) || !isObject(source)) return source;
+    if (visited.has(obj) || visited.has(source)) return obj;
+    
+    visited.add(obj);
+    visited.add(source);
+    
+    const merged = { ...obj };
+    
     for (const key in source) {
       if (isObject(source[key])) {
-        if (!target[key]) Object.assign(target, { [key]: {} });
-        mergeDeep(target[key], source[key]);
+        merged[key] = deepMerge(merged[key] || {}, source[key]);
       } else {
-        Object.assign(target, { [key]: source[key] });
+        merged[key] = source[key];
       }
     }
+    
+    visited.delete(obj);
+    visited.delete(source);
+    
+    return merged;
   }
-  return mergeDeep(target, ...sources);
+  
+  for (const source of sources) {
+    if (isObject(source)) {
+      Object.assign(result, deepMerge(result, source));
+    }
+  }
+  
+  return result;
 }
 function getItemByPath(obj, pathString) {
   if (!pathString) return null;
@@ -452,7 +513,1396 @@ function NewsletterElement({ title = "Get Exclusive Updates", subtitle = "Subscr
     );
 }
 
-const ALL_ELEMENT_TYPES = { Heading, TextBlock, ImageElement, ButtonElement, Divider, Spacer, IconElement, GoogleMapsPlaceholder, VideoElement, InnerSectionComponentDisplay, NavbarElement, CardSliderElement, AccordionElement, NewsletterElement };
+const HtmlHeading = ({ text, tag, fontSize, fontWeight, color, textAlign, margin, padding, customClassName, onUpdate, isSelected, isPreviewMode }) => {
+    const handleTextChange = (e) => {
+        if (onUpdate) {
+            onUpdate({ text: e.target.innerHTML });
+        }
+    };
+
+    const TagComponent = tag || 'h1';
+    const style = {
+        fontSize,
+        fontWeight,
+        color,
+        textAlign,
+        margin,
+        padding
+    };
+
+    return (
+        <div className={`relative ${isSelected && !isPreviewMode ? 'ring-2 ring-blue-500' : ''}`}>
+            <TagComponent
+                contentEditable={!isPreviewMode}
+                suppressContentEditableWarning
+                onBlur={handleTextChange}
+                className={customClassName}
+                style={style}
+                dangerouslySetInnerHTML={{ __html: text }}
+            />
+        </div>
+    );
+};
+
+const HtmlParagraph = ({ text, fontSize, fontWeight, color, textAlign, lineHeight, margin, padding, customClassName, onUpdate, isSelected, isPreviewMode }) => {
+    const handleTextChange = (e) => {
+        if (onUpdate) {
+            onUpdate({ text: e.target.innerHTML });
+        }
+    };
+
+    const style = {
+        fontSize,
+        fontWeight,
+        color,
+        textAlign,
+        lineHeight,
+        margin,
+        padding
+    };
+
+    return (
+        <div className={`relative ${isSelected && !isPreviewMode ? 'ring-2 ring-blue-500' : ''}`}>
+            <p
+                contentEditable={!isPreviewMode}
+                suppressContentEditableWarning
+                onBlur={handleTextChange}
+                className={customClassName}
+                style={style}
+                dangerouslySetInnerHTML={{ __html: text }}
+            />
+        </div>
+    );
+};
+
+const HtmlImage = ({ src, alt, width, height, borderRadius, margin, padding, customClassName, onUpdate, isSelected, isPreviewMode }) => {
+    const handleImageChange = (e) => {
+        if (onUpdate) {
+            onUpdate({ src: e.target.value });
+        }
+    };
+
+    const style = {
+        width,
+        height,
+        borderRadius,
+        margin,
+        padding
+    };
+
+    return (
+        <div className={`relative ${isSelected && !isPreviewMode ? 'ring-2 ring-blue-500' : ''}`}>
+            {!isPreviewMode && (
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <input
+                        type="text"
+                        value={src}
+                        onChange={handleImageChange}
+                        className="px-2 py-1 text-xs border border-gray-300 rounded bg-white"
+                        placeholder="Image URL"
+                    />
+                </div>
+            )}
+            <img
+                src={src}
+                alt={alt}
+                className={customClassName}
+                style={style}
+            />
+        </div>
+    );
+};
+
+const HtmlButton = ({ text, link, backgroundColor, color, fontSize, fontWeight, padding, borderRadius, border, margin, customClassName, onUpdate, isSelected, isPreviewMode }) => {
+    const handleTextChange = (e) => {
+        if (onUpdate) {
+            onUpdate({ text: e.target.innerHTML });
+        }
+    };
+
+    const style = {
+        backgroundColor,
+        color,
+        fontSize,
+        fontWeight,
+        padding,
+        borderRadius,
+        border,
+        margin
+    };
+
+    return (
+        <div className={`relative ${isSelected && !isPreviewMode ? 'ring-2 ring-blue-500' : ''}`}>
+            <button
+                contentEditable={!isPreviewMode}
+                suppressContentEditableWarning
+                onBlur={handleTextChange}
+                className={customClassName}
+                style={style}
+                dangerouslySetInnerHTML={{ __html: text }}
+            />
+        </div>
+    );
+};
+
+const HtmlText = ({ text, fontSize, fontWeight, color, textAlign, margin, padding, customClassName, onUpdate, isSelected, isPreviewMode }) => {
+    const handleTextChange = (e) => {
+        if (onUpdate) {
+            onUpdate({ text: e.target.innerHTML });
+        }
+    };
+
+    const style = {
+        fontSize,
+        fontWeight,
+        color,
+        textAlign,
+        margin,
+        padding
+    };
+
+    return (
+        <div className={`relative ${isSelected && !isPreviewMode ? 'ring-2 ring-blue-500' : ''}`}>
+            <div
+                contentEditable={!isPreviewMode}
+                suppressContentEditableWarning
+                onBlur={handleTextChange}
+                className={customClassName}
+                style={style}
+                dangerouslySetInnerHTML={{ __html: text }}
+            />
+        </div>
+    );
+};
+
+const HtmlElement = ({ originalHtml, customClassName, isEditable, onUpdate, isSelected, isPreviewMode }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editHtml, setEditHtml] = useState(originalHtml || '');
+
+    const handleSave = () => {
+        if (onUpdate) {
+            onUpdate({ originalHtml: editHtml });
+        }
+        setIsEditing(false);
+    };
+
+    const handleCancel = () => {
+        setEditHtml(originalHtml || '');
+        setIsEditing(false);
+    };
+
+    if (isEditing && !isPreviewMode) {
+        return (
+            <div className="border-2 border-blue-300 rounded-lg p-4 bg-blue-50">
+                <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-sm font-semibold text-blue-800">Edit HTML</h3>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleSave}
+                            className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                        >
+                            Save
+                        </button>
+                        <button
+                            onClick={handleCancel}
+                            className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+                <textarea
+                    value={editHtml}
+                    onChange={(e) => setEditHtml(e.target.value)}
+                    className="w-full h-40 p-2 border border-gray-300 rounded text-sm font-mono"
+                    placeholder="Enter HTML content..."
+                />
+            </div>
+        );
+    }
+
+    return (
+        <div 
+            className={`relative ${customClassName || ''} ${isSelected && !isPreviewMode ? 'ring-2 ring-blue-500' : ''}`}
+            onClick={() => !isPreviewMode && setIsEditing(true)}
+        >
+            {!isPreviewMode && (
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsEditing(true);
+                        }}
+                        className="p-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                        title="Edit HTML"
+                    >
+                        <LucideIcons.Edit className="w-3 h-3" />
+                    </button>
+                </div>
+            )}
+            <div 
+                dangerouslySetInnerHTML={{ __html: originalHtml || '' }}
+                className="html-content prose prose-slate max-w-none"
+            />
+        </div>
+    );
+};
+
+const HtmlSectionElement = ({ originalHtml, customClassName, isEditable, onUpdate, isSelected, isPreviewMode }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editHtml, setEditHtml] = useState(originalHtml || '');
+
+    const handleSave = () => {
+        if (onUpdate) {
+            onUpdate({ originalHtml: editHtml });
+        }
+        setIsEditing(false);
+    };
+
+    const handleCancel = () => {
+        setEditHtml(originalHtml || '');
+        setIsEditing(false);
+    };
+
+    if (isEditing && !isPreviewMode) {
+        return (
+            <div className="border-2 border-blue-300 rounded-lg p-4 bg-blue-50">
+                <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-sm font-semibold text-blue-800">Edit HTML Section</h3>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleSave}
+                            className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                        >
+                            Save
+                        </button>
+                        <button
+                            onClick={handleCancel}
+                            className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+                <textarea
+                    value={editHtml}
+                    onChange={(e) => setEditHtml(e.target.value)}
+                    className="w-full h-60 p-2 border border-gray-300 rounded text-sm font-mono"
+                    placeholder="Enter HTML section content..."
+                />
+            </div>
+        );
+    }
+
+    return (
+        <div 
+            className={`relative ${customClassName || ''} ${isSelected && !isPreviewMode ? 'ring-2 ring-blue-500' : ''}`}
+            onClick={() => !isPreviewMode && setIsEditing(true)}
+        >
+            {!isPreviewMode && (
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsEditing(true);
+                        }}
+                        className="p-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                        title="Edit HTML Section"
+                    >
+                        <LucideIcons.Edit className="w-3 h-3" />
+                    </button>
+                </div>
+            )}
+            <div 
+                dangerouslySetInnerHTML={{ __html: originalHtml || '' }}
+                className="html-content prose prose-slate max-w-none"
+            />
+        </div>
+    );
+};
+
+const HtmlHeadingElement = ({ text, tag = "h1", customClassName, fontSize, fontWeight, color, textAlign, margin, padding, onUpdate, isSelected, isPreviewMode, isEditable, originalHtml }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editText, setEditText] = useState(text);
+
+    const handleTextBlur = (e) => {
+        if (onUpdate && !isPreviewMode) {
+            onUpdate({ text: e.currentTarget.innerText });
+        }
+        setIsEditing(false);
+    };
+
+    const handleClick = (e) => {
+        if (!isPreviewMode && isEditable) {
+            e.preventDefault();
+            setIsEditing(true);
+            setEditText(text);
+        }
+    };
+
+    if (isEditing && !isPreviewMode) {
+        return (
+            <div className="relative">
+                <div 
+                    className="absolute inset-0 bg-blue-50 border-2 border-blue-300 rounded-lg p-2 z-10"
+                    style={{ minHeight: '40px' }}
+                >
+                    <textarea
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        onBlur={() => {
+                            onUpdate({ text: editText });
+                            setIsEditing(false);
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                onUpdate({ text: editText });
+                                setIsEditing(false);
+                            }
+                            if (e.key === 'Escape') {
+                                setEditText(text);
+                                setIsEditing(false);
+                            }
+                        }}
+                        className="w-full h-full resize-none border-none bg-transparent text-sm font-mono focus:outline-none"
+                        autoFocus
+                    />
+                </div>
+                <div 
+                    className="opacity-30"
+                    dangerouslySetInnerHTML={{ __html: originalHtml || text }}
+                />
+            </div>
+        );
+    }
+
+    return (
+        <div 
+            className={`relative group ${!isPreviewMode && isSelected ? 'ring-2 ring-blue-500' : ''}`}
+            onClick={handleClick}
+        >
+            {!isPreviewMode && (
+                <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                    <button
+                        className="p-1 bg-blue-600 text-white rounded-full text-xs hover:bg-blue-700"
+                        title="Edit heading"
+                    >
+                        <LucideIcons.Edit className="w-3 h-3" />
+                    </button>
+                </div>
+            )}
+            <div 
+                dangerouslySetInnerHTML={{ __html: originalHtml || text }}
+                className="html-content"
+            />
+        </div>
+    );
+};
+
+const HtmlParagraphElement = ({ text, customClassName, fontSize, fontWeight, color, textAlign, lineHeight, margin, padding, onUpdate, isSelected, isPreviewMode, isEditable, originalHtml }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editText, setEditText] = useState(text);
+
+    const handleClick = (e) => {
+        if (!isPreviewMode && isEditable) {
+            e.preventDefault();
+            setIsEditing(true);
+            setEditText(text);
+        }
+    };
+
+    if (isEditing && !isPreviewMode) {
+        return (
+            <div className="relative">
+                <div 
+                    className="absolute inset-0 bg-blue-50 border-2 border-blue-300 rounded-lg p-2 z-10"
+                    style={{ minHeight: '60px' }}
+                >
+                    <textarea
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        onBlur={() => {
+                            onUpdate({ text: editText });
+                            setIsEditing(false);
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Escape') {
+                                setEditText(text);
+                                setIsEditing(false);
+                            }
+                        }}
+                        className="w-full h-full resize-none border-none bg-transparent text-sm font-mono focus:outline-none"
+                        autoFocus
+                    />
+                </div>
+                <div 
+                    className="opacity-30"
+                    dangerouslySetInnerHTML={{ __html: originalHtml || text }}
+                />
+            </div>
+        );
+    }
+
+    return (
+        <div 
+            className={`relative group ${!isPreviewMode && isSelected ? 'ring-2 ring-blue-500' : ''}`}
+            onClick={handleClick}
+        >
+            {!isPreviewMode && (
+                <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                    <button
+                        className="p-1 bg-blue-600 text-white rounded-full text-xs hover:bg-blue-700"
+                        title="Edit paragraph"
+                    >
+                        <LucideIcons.Edit className="w-3 h-3" />
+                    </button>
+                </div>
+            )}
+            <div 
+                dangerouslySetInnerHTML={{ __html: originalHtml || text }}
+                className="html-content"
+            />
+        </div>
+    );
+};
+
+const HtmlImageElement = ({ src, alt, customClassName, width, height, borderRadius, margin, padding, onUpdate, isSelected, isPreviewMode, originalHtml }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editSrc, setEditSrc] = useState(src);
+    const [editAlt, setEditAlt] = useState(alt);
+
+    const handleClick = (e) => {
+        if (!isPreviewMode) {
+            e.preventDefault();
+            setIsEditing(true);
+            setEditSrc(src);
+            setEditAlt(alt);
+        }
+    };
+
+    if (isEditing && !isPreviewMode) {
+        return (
+            <div className="relative">
+                <div 
+                    className="absolute inset-0 bg-blue-50 border-2 border-blue-300 rounded-lg p-3 z-10"
+                    style={{ minHeight: '100px' }}
+                >
+                    <div className="space-y-2">
+                        <input
+                            type="text"
+                            value={editSrc}
+                            onChange={(e) => setEditSrc(e.target.value)}
+                            placeholder="Image URL"
+                            className="w-full p-2 border border-gray-300 rounded text-sm"
+                        />
+                        <input
+                            type="text"
+                            value={editAlt}
+                            onChange={(e) => setEditAlt(e.target.value)}
+                            placeholder="Alt text"
+                            className="w-full p-2 border border-gray-300 rounded text-sm"
+                        />
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => {
+                                    onUpdate({ src: editSrc, alt: editAlt });
+                                    setIsEditing(false);
+                                }}
+                                className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                            >
+                                Save
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setEditSrc(src);
+                                    setEditAlt(alt);
+                                    setIsEditing(false);
+                                }}
+                                className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div 
+                    className="opacity-30"
+                    dangerouslySetInnerHTML={{ __html: originalHtml }}
+                />
+            </div>
+        );
+    }
+
+    return (
+        <div 
+            className={`relative group ${!isPreviewMode && isSelected ? 'ring-2 ring-blue-500' : ''}`}
+            onClick={handleClick}
+        >
+            {!isPreviewMode && (
+                <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                    <button
+                        className="p-1 bg-blue-600 text-white rounded-full text-xs hover:bg-blue-700"
+                        title="Edit image"
+                    >
+                        <LucideIcons.Edit className="w-3 h-3" />
+                    </button>
+                </div>
+            )}
+            <div 
+                dangerouslySetInnerHTML={{ __html: originalHtml }}
+                className="html-content"
+            />
+        </div>
+    );
+};
+
+const HtmlButtonElement = ({ text, link, customClassName, backgroundColor, color, fontSize, fontWeight, padding, borderRadius, margin, onUpdate, isSelected, isPreviewMode, isEditable, originalHtml }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editText, setEditText] = useState(text);
+    const [editLink, setEditLink] = useState(link);
+
+    const handleClick = (e) => {
+        if (!isPreviewMode && isEditable) {
+            e.preventDefault();
+            setIsEditing(true);
+            setEditText(text);
+            setEditLink(link);
+        }
+    };
+
+    if (isEditing && !isPreviewMode) {
+        return (
+            <div className="relative">
+                <div 
+                    className="absolute inset-0 bg-blue-50 border-2 border-blue-300 rounded-lg p-3 z-10"
+                    style={{ minHeight: '60px' }}
+                >
+                    <div className="space-y-2">
+                        <input
+                            type="text"
+                            value={editText}
+                            onChange={(e) => setEditText(e.target.value)}
+                            placeholder="Button text"
+                            className="w-full p-2 border border-gray-300 rounded text-sm"
+                        />
+                        <input
+                            type="text"
+                            value={editLink}
+                            onChange={(e) => setEditLink(e.target.value)}
+                            placeholder="Link URL"
+                            className="w-full p-2 border border-gray-300 rounded text-sm"
+                        />
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => {
+                                    onUpdate({ text: editText, link: editLink });
+                                    setIsEditing(false);
+                                }}
+                                className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                            >
+                                Save
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setEditText(text);
+                                    setEditLink(link);
+                                    setIsEditing(false);
+                                }}
+                                className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div 
+                    className="opacity-30"
+                    dangerouslySetInnerHTML={{ __html: originalHtml }}
+                />
+            </div>
+        );
+    }
+
+    return (
+        <div 
+            className={`relative group ${!isPreviewMode && isSelected ? 'ring-2 ring-blue-500' : ''}`}
+            onClick={handleClick}
+        >
+            {!isPreviewMode && (
+                <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                    <button
+                        className="p-1 bg-blue-600 text-white rounded-full text-xs hover:bg-blue-700"
+                        title="Edit button"
+                    >
+                        <LucideIcons.Edit className="w-3 h-3" />
+                    </button>
+                </div>
+            )}
+            <div 
+                dangerouslySetInnerHTML={{ __html: originalHtml }}
+                className="html-content"
+            />
+        </div>
+    );
+};
+
+const HtmlTextElement = ({ text, customClassName, fontSize, fontWeight, color, textAlign, margin, padding, onUpdate, isSelected, isPreviewMode, isEditable, originalHtml }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editText, setEditText] = useState(text);
+
+    const handleClick = (e) => {
+        if (!isPreviewMode && isEditable) {
+            e.preventDefault();
+            setIsEditing(true);
+            setEditText(text);
+        }
+    };
+
+    if (isEditing && !isPreviewMode) {
+        return (
+            <div className="relative">
+                <div 
+                    className="absolute inset-0 bg-blue-50 border-2 border-blue-300 rounded-lg p-2 z-10"
+                    style={{ minHeight: '40px' }}
+                >
+                    <textarea
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        onBlur={() => {
+                            onUpdate({ text: editText });
+                            setIsEditing(false);
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Escape') {
+                                setEditText(text);
+                                setIsEditing(false);
+                            }
+                        }}
+                        className="w-full h-full resize-none border-none bg-transparent text-sm font-mono focus:outline-none"
+                        autoFocus
+                    />
+                </div>
+                <div 
+                    className="opacity-30"
+                    dangerouslySetInnerHTML={{ __html: originalHtml || text }}
+                />
+            </div>
+        );
+    }
+
+    return (
+        <div 
+            className={`relative group ${!isPreviewMode && isSelected ? 'ring-2 ring-blue-500' : ''}`}
+            onClick={handleClick}
+        >
+            {!isPreviewMode && (
+                <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                    <button
+                        className="p-1 bg-blue-600 text-white rounded-full text-xs hover:bg-blue-700"
+                        title="Edit text"
+                    >
+                        <LucideIcons.Edit className="w-3 h-3" />
+                    </button>
+                </div>
+            )}
+            <div 
+                dangerouslySetInnerHTML={{ __html: originalHtml || text }}
+                className="html-content"
+            />
+        </div>
+    );
+};
+
+const VisualHtmlEditor = ({ originalHtml, onUpdate, isSelected, isPreviewMode, elementId, onSelect }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editHtml, setEditHtml] = useState(originalHtml || '');
+
+    // Function to add data-element-id to all editable elements
+    const addElementIdsToHtml = (html) => {
+        if (!html || isPreviewMode) return html;
+        
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        
+        // Find all editable elements and add data-element-id if they don't have one
+            const editableElements = tempDiv.querySelectorAll('h1, h2, h3, h4, h5, h6, p, button, img, div, span');
+        
+        editableElements.forEach((element) => {
+            if (!element.getAttribute('data-element-id')) {
+                const elementType = element.tagName.toLowerCase();
+                const elementId = generateId(elementType);
+                element.setAttribute('data-element-id', elementId);
+            }
+        });
+        
+        return tempDiv.innerHTML;
+    };
+
+    // Update the originalHtml with IDs when component mounts or HTML changes
+    useEffect(() => {
+        if (originalHtml && !isPreviewMode) {
+            const htmlWithIds = addElementIdsToHtml(originalHtml);
+            if (htmlWithIds !== originalHtml) {
+                // Update the stored HTML with IDs
+                onUpdate({ originalHtml: htmlWithIds });
+            }
+        }
+    }, [originalHtml, isPreviewMode]);
+
+    const handleElementClick = (e) => {
+        if (!isPreviewMode) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Find the clicked element
+            const clickedElement = e.target;
+            const elementType = clickedElement.tagName.toLowerCase();
+            
+            console.log('🖱️ Element clicked:', { elementType, clickedElement, text: clickedElement.textContent });
+            
+            // Check if this is an icon element (div or span with specific classes, dimensions, or contains ■ symbol)
+            const isIconElement = (elementType === 'div' || elementType === 'span') && (
+                // Check if the element itself has icon classes
+                clickedElement.classList.contains('w-16') || 
+                clickedElement.classList.contains('h-16') ||
+                clickedElement.classList.contains('w-20') ||
+                clickedElement.classList.contains('h-20') ||
+                clickedElement.style.width === '64px' ||
+                clickedElement.style.height === '64px' ||
+                clickedElement.style.width === '80px' ||
+                clickedElement.style.height === '80px' ||
+                // Check if the element contains icon symbols
+                clickedElement.textContent.includes('■') ||
+                clickedElement.innerHTML.includes('■') ||
+                clickedElement.textContent.includes('●') ||
+                clickedElement.innerHTML.includes('●') ||
+                clickedElement.textContent.includes('▲') ||
+                clickedElement.innerHTML.includes('▲') ||
+                clickedElement.textContent.includes('◆') ||
+                clickedElement.innerHTML.includes('◆') ||
+                clickedElement.textContent.includes('★') ||
+                clickedElement.innerHTML.includes('★') ||
+                clickedElement.textContent.includes('♦') ||
+                clickedElement.innerHTML.includes('♦') ||
+                clickedElement.textContent.includes('◼') ||
+                clickedElement.innerHTML.includes('◼') ||
+                clickedElement.textContent.includes('◻') ||
+                clickedElement.innerHTML.includes('◻') ||
+                // Check if the parent element has icon classes (for span inside div)
+                (elementType === 'span' && clickedElement.parentElement && (
+                    clickedElement.parentElement.classList.contains('w-16') ||
+                    clickedElement.parentElement.classList.contains('h-16') ||
+                    clickedElement.parentElement.classList.contains('w-20') ||
+                    clickedElement.parentElement.classList.contains('h-20') ||
+                    clickedElement.parentElement.classList.contains('bg-gray-600') ||
+                    clickedElement.parentElement.classList.contains('rounded-lg')
+                ))
+            );
+            
+            console.log('🔍 Icon detection result:', { isIconElement, elementType, text: clickedElement.textContent });
+            
+            // Get the existing data-element-id (should already be set by addElementIdsToHtml)
+            const elementUniqueId = clickedElement.getAttribute('data-element-id');
+            
+            if (!elementUniqueId) {
+                console.log('❌ No data-element-id found on clicked element');
+                return;
+            }
+            
+            // Extract element properties
+            // If we clicked on a span inside an icon div, use the parent div's properties
+            let targetElement = clickedElement;
+            if (elementType === 'span' && isIconElement && clickedElement.parentElement) {
+                targetElement = clickedElement.parentElement;
+            }
+
+            const elementProps = {
+                id: elementUniqueId,
+                type: isIconElement ? 'icon' : elementType,
+                text: targetElement.innerText || targetElement.textContent || '',
+                className: targetElement.className || '',
+                style: targetElement.style.cssText || '',
+                tagName: targetElement.tagName.toLowerCase(),
+                originalHtml: targetElement.outerHTML,
+                element: targetElement,
+                isIcon: isIconElement
+            };
+            
+            console.log('🎯 Element props created:', elementProps);
+            
+            // Call onSelect to show properties in right panel
+            if (onSelect) {
+                onSelect(elementProps);
+            }
+        }
+    };
+
+    const handleContainerClick = (e) => {
+        if (!isPreviewMode && e.target === e.currentTarget) {
+            // Clicked on container, not on a child element - don't select anything
+            // Let the individual element clicks handle the selection
+            return;
+        }
+    };
+
+    return (
+        <div 
+            className={`relative group ${!isPreviewMode && isSelected ? 'ring-2 ring-blue-500' : ''} ${!isPreviewMode ? 'hover:ring-2 hover:ring-green-400 hover:ring-opacity-60 transition-all duration-200' : ''}`}
+            onClick={handleContainerClick}
+        >
+            <div 
+                dangerouslySetInnerHTML={{ __html: addElementIdsToHtml(originalHtml || '') }}
+                className={`html-content ${!isPreviewMode ? 'visual-editor-mode' : ''}`}
+                onClick={handleElementClick}
+                style={{ cursor: !isPreviewMode ? 'pointer' : 'default' }}
+            />
+            {!isPreviewMode && (
+                <style jsx>{`
+                    .visual-editor-mode h1,
+                    .visual-editor-mode h2,
+                    .visual-editor-mode h3,
+                    .visual-editor-mode h4,
+                    .visual-editor-mode h5,
+                    .visual-editor-mode h6,
+                    .visual-editor-mode p,
+                    .visual-editor-mode button,
+                    .visual-editor-mode img,
+                    .visual-editor-mode div {
+                        position: relative;
+                        transition: all 0.2s ease;
+                        cursor: pointer;
+                    }
+                    
+                    .visual-editor-mode h1:hover,
+                    .visual-editor-mode h2:hover,
+                    .visual-editor-mode h3:hover,
+                    .visual-editor-mode h4:hover,
+                    .visual-editor-mode h5:hover,
+                    .visual-editor-mode h6:hover,
+                    .visual-editor-mode p:hover,
+                    .visual-editor-mode button:hover,
+                    .visual-editor-mode img:hover,
+                    .visual-editor-mode div:hover {
+                        outline: 3px solid #10b981;
+                        outline-offset: 3px;
+                        border-radius: 6px;
+                        box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.3);
+                        background-color: rgba(16, 185, 129, 0.05);
+                    }
+                    
+                `}</style>
+            )}
+        </div>
+    );
+};
+
+const VisualElementProperties = ({ props, onUpdate, id, selectedVisualElement }) => {
+    const { type, text, className, style, tagName } = props;
+
+    const handleTextChange = (newText) => {
+        // Update the text content in the HTML
+        updateVisualElement({ text: newText });
+    };
+
+    const handleStyleChange = (property, value) => {
+        // Update specific style property in the HTML
+        const currentStyle = style || '';
+        const newStyle = currentStyle + `; ${property}: ${value}`;
+        updateVisualElement({ style: newStyle });
+    };
+
+    const handleClassChange = (newClass) => {
+        updateVisualElement({ className: newClass });
+    };
+
+    const getCurrentIcon = (text) => {
+        if (!text) return '■';
+        // Return the first character if it's an icon, otherwise return ■
+        const iconChars = ['■', '●', '▲', '◆', '★', '♦', '◼', '◻', '🔹', '🔸', '🔺', '🔻', '⭐', '✨', '💎', '🔴', '🟢', '🔵', '🟡', '🟠', '🟣', '⚫', '⚪'];
+        return iconChars.includes(text.charAt(0)) ? text.charAt(0) : '■';
+    };
+
+    const getIconShape = (className) => {
+        if (className.includes('rounded-full')) return 'circle';
+        if (className.includes('rounded-lg')) return 'rounded';
+        if (className.includes('rounded-md')) return 'rounded';
+        if (className.includes('rounded-sm')) return 'rounded';
+        return 'square';
+    };
+
+    const getIconSize = (className) => {
+        if (className.includes('w-16')) return 64;
+        if (className.includes('w-20')) return 80;
+        if (className.includes('w-12')) return 48;
+        if (className.includes('w-8')) return 32;
+        return 64;
+    };
+
+    const handleIconChange = (icon) => {
+        updateVisualElement({ text: icon });
+    };
+
+    const handleIconShapeChange = (shape) => {
+        let newClassName = className;
+        
+        // Remove existing shape classes
+        newClassName = newClassName.replace(/rounded-(full|lg|md|sm)/g, '');
+        
+        // Add new shape class
+        switch (shape) {
+            case 'circle':
+                newClassName += ' rounded-full';
+                break;
+            case 'rounded':
+                newClassName += ' rounded-lg';
+                break;
+            case 'square':
+                // No additional class needed for square
+                break;
+            case 'none':
+                // No additional class needed
+                break;
+        }
+        
+        updateVisualElement({ className: newClassName.trim() });
+    };
+
+    const handleIconSizeChange = (size) => {
+        let newClassName = className;
+        
+        // Remove existing size classes
+        newClassName = newClassName.replace(/w-(8|12|16|20|24|32)/g, '');
+        newClassName = newClassName.replace(/h-(8|12|16|20|24|32)/g, '');
+        
+        // Add new size classes
+        const sizeClass = `w-${size} h-${size}`;
+        newClassName += ` ${sizeClass}`;
+        
+        updateVisualElement({ className: newClassName.trim() });
+    };
+
+    const updateVisualElement = (updates) => {
+        console.log('🎨 VisualElementProperties updateVisualElement called:', updates);
+        console.log('🎨 Current selectedVisualElement:', selectedVisualElement);
+        // Simple direct update - let the parent handle the HTML parsing
+        onUpdate(updates);
+    };
+
+    const renderElementSpecificProperties = () => {
+        console.log('🎨 VisualElementProperties renderElementSpecificProperties:', { type, selectedVisualElement, isIcon: selectedVisualElement?.isIcon });
+        switch (type) {
+            case 'h1':
+            case 'h2':
+            case 'h3':
+            case 'h4':
+            case 'h5':
+            case 'h6':
+                return (
+                    <>
+                        <PropertyGroup title="Content">
+                            <DebouncedTextInput 
+                                label="Heading Text" 
+                                type="textarea" 
+                                rows={3} 
+                                initialValue={text} 
+                                onCommit={handleTextChange} 
+                                key={id}
+                            />
+                        </PropertyGroup>
+                        <PropertyGroup title="Typography">
+                            <StyledSlider 
+                                label="Font Size" 
+                                value={getStyleValue(style, 'font-size') || '2rem'} 
+                                onChange={val => handleStyleChange('font-size', val)} 
+                                max={72} 
+                                unit="px" 
+                                key={`${id}-fontsize`}
+                            />
+                            <CustomDropdown 
+                                label="Font Weight" 
+                                options={[
+                                    {label: 'Normal', value: 'normal'}, 
+                                    {label: 'Bold', value: 'bold'}, 
+                                    {label: 'Light', value: '300'}, 
+                                    {label: 'Medium', value: '500'}, 
+                                    {label: 'Semi Bold', value: '600'}, 
+                                    {label: 'Extra Bold', value: '800'}
+                                ]} 
+                                value={getStyleValue(style, 'font-weight') || 'bold'} 
+                                onChange={val => handleStyleChange('font-weight', val)} 
+                                key={`${id}-fontweight`}
+                            />
+                            <ColorInput 
+                                label="Text Color" 
+                                value={getStyleValue(style, 'color') || '#000000'} 
+                                onChange={val => handleStyleChange('color', val)} 
+                                key={`${id}-color`}
+                            />
+                            <CustomDropdown 
+                                label="Text Align" 
+                                options={[
+                                    {label: 'Left', value: 'left'}, 
+                                    {label: 'Center', value: 'center'}, 
+                                    {label: 'Right', value: 'right'}, 
+                                    {label: 'Justify', value: 'justify'}
+                                ]} 
+                                value={getStyleValue(style, 'text-align') || 'center'} 
+                                onChange={val => handleStyleChange('text-align', val)} 
+                                key={`${id}-align`}
+                            />
+                        </PropertyGroup>
+                    </>
+                );
+
+            case 'p':
+                return (
+                    <>
+                        <PropertyGroup title="Content">
+                            <DebouncedTextInput 
+                                label="Paragraph Text" 
+                                type="textarea" 
+                                rows={4} 
+                                initialValue={text} 
+                                onCommit={handleTextChange} 
+                                key={id}
+                            />
+                        </PropertyGroup>
+                        <PropertyGroup title="Typography">
+                            <StyledSlider 
+                                label="Font Size" 
+                                value={getStyleValue(style, 'font-size') || '1rem'} 
+                                onChange={val => handleStyleChange('font-size', val)} 
+                                max={48} 
+                                unit="px" 
+                                key={`${id}-fontsize`}
+                            />
+                            <CustomDropdown 
+                                label="Font Weight" 
+                                options={[
+                                    {label: 'Normal', value: 'normal'}, 
+                                    {label: 'Bold', value: 'bold'}, 
+                                    {label: 'Light', value: '300'}, 
+                                    {label: 'Medium', value: '500'}
+                                ]} 
+                                value={getStyleValue(style, 'font-weight') || 'normal'} 
+                                onChange={val => handleStyleChange('font-weight', val)} 
+                                key={`${id}-fontweight`}
+                            />
+                            <ColorInput 
+                                label="Text Color" 
+                                value={getStyleValue(style, 'color') || '#000000'} 
+                                onChange={val => handleStyleChange('color', val)} 
+                                key={`${id}-color`}
+                            />
+                            <CustomDropdown 
+                                label="Text Align" 
+                                options={[
+                                    {label: 'Left', value: 'left'}, 
+                                    {label: 'Center', value: 'center'}, 
+                                    {label: 'Right', value: 'right'}, 
+                                    {label: 'Justify', value: 'justify'}
+                                ]} 
+                                value={getStyleValue(style, 'text-align') || 'center'} 
+                                onChange={val => handleStyleChange('text-align', val)} 
+                                key={`${id}-align`}
+                            />
+                            <StyledSlider 
+                                label="Line Height" 
+                                value={getStyleValue(style, 'line-height') || '1.5'} 
+                                onChange={val => handleStyleChange('line-height', val)} 
+                                max={10} 
+                                step={0.1} 
+                                key={`${id}-lineheight`}
+                            />
+                        </PropertyGroup>
+                    </>
+                );
+
+            case 'button':
+                return (
+                    <>
+                        <PropertyGroup title="Content">
+                            <DebouncedTextInput 
+                                label="Button Text" 
+                                initialValue={text} 
+                                onCommit={handleTextChange} 
+                                key={`${id}-text`}
+                            />
+                        </PropertyGroup>
+                        <PropertyGroup title="Styling">
+                            <ColorInput 
+                                label="Background Color" 
+                                value={getStyleValue(style, 'background-color') || '#3b82f6'} 
+                                onChange={val => handleStyleChange('background-color', val)} 
+                                key={`${id}-bgcolor`}
+                            />
+                            <ColorInput 
+                                label="Text Color" 
+                                value={getStyleValue(style, 'color') || '#ffffff'} 
+                                onChange={val => handleStyleChange('color', val)} 
+                                key={`${id}-color`}
+                            />
+                            <StyledSlider 
+                                label="Font Size" 
+                                value={getStyleValue(style, 'font-size') || '1rem'} 
+                                onChange={val => handleStyleChange('font-size', val)} 
+                                max={32} 
+                                unit="px" 
+                                key={`${id}-fontsize`}
+                            />
+                            <DebouncedTextInput 
+                                label="Padding" 
+                                initialValue={getStyleValue(style, 'padding') || '0.5rem 1rem'} 
+                                onCommit={val => handleStyleChange('padding', val)} 
+                                key={`${id}-padding`}
+                            />
+                            <DebouncedTextInput 
+                                label="Border Radius" 
+                                initialValue={getStyleValue(style, 'border-radius') || '0.375rem'} 
+                                onCommit={val => handleStyleChange('border-radius', val)} 
+                                key={`${id}-radius`}
+                            />
+                        </PropertyGroup>
+                    </>
+                );
+
+            case 'img':
+                return (
+                    <>
+                        <PropertyGroup title="Image">
+                            <DebouncedTextInput 
+                                label="Image URL" 
+                                initialValue={props.src || ''} 
+                                onCommit={val => onUpdate({ src: val })} 
+                                key={`${id}-src`}
+                            />
+                            <DebouncedTextInput 
+                                label="Alt Text" 
+                                initialValue={props.alt || ''} 
+                                onCommit={val => onUpdate({ alt: val })} 
+                                key={`${id}-alt`}
+                            />
+                        </PropertyGroup>
+                        <PropertyGroup title="Dimensions">
+                            <DebouncedTextInput 
+                                label="Width" 
+                                initialValue={getStyleValue(style, 'width') || 'auto'} 
+                                onCommit={val => handleStyleChange('width', val)} 
+                                key={`${id}-width`}
+                            />
+                            <DebouncedTextInput 
+                                label="Height" 
+                                initialValue={getStyleValue(style, 'height') || 'auto'} 
+                                onCommit={val => handleStyleChange('height', val)} 
+                                key={`${id}-height`}
+                            />
+                            <DebouncedTextInput 
+                                label="Border Radius" 
+                                initialValue={getStyleValue(style, 'border-radius') || '0'} 
+                                onCommit={val => handleStyleChange('border-radius', val)} 
+                                key={`${id}-radius`}
+                            />
+                        </PropertyGroup>
+                    </>
+                );
+
+            default:
+                return (
+                    <>
+                        <PropertyGroup title="Content">
+                            <DebouncedTextInput 
+                                label="Text Content" 
+                                type="textarea" 
+                                rows={3} 
+                                initialValue={text} 
+                                onCommit={handleTextChange} 
+                                key={id}
+                            />
+                        </PropertyGroup>
+                        <PropertyGroup title="Typography">
+                            <StyledSlider 
+                                label="Font Size" 
+                                value={getStyleValue(style, 'font-size') || '1rem'} 
+                                onChange={val => handleStyleChange('font-size', val)} 
+                                max={48} 
+                                unit="px" 
+                                key={`${id}-fontsize`}
+                            />
+                            <ColorInput 
+                                label="Text Color" 
+                                value={getStyleValue(style, 'color') || '#000000'} 
+                                onChange={val => handleStyleChange('color', val)} 
+                                key={`${id}-color`}
+                            />
+                            <CustomDropdown 
+                                label="Text Align" 
+                                options={[
+                                    {label: 'Left', value: 'left'}, 
+                                    {label: 'Center', value: 'center'}, 
+                                    {label: 'Right', value: 'right'}, 
+                                    {label: 'Justify', value: 'justify'}
+                                ]} 
+                                value={getStyleValue(style, 'text-align') || 'center'} 
+                                onChange={val => handleStyleChange('text-align', val)} 
+                                key={`${id}-align`}
+                            />
+                        </PropertyGroup>
+                    </>
+                );
+
+            case 'div':
+            case 'span':
+                console.log('🎨 Div/Span case:', { isIcon: selectedVisualElement?.isIcon, selectedVisualElement });
+                if (selectedVisualElement?.isIcon) {
+                    return (
+                        <>
+                            <PropertyGroup title="Icon Settings">
+                                <CustomDropdown 
+                                    label="Icon Type" 
+                                    options={[
+                                        {label: '■ Square', value: '■'}, 
+                                        {label: '● Circle', value: '●'}, 
+                                        {label: '▲ Triangle', value: '▲'}, 
+                                        {label: '◆ Diamond', value: '◆'},
+                                        {label: '★ Star', value: '★'},
+                                        {label: '♦ Diamond Alt', value: '♦'},
+                                        {label: '◼ Filled Square', value: '◼'},
+                                        {label: '◻ Empty Square', value: '◻'},
+                                        {label: '🔹 Blue Diamond', value: '🔹'},
+                                        {label: '🔸 Orange Diamond', value: '🔸'},
+                                        {label: '🔺 Red Triangle', value: '🔺'},
+                                        {label: '🔻 Red Triangle Down', value: '🔻'},
+                                        {label: '⭐ Star', value: '⭐'},
+                                        {label: '✨ Sparkles', value: '✨'},
+                                        {label: '💎 Gem', value: '💎'},
+                                        {label: '🔴 Red Circle', value: '🔴'},
+                                        {label: '🟢 Green Circle', value: '🟢'},
+                                        {label: '🔵 Blue Circle', value: '🔵'},
+                                        {label: '🟡 Yellow Circle', value: '🟡'},
+                                        {label: '🟠 Orange Circle', value: '🟠'},
+                                        {label: '🟣 Purple Circle', value: '🟣'},
+                                        {label: '⚫ Black Circle', value: '⚫'},
+                                        {label: '⚪ White Circle', value: '⚪'}
+                                    ]} 
+                                    value={getCurrentIcon(text)} 
+                                    onChange={val => handleIconChange(val)} 
+                                    key={`${id}-icon`}
+                                />
+                                <CustomDropdown 
+                                    label="Icon Shape" 
+                                    options={[
+                                        {label: 'Square', value: 'square'}, 
+                                        {label: 'Circle', value: 'circle'}, 
+                                        {label: 'Rounded', value: 'rounded'}, 
+                                        {label: 'None', value: 'none'}
+                                    ]} 
+                                    value={getIconShape(className)} 
+                                    onChange={val => handleIconShapeChange(val)} 
+                                    key={`${id}-shape`}
+                                />
+                                <ColorInput 
+                                    label="Background Color" 
+                                    value={getStyleValue(style, 'background-color') || '#6b7280'} 
+                                    onChange={val => handleStyleChange('background-color', val)} 
+                                    key={`${id}-bgcolor`}
+                                />
+                                <ColorInput 
+                                    label="Icon Color" 
+                                    value={getStyleValue(style, 'color') || '#ffffff'} 
+                                    onChange={val => handleStyleChange('color', val)} 
+                                    key={`${id}-iconcolor`}
+                                />
+                                <NumberInput 
+                                    label="Icon Size" 
+                                    value={getIconSize(className)} 
+                                    onChange={val => handleIconSizeChange(val)} 
+                                    min={16}
+                                    max={128}
+                                />
+                            </PropertyGroup>
+                        </>
+                    );
+                } else {
+                    return (
+                        <>
+                            <PropertyGroup title="Content">
+                                <DebouncedTextInput 
+                                    label="Text Content" 
+                                    type="textarea" 
+                                    rows={3} 
+                                    initialValue={text} 
+                                    onCommit={val => updateVisualElement({ text: val })} 
+                                    key={id}
+                                />
+                            </PropertyGroup>
+                            <PropertyGroup title="Styling">
+                                <ColorInput 
+                                    label="Background Color" 
+                                    value={getStyleValue(style, 'background-color') || '#ffffff'} 
+                                    onChange={val => handleStyleChange('background-color', val)} 
+                                    key={`${id}-bgcolor`}
+                                />
+                                <CustomDropdown 
+                                    label="Text Align" 
+                                    options={[
+                                        {label: 'Left', value: 'left'}, 
+                                        {label: 'Center', value: 'center'}, 
+                                        {label: 'Right', value: 'right'}, 
+                                        {label: 'Justify', value: 'justify'}
+                                    ]} 
+                                    value={getStyleValue(style, 'text-align') || 'center'} 
+                                    onChange={val => handleStyleChange('text-align', val)} 
+                                    key={`${id}-align`}
+                                />
+                            </PropertyGroup>
+                        </>
+                    );
+                }
+        }
+    };
+
+    return (
+        <>
+            {renderElementSpecificProperties()}
+            <PropertyGroup title="Spacing">
+                <NumberInput 
+                    label="Margin" 
+                    value={parseInt(getStyleValue(style, 'margin')) || 0} 
+                    onChange={val => handleStyleChange('margin', val)} 
+                />
+                <NumberInput 
+                    label="Padding" 
+                    value={parseInt(getStyleValue(style, 'padding')) || 0} 
+                    onChange={val => handleStyleChange('padding', val)} 
+                />
+            </PropertyGroup>
+        </>
+    );
+};
+
+// Helper function to extract style values
+const getStyleValue = (styleString, property) => {
+    if (!styleString) return null;
+    const regex = new RegExp(`${property}\\s*:\\s*([^;]+)`);
+    const match = styleString.match(regex);
+    return match ? match[1].trim() : null;
+};
+
+const HtmlContentElement = ({ originalHtml, customClassName, isEditable, onUpdate, isSelected, isPreviewMode, elementId, onSelect }) => {
+    return (
+        <VisualHtmlEditor
+            originalHtml={originalHtml}
+            onUpdate={onUpdate}
+            isSelected={isSelected}
+            isPreviewMode={isPreviewMode}
+            elementId={elementId}
+            onSelect={onSelect}
+        />
+    );
+};
+
+const ALL_ELEMENT_TYPES = { Heading, TextBlock, ImageElement, ButtonElement, Divider, Spacer, IconElement, GoogleMapsPlaceholder, VideoElement, InnerSectionComponentDisplay, NavbarElement, CardSliderElement, AccordionElement, NewsletterElement, HtmlElement, HtmlSectionElement, HtmlHeadingElement, HtmlParagraphElement, HtmlImageElement, HtmlButtonElement, HtmlTextElement, HtmlContentElement };
 const getDefaultProps = (id) => ({ ...(AVAILABLE_ELEMENTS_CONFIG.find(c => c.id === id)?.defaultProps || {}), style: {} });
 const AVAILABLE_ELEMENTS_CONFIG = [
     { id: "header", name: "Heading", component: "Heading", category: 'Basic', defaultProps: { text: "Powerful Headline Here", customClassName: "text-4xl font-bold text-slate-800 text-left" } },
@@ -468,8 +1918,282 @@ const AVAILABLE_ELEMENTS_CONFIG = [
     { id: "cardSlider", name: "Card Slider", component: "CardSliderElement", category: 'Advanced', defaultProps: { slides: [{ id: generateId(), imgSrc: img, heading: "Feature One", text: "Description for feature one.", link: "#" }], slidesPerView: 3, spaceBetween: 16 } },
     { id: "newsletter", name: "Newsletter", component: "NewsletterElement", category: 'Advanced', defaultProps: { title: "Get Exclusive Updates", subtitle: "Subscribe for weekly tips and special offers", placeholder: "name@email.com", buttonText: "Subscribe", customClassName: "py-20 bg-white" } },
     { id: "navbar", name: "Navbar", component: "NavbarElement", category: 'Global', isGlobalOnly: true, defaultProps: { logoText: "SiteName", links: [{ id: generateId(), text: "Home", url: "#" }], customClassName: "bg-white border-b border-gray-200 shadow-sm" } },
+    { id: "htmlSection", name: "HTML Section", component: "HtmlSectionElement", category: 'Advanced', defaultProps: { originalHtml: "", customClassName: "", isEditable: true } },
+    { id: "htmlElement", name: "HTML Element", component: "HtmlElement", category: 'Advanced', defaultProps: { originalHtml: "", customClassName: "", isEditable: true } },
+    { id: "htmlHeading", name: "HTML Heading", component: "HtmlHeadingElement", category: 'HTML', defaultProps: { text: "Heading", tag: "h1", customClassName: "", fontSize: "2rem", fontWeight: "bold", color: "#000000", textAlign: "left", margin: "0", padding: "0" } },
+    { id: "htmlParagraph", name: "HTML Paragraph", component: "HtmlParagraphElement", category: 'HTML', defaultProps: { text: "Paragraph text", customClassName: "", fontSize: "1rem", fontWeight: "normal", color: "#000000", textAlign: "left", lineHeight: "1.5", margin: "0", padding: "0" } },
+    { id: "htmlImage", name: "HTML Image", component: "HtmlImageElement", category: 'HTML', defaultProps: { src: "", alt: "", customClassName: "", width: "auto", height: "auto", borderRadius: "0", margin: "0", padding: "0" } },
+    { id: "htmlButton", name: "HTML Button", component: "HtmlButtonElement", category: 'HTML', defaultProps: { text: "Button", link: "#", customClassName: "", backgroundColor: "#3b82f6", color: "#ffffff", fontSize: "1rem", fontWeight: "medium", padding: "0.5rem 1rem", borderRadius: "0.375rem", margin: "0" } },
+    { id: "htmlText", name: "HTML Text", component: "HtmlTextElement", category: 'HTML', defaultProps: { text: "Text content", customClassName: "", fontSize: "1rem", fontWeight: "normal", color: "#000000", textAlign: "left", margin: "0", padding: "0" } },
+    { id: "htmlContent", name: "HTML Content", component: "HtmlContentElement", category: 'HTML', defaultProps: { originalHtml: "", customClassName: "", isEditable: true } },
 ];
-const elementIcons = { header: <LucideIcons.Heading1 />, textBlock: <LucideIcons.Baseline />, image: <LucideIcons.Image />, button: <LucideIcons.MousePointerClick />, divider: <LucideIcons.Minus />, spacer: <LucideIcons.StretchVertical />, icon: <LucideIcons.Star />, video: <LucideIcons.Youtube />, innerSection: <LucideIcons.LayoutPanelLeft />, accordion: <LucideIcons.ChevronsUpDown />, cardSlider: <LucideIcons.GalleryHorizontalEnd />, newsletter: <LucideIcons.Mail />, navbar: <LucideIcons.Navigation />, footer: <LucideIcons.PanelBottom />, default: <LucideIcons.Puzzle />, section: <LucideIcons.LayoutPanelTop />, column: <LucideIcons.View /> };
+const elementIcons = { header: <LucideIcons.Heading1 />, textBlock: <LucideIcons.Baseline />, image: <LucideIcons.Image />, button: <LucideIcons.MousePointerClick />, divider: <LucideIcons.Minus />, spacer: <LucideIcons.StretchVertical />, icon: <LucideIcons.Star />, video: <LucideIcons.Youtube />, innerSection: <LucideIcons.LayoutPanelLeft />, accordion: <LucideIcons.ChevronsUpDown />, cardSlider: <LucideIcons.GalleryHorizontalEnd />, newsletter: <LucideIcons.Mail />, navbar: <LucideIcons.Navigation />, footer: <LucideIcons.PanelBottom />, htmlSection: <LucideIcons.Code />, htmlElement: <LucideIcons.Code2 />, htmlHeading: <LucideIcons.Type />, htmlParagraph: <LucideIcons.FileText />, htmlImage: <LucideIcons.Image />, htmlButton: <LucideIcons.Square />, htmlText: <LucideIcons.AlignLeft />, htmlContent: <LucideIcons.FileCode />, default: <LucideIcons.Puzzle />, section: <LucideIcons.LayoutPanelTop />, column: <LucideIcons.View /> };
+
+function htmlToBuilderJsonWithPreservation(htmlString) {
+    if (!htmlString) return { sections: [], globalNavbar: null, globalFooter: null };
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+
+    const parseHtmlElement = (node) => {
+        const tagName = node.tagName.toLowerCase();
+        const elementId = generateId(tagName);
+        
+        let element = null;
+        
+        if (tagName.match(/^h[1-6]$/)) {
+            element = {
+                id: elementId,
+                type: 'htmlHeading',
+                props: {
+                    text: node.innerHTML,
+                    tag: tagName,
+                    customClassName: node.className || '',
+                    fontSize: getComputedStyle(node).fontSize || '2rem',
+                    fontWeight: getComputedStyle(node).fontWeight || 'bold',
+                    color: getComputedStyle(node).color || '#000000',
+                    textAlign: getComputedStyle(node).textAlign || 'left',
+                    margin: getComputedStyle(node).margin || '0',
+                    padding: getComputedStyle(node).padding || '0',
+                    originalHtml: node.outerHTML
+                }
+            };
+        } else if (tagName === 'p') {
+            element = {
+                id: elementId,
+                type: 'htmlParagraph',
+                props: {
+                    text: node.innerHTML,
+                    customClassName: node.className || '',
+                    fontSize: getComputedStyle(node).fontSize || '1rem',
+                    fontWeight: getComputedStyle(node).fontWeight || 'normal',
+                    color: getComputedStyle(node).color || '#000000',
+                    textAlign: getComputedStyle(node).textAlign || 'left',
+                    lineHeight: getComputedStyle(node).lineHeight || '1.5',
+                    margin: getComputedStyle(node).margin || '0',
+                    padding: getComputedStyle(node).padding || '0',
+                    originalHtml: node.outerHTML
+                }
+            };
+        } else if (tagName === 'img') {
+            element = {
+                id: elementId,
+                type: 'htmlImage',
+                props: {
+                    src: node.src || '',
+                    alt: node.alt || '',
+                    customClassName: node.className || '',
+                    width: node.width || 'auto',
+                    height: node.height || 'auto',
+                    borderRadius: getComputedStyle(node).borderRadius || '0',
+                    margin: getComputedStyle(node).margin || '0',
+                    padding: getComputedStyle(node).padding || '0',
+                    originalHtml: node.outerHTML
+                }
+            };
+        } else if (tagName === 'button' || (tagName === 'a' && !node.closest('nav, ul'))) {
+            element = {
+                id: elementId,
+                type: 'htmlButton',
+                props: {
+                    text: node.innerText || node.innerHTML,
+                    link: node.href || '#',
+                    customClassName: node.className || '',
+                    backgroundColor: getComputedStyle(node).backgroundColor || '#007bff',
+                    color: getComputedStyle(node).color || '#ffffff',
+                    fontSize: getComputedStyle(node).fontSize || '1rem',
+                    fontWeight: getComputedStyle(node).fontWeight || 'normal',
+                    padding: getComputedStyle(node).padding || '8px 16px',
+                    borderRadius: getComputedStyle(node).borderRadius || '4px',
+                    border: getComputedStyle(node).border || 'none',
+                    margin: getComputedStyle(node).margin || '0',
+                    originalHtml: node.outerHTML
+                }
+            };
+        } else if (tagName === 'div' && node.children.length === 0 && node.innerText.trim()) {
+            element = {
+                id: elementId,
+                type: 'htmlText',
+                props: {
+                    text: node.innerHTML,
+                    customClassName: node.className || '',
+                    fontSize: getComputedStyle(node).fontSize || '1rem',
+                    fontWeight: getComputedStyle(node).fontWeight || 'normal',
+                    color: getComputedStyle(node).color || '#000000',
+                    textAlign: getComputedStyle(node).textAlign || 'left',
+                    margin: getComputedStyle(node).margin || '0',
+                    padding: getComputedStyle(node).padding || '0',
+                    originalHtml: node.outerHTML
+                }
+            };
+        }
+        
+        return element;
+    };
+
+    const createHtmlSection = (node, isFooter = false) => {
+        const sectionId = isFooter ? 'global-footer' : generateId('section');
+        const elements = [];
+        
+        // Parse all child elements
+        const walker = document.createTreeWalker(
+            node,
+            NodeFilter.SHOW_ELEMENT,
+            {
+                acceptNode: (node) => {
+                    const tagName = node.tagName.toLowerCase();
+                    if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'img', 'button', 'a', 'div'].includes(tagName)) {
+                        return NodeFilter.FILTER_ACCEPT;
+                    }
+                    return NodeFilter.FILTER_SKIP;
+                }
+            }
+        );
+        
+        let currentNode;
+        while (currentNode = walker.nextNode()) {
+            const element = parseHtmlElement(currentNode);
+            if (element) {
+                elements.push(element);
+            }
+        }
+        
+        return {
+            id: sectionId,
+            type: 'htmlSection',
+            props: {
+                ...getDefaultProps('section'),
+                customClassName: node.className || '',
+                backgroundColor: getComputedStyle(node).backgroundColor || 'transparent',
+                padding: getComputedStyle(node).padding || '0',
+                margin: getComputedStyle(node).margin || '0',
+                originalHtml: node.outerHTML
+            },
+            columns: [{
+                id: generateId('col'),
+                type: 'column',
+                props: { customClassName: '' },
+                elements: elements
+            }]
+        };
+    };
+
+    function parseNavbar(headerEl) {
+        const newNav = { id: 'global-navbar', type: 'navbar', props: getDefaultProps('navbar') };
+        newNav.props.customClassName = headerEl.className;
+        const logo = headerEl.querySelector('.font-bold');
+        if (logo) newNav.props.logoText = logo.innerText.trim();
+        
+        const navLinks = headerEl.querySelectorAll('nav a');
+        if (navLinks.length > 0) {
+            newNav.props.links = Array.from(navLinks).map(a => ({ id: generateId('link'), text: a.innerText.trim(), url: a.getAttribute('href') || '#' }));
+        }
+        return newNav;
+    }
+
+    let sections = [];
+    let globalNavbar = null;
+    let globalFooter = null;
+
+    for (const node of Array.from(doc.body.children)) {
+        if (node.tagName === 'HEADER') {
+            globalNavbar = parseNavbar(node);
+        } else if (node.tagName === 'FOOTER') {
+            globalFooter = createHtmlSection(node, true);
+        } else {
+            const isSection = node.tagName === 'SECTION' || 
+                             (node.tagName === 'DIV' && (
+                                 node.children.length > 0 || 
+                                 node.innerText.trim().length > 50 ||
+                                 node.querySelector('h1, h2, h3, h4, h5, h6, p, img, button, input')
+                             ));
+            
+            if (isSection) {
+                const htmlSection = createHtmlSection(node);
+                if (htmlSection) {
+                    sections.push(htmlSection);
+                }
+            }
+        }
+    }
+
+    return { sections, globalNavbar, globalFooter };
+}
+
+function htmlToBuilderJsonSimple(htmlString) {
+    if (!htmlString) return { sections: [], globalNavbar: null, globalFooter: null };
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+
+    const createSimpleHtmlSection = (node, isFooter = false) => {
+        const sectionId = isFooter ? 'global-footer' : generateId('section');
+        
+        return {
+            id: sectionId,
+            type: 'section',
+            props: {
+                ...getDefaultProps('section'),
+                customClassName: node.className || ''
+            },
+            columns: [{
+                id: generateId('col'),
+                type: 'column',
+                props: { customClassName: '' },
+                elements: [{
+                    id: generateId('htmlContent'),
+                    type: 'htmlContent',
+                    props: {
+                        originalHtml: node.outerHTML,
+                        customClassName: '',
+                        isEditable: true
+                    }
+                }]
+            }]
+        };
+    };
+
+    function parseNavbar(headerEl) {
+        const newNav = { id: 'global-navbar', type: 'navbar', props: getDefaultProps('navbar') };
+        newNav.props.customClassName = headerEl.className;
+        const logo = headerEl.querySelector('.font-bold');
+        if (logo) newNav.props.logoText = logo.innerText.trim();
+        
+        const navLinks = headerEl.querySelectorAll('nav a');
+        if (navLinks.length > 0) {
+            newNav.props.links = Array.from(navLinks).map(a => ({ id: generateId('link'), text: a.innerText.trim(), url: a.getAttribute('href') || '#' }));
+        }
+        return newNav;
+    }
+
+    let sections = [];
+    let globalNavbar = null;
+    let globalFooter = null;
+
+    for (const node of Array.from(doc.body.children)) {
+        if (node.tagName === 'HEADER') {
+            globalNavbar = parseNavbar(node);
+        } else if (node.tagName === 'FOOTER') {
+            globalFooter = createSimpleHtmlSection(node, true);
+        } else {
+            const isSection = node.tagName === 'SECTION' || 
+                             (node.tagName === 'DIV' && (
+                                 node.children.length > 0 || 
+                                 node.innerText.trim().length > 50 ||
+                                 node.querySelector('h1, h2, h3, h4, h5, h6, p, img, button, input')
+                             ));
+            
+            if (isSection) {
+                const htmlSection = createSimpleHtmlSection(node);
+                if (htmlSection) {
+                    sections.push(htmlSection);
+                }
+            }
+        }
+    }
+
+    return { sections, globalNavbar, globalFooter };
+}
 
 function htmlToBuilderJson(htmlString) {
     if (!htmlString) return { sections: [], globalNavbar: null, globalFooter: null };
@@ -513,10 +2237,8 @@ function htmlToBuilderJson(htmlString) {
         } else if (node.innerText.trim() === '■' || node.innerText.trim() === '▲' || node.innerText.trim() === '●') {
              element = { type: 'icon', props: { iconName: "CheckSquare" }};
         } else if (tagName === 'div' && node.innerText.trim().length > 0 && !node.querySelector('h1, h2, h3, h4, h5, h6, p, img, button, input')) {
-            // Handle divs with text content that might be missed
             element = { type: 'textBlock', props: { text: node.innerHTML.trim(), customClassName: node.className } };
         } else if (tagName === 'span' && node.innerText.trim().length > 0) {
-            // Handle spans with text content
             element = { type: 'textBlock', props: { text: node.innerHTML.trim(), customClassName: node.className } };
         }
 
@@ -571,7 +2293,6 @@ function htmlToBuilderJson(htmlString) {
             newSection.props.customClassName = sectionEl.className;
         }
 
-        // Enhanced content detection - look for any container with content
         const mainContentContainer = sectionEl.children[0] || sectionEl;
         let layoutContainer = mainContentContainer?.querySelector('.grid, .flex:not([class*="items-center"]), [class*="grid"], [class*="flex"]');
 
@@ -587,7 +2308,6 @@ function htmlToBuilderJson(htmlString) {
         } else if (mainContentContainer && mainContentContainer !== sectionEl) {
              colNodes = [mainContentContainer];
         } else {
-            // If no clear structure, treat the entire section as one column
             colNodes = [sectionEl];
         }
 
@@ -607,7 +2327,6 @@ function htmlToBuilderJson(htmlString) {
             }
         });
         
-        // If no columns were created, try to parse the section directly
         if (newSection.columns.length === 0) {
             const elements = parseContainer(sectionEl);
             if (elements.length > 0) {
@@ -652,17 +2371,12 @@ function htmlToBuilderJson(htmlString) {
     let globalNavbar = null;
     let globalFooter = null;
 
-    // Enhanced section detection - look for ANY container that could be a section
     for (const node of Array.from(doc.body.children)) {
         if (node.tagName === 'HEADER') {
             globalNavbar = parseNavbar(node);
         } else if (node.tagName === 'FOOTER') {
             globalFooter = parseSection(node, true);
         } else {
-            // Look for ANY element that could be a section:
-            // - <section> tags
-            // - <div> tags with substantial content
-            // - Any container with multiple child elements
             const isSection = node.tagName === 'SECTION' || 
                              (node.tagName === 'DIV' && (
                                  node.children.length > 0 || 
@@ -723,6 +2437,16 @@ function DraggableCanvasElement({ elementData, onUpdateProps, onDelete, onSelect
                 onNavigate={onNavigate}
                 isEditable={isDraggable && isSelected}
                 isDraggable={isDraggable}
+                onSelect={(elementProps) => {
+                    // Handle visual element selection
+                    const visualElementData = {
+                        ...elementProps,
+                        path: elementData.path,
+                        parentElementId: elementData.id,
+                        isIcon: elementProps.isIcon
+                    };
+                    onSelect(elementData.id, 'visualElement', elementData.path, visualElementData);
+                }}
             />
         </div>
         {!isPreviewMode && isSelected && (
@@ -962,7 +2686,7 @@ function AiLoader() {
         </div>
     );
 }
-function AiModeView({ onBack, onAiSubmit, isAiLoading, aiChatHistory, aiSuggestions, handleUndo, handleRedo, canUndo, canRedo }) {
+function AiModeView({ onBack, onAiSubmit, isAiLoading, aiChatHistory, aiSuggestions, handleUndo, handleRedo, canUndo, canRedo, originalApiHtml }) {
     const handleKeyDown = (e) => {
         if(e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -1013,6 +2737,22 @@ function AiModeView({ onBack, onAiSubmit, isAiLoading, aiChatHistory, aiSuggesti
                                 </button>
                             ))}
                         </div>
+                    </div>
+                )}
+                {originalApiHtml && (
+                    <div className="pb-3">
+                        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Original HTML</p>
+                        <button 
+                            onClick={() => {
+                                const newWindow = window.open('', '_blank');
+                                newWindow.document.write(originalApiHtml);
+                                newWindow.document.close();
+                            }}
+                            className="px-2 py-1 bg-blue-100 text-blue-800 text-[11px] font-medium rounded-full hover:bg-blue-200 transition-colors flex items-center gap-1"
+                        >
+                            <LucideIcons.ExternalLink className="w-3 h-3" />
+                            View Original
+                        </button>
                     </div>
                 )}
                 <div className="relative">
@@ -1090,7 +2830,7 @@ const ElementAccordion = ({ title, children, defaultOpen = true }) => {
         </div>
     );
 };
-function LeftPanel({ isOpen, onClose, onAddTopLevelSection, onEnterAiMode, pages, activePageId, onAddPage, onSelectPage, onRenamePage, onDeletePage, onAiSubmit, isAiLoading, aiChatHistory, onSelect, selectedItem, aiSuggestions, handleUndo, handleRedo, isAiMode, setIsAiMode, canUndo, canRedo }) {
+function LeftPanel({ isOpen, onClose, onAddTopLevelSection, onEnterAiMode, pages, activePageId, onAddPage, onSelectPage, onRenamePage, onDeletePage, onAiSubmit, isAiLoading, aiChatHistory, onSelect, selectedItem, aiSuggestions, handleUndo, handleRedo, isAiMode, setIsAiMode, canUndo, canRedo, originalApiHtml }) {
   const [activeTab, setActiveTab] = useState("insert");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -1140,7 +2880,7 @@ function LeftPanel({ isOpen, onClose, onAddTopLevelSection, onEnterAiMode, pages
             <TabButton tabName="pages" icon={<LucideIcons.FileText className="w-4 h-4" />} label="Pages" />
         </div>
         <div className="flex-1 overflow-y-auto bg-white pb-12">
-            {activeTab === 'insert' && isAiMode && <AiModeView onBack={() => setIsAiMode(false)} onAiSubmit={onAiSubmit} isAiLoading={isAiLoading} aiChatHistory={aiChatHistory} aiSuggestions={aiSuggestions} handleUndo={handleUndo} handleRedo={handleRedo} canUndo={canUndo} canRedo={canRedo} />}
+            {activeTab === 'insert' && isAiMode && <AiModeView onBack={() => setIsAiMode(false)} onAiSubmit={onAiSubmit} isAiLoading={isAiLoading} aiChatHistory={aiChatHistory} aiSuggestions={aiSuggestions} handleUndo={handleUndo} handleRedo={handleRedo} canUndo={canUndo} canRedo={canRedo} originalApiHtml={originalApiHtml} />}
             {activeTab === 'insert' && !isAiMode && (
                 <div className="p-3 space-y-4">
                     <div className="relative"><LucideIcons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" /><input type="text" placeholder="Search elements..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-md text-sm focus:ring-1 focus:ring-green-500" /></div>
@@ -1415,7 +3155,7 @@ function SlideManager({ slides = [], onUpdateSlides, elementId }) {
     );
 }
 
-function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePageId, onRenamePage, onAddGlobalElement, comments, onUpdateComment, onDeleteComment, onClose }) {
+function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePageId, onRenamePage, onAddGlobalElement, comments, onUpdateComment, onDeleteComment, onClose, selectedVisualElement }) {
   const [activeTab, setActiveTab] = React.useState('properties');
 
   const renderPropertiesPanel = () => {
@@ -1432,15 +3172,19 @@ function RightSidebar({ selectedItemData, onUpdateSelectedProps, pages, activePa
 
     const GeneralStyling = () => (
         <>
-        <PropertyGroup title="Custom Classes">
-             <DebouncedTextInput label="Tailwind Classes" type="textarea" rows={3} initialValue={props.customClassName} onCommit={val => onUpdate({ customClassName: val })} key={`${id}-classes`}/>
-        </PropertyGroup>
         </>
     );
     return (<> <div className="flex justify-between items-center px-3 border-b border-slate-200/80 h-[56px] bg-white"><h2 className="text-base font-bold text-slate-800 capitalize truncate">{config?.name || itemType || 'Properties'}</h2><button onClick={onClose} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors -mr-1"><LucideIcons.PanelRightClose className="w-5 h-5"/></button></div><div className="overflow-y-auto flex-grow text-sm p-3 bg-slate-50/50"> {(() => {
         switch(itemType) {
             case 'header': case 'textBlock': return <><PropertyGroup title="Content"><DebouncedTextInput label="Text" type="textarea" rows={4} initialValue={props.text} onCommit={val => onUpdate({ text: val })} key={id}/></PropertyGroup><GeneralStyling/></>;
             case 'button': return <><PropertyGroup title="Content"><DebouncedTextInput label="Button Text" initialValue={props.buttonText} onCommit={val => onUpdate({ buttonText: val })} key={`${id}-text`} /><DebouncedTextInput label="Link URL" initialValue={props.link} onCommit={val => onUpdate({ link: val })} key={`${id}-link`} /></PropertyGroup><GeneralStyling/></>;
+            case 'htmlHeading': return <><PropertyGroup title="Content"><DebouncedTextInput label="Heading Text" type="textarea" rows={3} initialValue={props.text} onCommit={val => onUpdate({ text: val })} key={id}/><CustomDropdown label="Tag" options={[{label: 'H1', value: 'h1'}, {label: 'H2', value: 'h2'}, {label: 'H3', value: 'h3'}, {label: 'H4', value: 'h4'}, {label: 'H5', value: 'h5'}, {label: 'H6', value: 'h6'}]} value={props.tag} onChange={val => onUpdate({ tag: val })} key={`${id}-tag`}/></PropertyGroup><PropertyGroup title="Typography"><StyledSlider label="Font Size" value={props.fontSize} onChange={val => onUpdate({ fontSize: val })} max={72} unit="px" key={`${id}-fontsize`}/><CustomDropdown label="Font Weight" options={[{label: 'Normal', value: 'normal'}, {label: 'Bold', value: 'bold'}, {label: 'Light', value: '300'}, {label: 'Medium', value: '500'}, {label: 'Semi Bold', value: '600'}, {label: 'Extra Bold', value: '800'}]} value={props.fontWeight} onChange={val => onUpdate({ fontWeight: val })} key={`${id}-fontweight`}/><ColorInput label="Text Color" value={props.color} onChange={val => onUpdate({ color: val })} key={`${id}-color`}/><CustomDropdown label="Text Align" options={[{label: 'Left', value: 'left'}, {label: 'Center', value: 'center'}, {label: 'Right', value: 'right'}, {label: 'Justify', value: 'justify'}]} value={props.textAlign} onChange={val => onUpdate({ textAlign: val })} key={`${id}-align`}/></PropertyGroup><PropertyGroup title="Spacing"><DebouncedTextInput label="Margin" initialValue={props.margin} onCommit={val => onUpdate({ margin: val })} key={`${id}-margin`}/><DebouncedTextInput label="Padding" initialValue={props.padding} onCommit={val => onUpdate({ padding: val })} key={`${id}-padding`}/></PropertyGroup><GeneralStyling/></>;
+            case 'htmlParagraph': return <><PropertyGroup title="Content"><DebouncedTextInput label="Paragraph Text" type="textarea" rows={4} initialValue={props.text} onCommit={val => onUpdate({ text: val })} key={id}/></PropertyGroup><PropertyGroup title="Typography"><StyledSlider label="Font Size" value={props.fontSize} onChange={val => onUpdate({ fontSize: val })} max={48} unit="px" key={`${id}-fontsize`}/><CustomDropdown label="Font Weight" options={[{label: 'Normal', value: 'normal'}, {label: 'Bold', value: 'bold'}, {label: 'Light', value: '300'}, {label: 'Medium', value: '500'}]} value={props.fontWeight} onChange={val => onUpdate({ fontWeight: val })} key={`${id}-fontweight`}/><ColorInput label="Text Color" value={props.color} onChange={val => onUpdate({ color: val })} key={`${id}-color`}/><CustomDropdown label="Text Align" options={[{label: 'Left', value: 'left'}, {label: 'Center', value: 'center'}, {label: 'Right', value: 'right'}, {label: 'Justify', value: 'justify'}]} value={props.textAlign} onChange={val => onUpdate({ textAlign: val })} key={`${id}-align`}/><StyledSlider label="Line Height" value={props.lineHeight} onChange={val => onUpdate({ lineHeight: val })} max={3} step={0.1} key={`${id}-lineheight`}/></PropertyGroup><PropertyGroup title="Spacing"><DebouncedTextInput label="Margin" initialValue={props.margin} onCommit={val => onUpdate({ margin: val })} key={`${id}-margin`}/><DebouncedTextInput label="Padding" initialValue={props.padding} onCommit={val => onUpdate({ padding: val })} key={`${id}-padding`}/></PropertyGroup><GeneralStyling/></>;
+            case 'htmlImage': return <><PropertyGroup title="Content"><DebouncedTextInput label="Image URL" initialValue={props.src} onCommit={val => onUpdate({ src: val })} key={`${id}-src`}/><DebouncedTextInput label="Alt Text" initialValue={props.alt} onCommit={val => onUpdate({ alt: val })} key={`${id}-alt`}/></PropertyGroup><PropertyGroup title="Dimensions"><DebouncedTextInput label="Width" initialValue={props.width} onCommit={val => onUpdate({ width: val })} key={`${id}-width`}/><DebouncedTextInput label="Height" initialValue={props.height} onCommit={val => onUpdate({ height: val })} key={`${id}-height`}/><DebouncedTextInput label="Border Radius" initialValue={props.borderRadius} onCommit={val => onUpdate({ borderRadius: val })} key={`${id}-radius`}/></PropertyGroup><PropertyGroup title="Spacing"><DebouncedTextInput label="Margin" initialValue={props.margin} onCommit={val => onUpdate({ margin: val })} key={`${id}-margin`}/><DebouncedTextInput label="Padding" initialValue={props.padding} onCommit={val => onUpdate({ padding: val })} key={`${id}-padding`}/></PropertyGroup><GeneralStyling/></>;
+            case 'htmlButton': return <><PropertyGroup title="Content"><DebouncedTextInput label="Button Text" initialValue={props.text} onCommit={val => onUpdate({ text: val })} key={`${id}-text`}/><DebouncedTextInput label="Link URL" initialValue={props.link} onCommit={val => onUpdate({ link: val })} key={`${id}-link`}/></PropertyGroup><PropertyGroup title="Styling"><ColorInput label="Background Color" value={props.backgroundColor} onChange={val => onUpdate({ backgroundColor: val })} key={`${id}-bgcolor`}/><ColorInput label="Text Color" value={props.color} onChange={val => onUpdate({ color: val })} key={`${id}-color`}/><StyledSlider label="Font Size" value={props.fontSize} onChange={val => onUpdate({ fontSize: val })} max={32} unit="px" key={`${id}-fontsize`}/><CustomDropdown label="Font Weight" options={[{label: 'Normal', value: 'normal'}, {label: 'Bold', value: 'bold'}, {label: 'Medium', value: '500'}, {label: 'Semi Bold', value: '600'}]} value={props.fontWeight} onChange={val => onUpdate({ fontWeight: val })} key={`${id}-fontweight`}/><DebouncedTextInput label="Padding" initialValue={props.padding} onCommit={val => onUpdate({ padding: val })} key={`${id}-padding`}/><DebouncedTextInput label="Border Radius" initialValue={props.borderRadius} onCommit={val => onUpdate({ borderRadius: val })} key={`${id}-radius`}/></PropertyGroup><PropertyGroup title="Spacing"><DebouncedTextInput label="Margin" initialValue={props.margin} onCommit={val => onUpdate({ margin: val })} key={`${id}-margin`}/></PropertyGroup><GeneralStyling/></>;
+            case 'htmlText': return <><PropertyGroup title="Content"><DebouncedTextInput label="Text Content" type="textarea" rows={3} initialValue={props.text} onCommit={val => onUpdate({ text: val })} key={id}/></PropertyGroup><PropertyGroup title="Typography"><StyledSlider label="Font Size" value={props.fontSize} onChange={val => onUpdate({ fontSize: val })} max={48} unit="px" key={`${id}-fontsize`}/><CustomDropdown label="Font Weight" options={[{label: 'Normal', value: 'normal'}, {label: 'Bold', value: 'bold'}, {label: 'Light', value: '300'}, {label: 'Medium', value: '500'}]} value={props.fontWeight} onChange={val => onUpdate({ fontWeight: val })} key={`${id}-fontweight`}/><ColorInput label="Text Color" value={props.color} onChange={val => onUpdate({ color: val })} key={`${id}-color`}/><CustomDropdown label="Text Align" options={[{label: 'Left', value: 'left'}, {label: 'Center', value: 'center'}, {label: 'Right', value: 'right'}, {label: 'Justify', value: 'justify'}]} value={props.textAlign} onChange={val => onUpdate({ textAlign: val })} key={`${id}-align`}/></PropertyGroup><PropertyGroup title="Spacing"><DebouncedTextInput label="Margin" initialValue={props.margin} onCommit={val => onUpdate({ margin: val })} key={`${id}-margin`}/><DebouncedTextInput label="Padding" initialValue={props.padding} onCommit={val => onUpdate({ padding: val })} key={`${id}-padding`}/></PropertyGroup><GeneralStyling/></>;
+            case 'htmlContent': return <><PropertyGroup title="Section Settings"><div className="text-sm text-gray-600 p-3 bg-blue-50 rounded-lg border border-blue-200"><p className="font-medium text-blue-800 mb-1">Visual Editor Active</p><p>Click on any element within this section to edit it visually.</p></div></PropertyGroup><GeneralStyling/></>;
+            case 'visualElement': return <VisualElementProperties props={props} onUpdate={onUpdate} id={id} selectedVisualElement={selectedVisualElement} />;
             case 'icon':
                 return (
                     <>
@@ -1683,6 +3427,8 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     const [selectedItem, setSelectedItem] = useState(null);
     const [activeDragItem, setActiveDragItem] = useState(null);
     const [isPreviewMode, setIsPreviewMode] = useState(false);
+    const [selectedVisualElement, setSelectedVisualElement] = useState(null);
+    const [originalApiHtml, setOriginalApiHtml] = useState(null);
     const [activeTool, setActiveTool] = useState('select');
     const [zoom, setZoom] = useState(0.75);
     const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
@@ -1717,44 +3463,142 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
             onDataChangeRef.current(currentData);
         }
     }, [pages, activePageId, globalNavbar, globalFooter, comments]);
+
+  // Handle clicks outside to close visual element selection
+  useEffect(() => {
+    const handleDocumentClick = (e) => {
+      if (selectedItem?.type === 'visualElement') {
+        // Check if click is outside the right panel
+        const rightPanel = document.querySelector('[data-right-panel]');
+        if (rightPanel && !rightPanel.contains(e.target)) {
+          setSelectedItem(null);
+          setSelectedVisualElement(null);
+        }
+      }
+    };
+
+    document.addEventListener('click', handleDocumentClick);
+    return () => document.removeEventListener('click', handleDocumentClick);
+  }, [selectedItem]);
     
+
+    // Function to merge user changes with AI-generated content
+    const mergeUserChangesWithAI = useCallback((currentLayout, aiSections) => {
+        console.log('🔄 Merging user changes with AI content:', { currentLayout, aiSections });
+        
+        // If no current layout, use AI sections as-is
+        if (!currentLayout || currentLayout.length === 0) {
+            return aiSections;
+        }
+        
+        // If no AI sections, keep current layout
+        if (!aiSections || aiSections.length === 0) {
+            return currentLayout;
+        }
+        
+        // Create a map of current sections by their type/content for comparison
+        const currentSectionsMap = new Map();
+        currentLayout.forEach((section, index) => {
+            // Use section type and first element content as key
+            const key = `${section.type}-${section.columns?.[0]?.elements?.[0]?.type || 'unknown'}`;
+            currentSectionsMap.set(key, { section, index });
+        });
+        
+        // Merge AI sections with preserved user changes
+        const mergedLayout = aiSections.map((aiSection, aiIndex) => {
+            const aiKey = `${aiSection.type}-${aiSection.columns?.[0]?.elements?.[0]?.type || 'unknown'}`;
+            const currentSectionData = currentSectionsMap.get(aiKey);
+            
+            if (currentSectionData) {
+                // Found matching section - preserve user changes
+                const currentSection = currentSectionData.section;
+                
+                // Check if user has made changes to this section
+                const hasUserChanges = currentSection.version && currentSection.version > 1;
+                
+                if (hasUserChanges) {
+                    console.log('✅ Preserving user changes for section:', aiKey);
+                    // Keep the user-modified section
+                    return {
+                        ...currentSection,
+                        // Update with any new AI content but preserve user modifications
+                        columns: currentSection.columns.map((currentColumn, colIndex) => {
+                            const aiColumn = aiSection.columns?.[colIndex];
+                            if (!aiColumn) return currentColumn;
+                            
+                            return {
+                                ...currentColumn,
+                                elements: currentColumn.elements.map((currentElement, elemIndex) => {
+                                    const aiElement = aiColumn.elements?.[elemIndex];
+                                    if (!aiElement) return currentElement;
+                                    
+                                    // For HTML content elements, preserve user's originalHtml if it has been modified
+                                    if (currentElement.type === 'htmlContent' && 
+                                        currentElement.props?.originalHtml && 
+                                        currentElement.props?.originalHtml !== aiElement.props?.originalHtml) {
+                                        console.log('✅ Preserving user HTML changes');
+                                        return currentElement; // Keep user's version
+                                    }
+                                    
+                                    // For other elements, merge AI content with user changes
+                                    return {
+                                        ...aiElement,
+                                        props: {
+                                            ...aiElement.props,
+                                            ...currentElement.props // User changes override AI defaults
+                                        }
+                                    };
+                                })
+                            };
+                        })
+                    };
+                } else {
+                    // No user changes, use AI section
+                    console.log('🔄 Using AI section (no user changes):', aiKey);
+                    return aiSection;
+                }
+            } else {
+                // New section from AI, use as-is
+                console.log('🆕 Using new AI section:', aiKey);
+                return aiSection;
+            }
+        });
+        
+        console.log('✅ Merged layout:', mergedLayout);
+        return mergedLayout;
+    }, []);
 
     const syncPageWithAI = useCallback((responseData) => {
         // Always auto-apply changes - no modal needed
         setIsInitialPrompt(false);
 
         if (responseData.html) {
-            // Always automatically apply the changes
-            const { sections, globalNavbar: parsedNav, globalFooter: parsedFooter } = htmlToBuilderJson(responseData.html);
+            // Store the original HTML for reference
+            setOriginalApiHtml(responseData.html);
+            
+            // Use the simple HTML preservation approach to maintain exact styling
+            const { sections, globalNavbar: parsedNav, globalFooter: parsedFooter } = htmlToBuilderJsonSimple(responseData.html);
             // Parsed sections from new response
         
         setPages(currentPages => {
             const pageToUpdate = currentPages[activePageId];
             if (!pageToUpdate) return currentPages;
                 
-                // Current page layout before update
-            
             const newVersion = (pageToUpdate.version || 1) + 1;
+            const currentLayout = pageToUpdate.layout || [];
             
-                // Replace with the latest generation
-                const currentLayout = pageToUpdate.layout || [];
-                const mergedLayout = sections; // Use the latest sections from the AI response
-                
-                // Replacing with latest generation
-
-                // Final merged layout
-
-                const updatedPage = {
-                    ...pageToUpdate,
-                    layout: mergedLayout,
-                    version: newVersion
-                };
+            // Preserve user changes by merging with AI-generated content
+            const mergedLayout = mergeUserChangesWithAI(currentLayout, sections);
+            
+            const updatedPage = {
+                ...pageToUpdate,
+                layout: mergedLayout,
+                version: newVersion
+            };
                         
-                // Auto-updating pages state
-                
-                return {
-                    ...currentPages,
-                    [activePageId]: updatedPage
+            return {
+                ...currentPages,
+                [activePageId]: updatedPage
             };
         });
 
@@ -1952,7 +3796,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
       
       if (previousState) {
         // Update the page with previous HTML state
-        const { sections } = htmlToBuilderJson(previousState.html);
+        const { sections } = htmlToBuilderJsonSimple(previousState.html);
         console.log('Parsed sections for undo:', sections);
         
         setPages(prev => {
@@ -1990,7 +3834,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
       
       if (nextState) {
         // Update the page with next HTML state
-        const { sections } = htmlToBuilderJson(nextState.html);
+        const { sections } = htmlToBuilderJsonSimple(nextState.html);
         console.log('Parsed sections for redo:', sections);
         
         setPages(prev => {
@@ -2099,6 +3943,21 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
         }
         return;
     }
+    
+    // Handle visual element selection
+    if (type === 'visualElement') {
+        console.log('🎯 Setting selectedVisualElement:', itemData);
+        setSelectedVisualElement(itemData);
+        setSelectedItem({ 
+            pageId: activePageId, 
+            id: itemData.id, 
+            type: 'visualElement', 
+            itemType: 'visualElement', 
+            path: path, 
+            props: itemData 
+        });
+        return;
+    }
     if (itemData) {
         const pageIdMatch = path.match(/pages\[([\w-]+)\]/);
         const pageId = pageIdMatch ? pageIdMatch[1] : activePageId;
@@ -2122,6 +3981,139 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     if (selectedItem?.path === path) {
         setSelectedItem(prev => prev ? ({ ...prev, props: mergeDeep({}, prev.props || {}, newProps) }) : null);
     }
+  };
+
+  const handleVisualElementUpdate = (path, updates) => {
+    console.log('🔧 Visual Element Update:', { path, updates, selectedVisualElement });
+    
+    // Handle visual element updates by updating the originalHtml
+    setPages(currentPages => {
+      const updatedPages = { ...currentPages };
+      
+      // Parse the path correctly: pages[pageId].layout[sectionIndex].columns[columnIndex].elements[elementIndex]
+      const pageMatch = path.match(/pages\[([^\]]+)\]/);
+      const pageId = pageMatch ? pageMatch[1] : null;
+      
+      if (!pageId || !updatedPages[pageId]) {
+        console.log('❌ Invalid pageId or page not found:', pageId, 'Available pages:', Object.keys(updatedPages));
+        return updatedPages;
+      }
+      
+      const page = updatedPages[pageId];
+      const newLayout = [...(page.layout || [])];
+      
+      // Parse section, column, and element indices
+      const sectionMatch = path.match(/layout\[(\d+)\]/);
+      const columnMatch = path.match(/columns\[(\d+)\]/);
+      const elementMatch = path.match(/elements\[(\d+)\]/);
+      
+      const sectionIndex = sectionMatch ? parseInt(sectionMatch[1]) : -1;
+      const columnIndex = columnMatch ? parseInt(columnMatch[1]) : -1;
+      const elementIndex = elementMatch ? parseInt(elementMatch[1]) : -1;
+      
+      console.log('📍 Parsed indices:', { sectionIndex, columnIndex, elementIndex });
+      
+      if (sectionIndex >= 0 && sectionIndex < newLayout.length) {
+        if (columnIndex >= 0 && columnIndex < newLayout[sectionIndex].columns.length) {
+          if (elementIndex >= 0 && elementIndex < newLayout[sectionIndex].columns[columnIndex].elements.length) {
+            const element = newLayout[sectionIndex].columns[columnIndex].elements[elementIndex];
+            
+            console.log('🎯 Found element to update:', element);
+            
+            // For HTML content elements, update the originalHtml
+            if (element.type === 'htmlContent' && element.props?.originalHtml) {
+              let updatedHtml = element.props.originalHtml;
+              
+              console.log('📝 Original HTML:', updatedHtml);
+              
+              // Simple approach: Update the entire HTML with new styles
+              if (updates.style || updates.text !== undefined || updates.className) {
+                // Create a temporary DOM to parse and update
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = updatedHtml;
+                
+                // Find the element by matching tag name and text content
+                const targetTagName = selectedVisualElement?.tagName?.toLowerCase();
+                const originalText = selectedVisualElement?.text;
+                
+                let targetElement = null;
+                
+                if (targetTagName && originalText) {
+                  // Try to find by tag name and text content
+                  const elements = tempDiv.querySelectorAll(targetTagName);
+                  for (const element of elements) {
+                    if (element.textContent.trim() === originalText.trim()) {
+                      targetElement = element;
+                      break;
+                    }
+                  }
+                }
+                
+                if (targetElement) {
+                  console.log('🎯 Found target element by content:', targetElement);
+                  
+                  // Update the element
+                  if (updates.text !== undefined) {
+                    targetElement.textContent = updates.text;
+                  }
+                  if (updates.style) {
+                    targetElement.style.cssText = updates.style;
+                  }
+                  if (updates.className) {
+                    targetElement.className = updates.className;
+                  }
+                  
+                  // Ensure all elements have data-element-id attributes
+                  const allElements = tempDiv.querySelectorAll('h1, h2, h3, h4, h5, h6, p, button, img, div');
+                  allElements.forEach((element) => {
+                    if (!element.getAttribute('data-element-id')) {
+                      const elementType = element.tagName.toLowerCase();
+                      const elementId = generateId(elementType);
+                      element.setAttribute('data-element-id', elementId);
+                    }
+                  });
+                  
+                  updatedHtml = tempDiv.innerHTML;
+                  console.log('✅ Updated HTML:', updatedHtml);
+                } else {
+                  console.log('❌ Target element not found by content:', { targetTagName, originalText });
+                  console.log('🔍 Available elements:', Array.from(tempDiv.querySelectorAll('h1, h2, h3, h4, h5, h6, p, button, img, div')).map(el => ({
+                    tag: el.tagName.toLowerCase(),
+                    text: el.textContent.trim().substring(0, 50)
+                  })));
+                }
+              }
+              
+              newLayout[sectionIndex].columns[columnIndex].elements[elementIndex] = {
+                ...element,
+                props: { ...element.props, originalHtml: updatedHtml }
+              };
+            } else {
+              // For other elements, update props normally
+              newLayout[sectionIndex].columns[columnIndex].elements[elementIndex] = {
+                ...element,
+                props: { ...element.props, ...updates }
+              };
+            }
+          } else {
+            console.log('❌ Invalid element index:', elementIndex);
+          }
+        } else {
+          console.log('❌ Invalid column index:', columnIndex);
+        }
+      } else {
+        console.log('❌ Invalid section index:', sectionIndex);
+      }
+      
+      updatedPages[pageId] = {
+        ...page,
+        layout: newLayout,
+        version: (page.version || 1) + 1
+      };
+      
+      console.log('🔄 Updated pages:', updatedPages[pageId]);
+      return updatedPages;
+    });
   };
 
   const handleDelete = (path) => {
@@ -2241,6 +4233,14 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   const handleCanvasMouseMove = (e) => { if (activeTool === 'hand' && isPanning.current) { const dx = e.clientX - lastMousePos.current.x; const dy = e.clientY - lastMousePos.current.y; lastMousePos.current = { x: e.clientX, y: e.clientY }; setPanOffset(prev => ({ x: prev.x + dx, y: prev.y + dy })); } };
   const handleCanvasMouseUpOrLeave = (e) => { if (activeTool === 'hand' && isPanning.current) { isPanning.current = false; e.currentTarget.style.cursor = 'grab'; } };
 
+  const handleClickOutside = (e) => {
+    // Close visual element selection when clicking outside the right panel
+    if (selectedItem?.type === 'visualElement' && !e.target.closest('[data-right-panel]')) {
+      setSelectedItem(null);
+      setSelectedVisualElement(null);
+    }
+  };
+
   const handleAddComment = (pageId, frameName, clickPosition) => {
     if (!canvasRef.current) return;
     const canvasRect = canvasRef.current.getBoundingClientRect(); const viewX = clickPosition.x - canvasRect.left; const viewY = clickPosition.y - canvasRect.top; const transformedX = (viewX - panOffset.x) / zoom; const transformedY = (viewY - panOffset.y) / zoom;
@@ -2296,6 +4296,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
                     setIsAiMode={setIsAiMode}
                     canUndo={canUndo}
                     canRedo={canRedo}
+                    originalApiHtml={originalApiHtml}
                 />
                 <div className="flex-1 flex flex-col relative">
                     <CanvasToolbar selectedItem={selectedItem} zoom={zoom} onZoomChange={setZoom} onSelect={handleSelect} pages={pages} activeTool={activeTool} onToolChange={setActiveTool}/>
@@ -2303,7 +4304,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
                     {isAiLoading && <AiCanvasLoader />}
 
                     {!isAiLoading && !aiPreviewHtml && (
-                        <div key={`${activePageId}-${activePage?.version || 1}`} style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`, transformOrigin: "0 0", transition: isPanning.current ? 'none' : "transform 0.2s" }} className="flex-1 flex gap-16 items-start p-16" onClick={(e) => { if (e.target === e.currentTarget && activeTool === 'select') { setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); } }}>
+                        <div key={`${activePageId}-${activePage?.version || 1}`} style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`, transformOrigin: "0 0", transition: isPanning.current ? 'none' : "transform 0.2s" }} className="flex-1 flex gap-16 items-start p-16" onClick={(e) => { if (e.target === e.currentTarget && activeTool === 'select') { setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null }); } handleClickOutside(e); }}>
                             {activePage && DEVICE_FRAMES_CONFIG.map((device) => (
                                 <DeviceFrame key={device.name} device={device} page={activePage} globalNavbar={globalNavbar} globalFooter={globalFooter} onUpdateProps={handleUpdateProps} onDelete={handleDelete} onSelect={handleSelect} selectedItemId={selectedItem?.id} onOpenStructureModal={(path, type) => handleOpenStructureModal(path, type, activePage.id)} isPreviewMode={isPreviewMode} onNavigate={handleNavigate} onDeleteGlobalElement={handleDeleteGlobalElement} isDraggable={activeTool === 'select'} comments={(comments[activePageId] || []).filter(c => c.frame === device.name)} onAddComment={handleAddComment} activeTool={activeTool} />
                             ))}
@@ -2311,8 +4312,8 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
                     )}
                     </main>
                 </div>
-                <div className={`absolute top-0 right-0 h-full transition-transform duration-300 ease-in-out z-40 transform ${isRightPanelOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                  <RightSidebar selectedItemData={selectedItem} onUpdateSelectedProps={handleUpdateProps} pages={pages} activePageId={activePageId} onRenamePage={handleRenameActivePage} onAddGlobalElement={handleAddGlobalElement} comments={comments} onUpdateComment={handleUpdateComment} onDeleteComment={handleDeleteComment} onClose={() => setSelectedItem(null)} />
+                <div className={`absolute top-0 right-0 h-full transition-transform duration-300 ease-in-out z-40 transform ${isRightPanelOpen ? 'translate-x-0' : 'translate-x-full'}`} data-right-panel>
+                  <RightSidebar selectedItemData={selectedItem} onUpdateSelectedProps={selectedItem?.type === 'visualElement' ? handleVisualElementUpdate : handleUpdateProps} pages={pages} activePageId={activePageId} onRenamePage={handleRenameActivePage} onAddGlobalElement={handleAddGlobalElement} comments={comments} onUpdateComment={handleUpdateComment} onDeleteComment={handleDeleteComment} onClose={() => setSelectedItem(null)} selectedVisualElement={selectedVisualElement} />
                 </div>
             </div>
             <DragOverlay dropAnimation={null} zIndex={9999}>{activeDragItem && activeDragItem.data.current?.type === "paletteItem" ? (<PaletteItemDragOverlay config={activeDragItem.data.current.config} />) : null}</DragOverlay>
