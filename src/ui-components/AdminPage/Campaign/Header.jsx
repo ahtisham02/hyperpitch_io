@@ -5,6 +5,7 @@ import { CSS } from "@dnd-kit/utilities";
 import img from "../../../assets/img/cards/672e98fa2d1ed0b7d1bf2adb_glass.png";
 import * as LucideIcons from "lucide-react";
 import apiRequest from "../../../utils/apiRequestAI";
+import sectionApiService from "../../../utils/sectionApiService";
 
 const AI_HISTORY_STORAGE_KEY = "ai_session_histories";
 
@@ -3415,6 +3416,128 @@ function TopBar({ onSaveAndClose, onCancel, onTogglePreview, isPreviewMode, onTo
 }
 let globalAiSessionId = sessionStorage.getItem('ai_session_id') || null;
 
+const convertSectionToHtml = (section) => {
+    if (!section || !section.columns) return null;
+    
+    try {
+        // Convert section structure to HTML
+        let html = '<section';
+        if (section.props?.className) {
+            html += ` class="${section.props.className}"`;
+        }
+        if (section.props?.style) {
+            html += ` style="${section.props.style}"`;
+        }
+        html += '>';
+        
+        section.columns.forEach(column => {
+            html += '<div';
+            if (column.props?.className) {
+                html += ` class="${column.props.className}"`;
+            }
+            if (column.props?.style) {
+                html += ` style="${column.props.style}"`;
+            }
+            html += '>';
+            
+            if (column.elements) {
+                column.elements.forEach(element => {
+                    if (element.type === 'htmlContent' && element.props?.originalHtml) {
+                        html += element.props.originalHtml;
+                    } else {
+                        // Convert other element types to HTML
+                        const tag = element.type === 'heading' ? 'h1' : 
+                                   element.type === 'paragraph' ? 'p' : 
+                                   element.type === 'button' ? 'button' : 'div';
+                        html += `<${tag}`;
+                        if (element.props?.className) {
+                            html += ` class="${element.props.className}"`;
+                        }
+                        if (element.props?.style) {
+                            html += ` style="${element.props.style}"`;
+                        }
+                        html += '>';
+                        if (element.props?.text) {
+                            html += element.props.text;
+                        }
+                        html += `</${tag}>`;
+                    }
+                });
+            }
+            
+            html += '</div>';
+        });
+        
+        html += '</section>';
+        return html;
+    } catch (error) {
+        console.error('Failed to convert section to HTML:', error);
+        return null;
+    }
+};
+
+const sectionManagementService = {
+    async updateSection(sessionId, sectionName, html, position = 'at_beginning', refSection = '', action = 'update') {
+        try {
+            if (!sessionId) {
+                console.warn('⚠️ No session ID provided for update-section API');
+                return;
+            }
+            const result = await sectionApiService.updateSection(sessionId, sectionName, html, position, refSection, action);
+            console.log('✅ Section updated:', result);
+            return result;
+        } catch (error) {
+            console.error('❌ Failed to update section:', error);
+            throw error;
+        }
+    },
+
+    async addSection(sessionId, sectionName, html, position = 'at_beginning', refSection = '') {
+        try {
+            if (!sessionId) {
+                console.warn('⚠️ No session ID provided for add-section API');
+                return;
+            }
+            const result = await sectionApiService.addSection(sessionId, sectionName, html, position, refSection);
+            console.log('✅ Section added:', result);
+            return result;
+        } catch (error) {
+            console.error('❌ Failed to add section:', error);
+            throw error;
+        }
+    },
+
+    async removeSection(sessionId, sectionName) {
+        try {
+            if (!sessionId) {
+                console.warn('⚠️ No session ID provided for remove-section API');
+                return;
+            }
+            const result = await sectionApiService.removeSection(sessionId, sectionName);
+            console.log('✅ Section removed:', result);
+            return result;
+        } catch (error) {
+            console.error('❌ Failed to remove section:', error);
+            throw error;
+        }
+    },
+
+    async moveSection(sessionId, sectionName, newPosition = 'at_beginning', refSection = '') {
+        try {
+            if (!sessionId) {
+                console.warn('⚠️ No session ID provided for move-section API');
+                return;
+            }
+            const result = await sectionApiService.moveSection(sessionId, sectionName, newPosition, refSection);
+            console.log('✅ Section moved:', result);
+            return result;
+        } catch (error) {
+            console.error('❌ Failed to move section:', error);
+            throw error;
+        }
+    }
+};
+
 
 export default function ElementBuilderPage({ onExternalSave, initialBuilderState, onDataChange, onSaveAndClose, onCancel }) {
     const [newlyAddedElementId, setNewlyAddedElementId] = useState(null);
@@ -3589,6 +3712,13 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
             
             // Preserve user changes by merging with AI-generated content
             const mergedLayout = mergeUserChangesWithAI(currentLayout, sections);
+            
+            // Update section via API
+            if (aiSessionId.current) {
+                const sectionName = `section-${Date.now()}`;
+                sectionManagementService.updateSection(aiSessionId.current, sectionName, responseData.html, 'at_beginning', '', 'update')
+                    .catch(error => console.error('Section update failed:', error));
+            }
             
             const updatedPage = {
                 ...pageToUpdate,
@@ -3915,18 +4045,62 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
     const newColumns = columnLayouts.map(layout => ({ id: generateId("col"), type: "column", props: { width: layout.width, style: {} }, elements: [] }));
     const targetPageId = context.pageId || activePageId;
     
+    // Generate appropriate CSS class for the layout
+    const getLayoutClassName = (layouts) => {
+      if (layouts.length === 1) return "grid grid-cols-1 gap-6";
+      if (layouts.length === 2) {
+        const widths = layouts.map(l => l.width);
+        if (widths.includes("50%")) return "grid grid-cols-1 md:grid-cols-2 gap-6";
+        if (widths.includes("30%") && widths.includes("70%")) return "grid grid-cols-1 md:grid-cols-2 gap-6";
+        return "grid grid-cols-1 md:grid-cols-2 gap-6";
+      }
+      if (layouts.length === 3) return "grid grid-cols-1 md:grid-cols-3 gap-6";
+      if (layouts.length === 4) return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6";
+      return "grid grid-cols-1 gap-6";
+    };
+    
     setPages(currentPages => {
         const pageToUpdate = currentPages[targetPageId];
         if (!pageToUpdate) return currentPages;
         const newLayout = JSON.parse(JSON.stringify(pageToUpdate.layout || []));
         if (context.path === null) {
-            const newSection = { id: generateId("section"), type: "section", props: { paddingTop: "48px", paddingBottom: "48px", style: {} }, columns: newColumns };
+            const newSection = { 
+              id: generateId("section"), 
+              type: "section", 
+              props: { paddingTop: "48px", paddingBottom: "48px", style: {} }, 
+              columns: newColumns,
+              layoutContainerClassName: getLayoutClassName(columnLayouts)
+            };
             newLayout.push(newSection);
+            
+            // Note: Add-section API will be called after the modal selection is complete
+            // This function just creates the section structure, the API call happens elsewhere
         } else {
             const item = getItemByPath({ layout: newLayout }, context.path.replace(`pages[${targetPageId}].`, ''));
-            if (item) item.columns = newColumns;
+            if (item) {
+              item.columns = newColumns;
+              item.layoutContainerClassName = getLayoutClassName(columnLayouts);
+            }
         }
-        return { ...currentPages, [targetPageId]: { ...pageToUpdate, layout: newLayout } };
+        const updatedPages = { ...currentPages, [targetPageId]: { ...pageToUpdate, layout: newLayout } };
+        
+        // Call add-section API after section is created (only for new sections, not column updates)
+        if (context.path === null && aiSessionId.current) {
+            const sectionName = `section-${newLayout.length - 1}`;
+            // Get the newly created section from the layout
+            const newlyCreatedSection = newLayout[newLayout.length - 1];
+            const sectionHtml = convertSectionToHtml(newlyCreatedSection);
+            if (sectionHtml) {
+                console.log('➕ Calling add-section API after section creation:', { sessionId: aiSessionId.current, sectionName, columnLayouts });
+                sectionManagementService.addSection(aiSessionId.current, sectionName, sectionHtml, 'at_end', '')
+                    .then(result => console.log('✅ Section added successfully:', result))
+                    .catch(error => console.error('❌ Failed to add section via API:', error));
+            } else {
+                console.log('⚠️ Could not convert new section to HTML for API call');
+            }
+        }
+        
+        return updatedPages;
     });
     setIsLeftPanelOpen(false);
   };
@@ -3966,6 +4140,8 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
   };
 
   const handleUpdateProps = (path, newProps) => {
+    console.log('🔧 handleUpdateProps called:', { path, newProps });
+    
     const isGlobal = path.startsWith('global');
     if (isGlobal) {
         const updater = path.includes('Navbar') ? setGlobalNavbar : setGlobalFooter;
@@ -3975,6 +4151,43 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
             const stateWrapper = { pages: JSON.parse(JSON.stringify(currentPages)) };
             const itemToUpdate = getItemByPath(stateWrapper, path);
             if (itemToUpdate) itemToUpdate.props = mergeDeep({}, itemToUpdate.props || {}, newProps);
+            
+            // Call update-section API ONLY for section-level changes (not element changes)
+            // This prevents text/heading changes from triggering section API calls
+            const isSectionLevelChange = path.includes('layout[') && !path.includes('columns[') && !path.includes('elements[');
+            const isVisualElement = selectedItem?.type === 'visualElement';
+            
+            if (isSectionLevelChange && !isVisualElement && aiSessionId.current && itemToUpdate) {
+                const sectionIndex = path.match(/layout\[(\d+)\]/)?.[1];
+                if (sectionIndex !== undefined) {
+                    const sectionName = `section-${sectionIndex}`;
+                    // Convert section to HTML for API call
+                    const sectionHtml = convertSectionToHtml(itemToUpdate);
+                    if (sectionHtml) {
+                        console.log('✏️ Calling update-section API for section-level changes:', { sessionId: aiSessionId.current, sectionName, path, newProps });
+                        sectionManagementService.updateSection(aiSessionId.current, sectionName, sectionHtml, 'at_beginning', '', 'update')
+                            .then(result => console.log('✅ Section updated successfully:', result))
+                            .catch(error => console.error('❌ Failed to update section via API:', error));
+                    } else {
+                        console.log('⚠️ Could not convert section to HTML for API call');
+                    }
+                } else {
+                    console.log('⚠️ Could not extract section index from path:', path);
+                }
+            } else {
+                console.log('⚠️ Not calling update-section API (element-level change):', { 
+                    path: path,
+                    hasLayoutPath: path.includes('layout['), 
+                    hasColumnsPath: path.includes('columns['),
+                    hasElementsPath: path.includes('elements['),
+                    isSectionLevelChange: isSectionLevelChange,
+                    isVisualElement: isVisualElement,
+                    selectedItemType: selectedItem?.type,
+                    hasSession: !!aiSessionId.current, 
+                    hasItem: !!itemToUpdate 
+                });
+            }
+            
             return stateWrapper.pages;
         });
     }
@@ -4123,6 +4336,26 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
             if (selectedItem?.path?.startsWith(path)) {
                 setSelectedItem({ pageId: activePageId, path: null, type: 'page', id: null });
             }
+            
+            // Call remove-section API if it's a section and we have an AI session
+            if (path.includes('layout[') && aiSessionId.current) {
+                const sectionIndex = path.match(/layout\[(\d+)\]/)?.[1];
+                if (sectionIndex !== undefined) {
+                    const sectionName = `section-${sectionIndex}`;
+                    console.log('🗑️ Calling remove-section API:', { sessionId: aiSessionId.current, sectionName, path });
+                    sectionManagementService.removeSection(aiSessionId.current, sectionName)
+                        .then(result => console.log('✅ Section removed successfully:', result))
+                        .catch(error => console.error('❌ Failed to remove section via API:', error));
+                } else {
+                    console.log('⚠️ Could not extract section index from path:', path);
+                }
+            } else {
+                console.log('⚠️ Not calling remove-section API:', { 
+                    hasLayoutPath: path.includes('layout['), 
+                    hasSession: !!aiSessionId.current 
+                });
+            }
+            
             return stateWrapper.pages;
         }
         return currentPages;
@@ -4220,6 +4453,21 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
             const overIndex = newLayout.findIndex(s => s.id === overId);
             if (activeIndex !== -1 && overIndex !== -1) {
                 const movedLayout = arrayMove(newLayout, activeIndex, overIndex);
+                
+                // Call move-section API if we have an AI session
+                if (aiSessionId.current) {
+                    const sectionName = `section-${activeIndex}`;
+                    const newPosition = overIndex === 0 ? 'at_beginning' : overIndex === movedLayout.length - 1 ? 'at_end' : 'after';
+                    const refSection = overIndex > 0 ? `section-${overIndex - 1}` : '';
+                    
+                    console.log('🔄 Calling move-section API:', { sessionId: aiSessionId.current, sectionName, newPosition, refSection, activeIndex, overIndex });
+                    sectionManagementService.moveSection(aiSessionId.current, sectionName, newPosition, refSection)
+                        .then(result => console.log('✅ Section moved successfully:', result))
+                        .catch(error => console.error('❌ Failed to move section via API:', error));
+                } else {
+                    console.log('⚠️ No AI session available for move-section API call');
+                }
+                
                 return { ...currentPages, [activePageId]: { ...pageToUpdate, layout: movedLayout } };
             }
         }
@@ -4276,7 +4524,7 @@ export default function ElementBuilderPage({ onExternalSave, initialBuilderState
                 <LeftPanel
                     isOpen={isLeftPanelOpen}
                     onClose={() => setIsLeftPanelOpen(false)}
-                    onAddTopLevelSection={() => handleSetStructure([], { path: null, pageId: activePageId })}
+                    onAddTopLevelSection={() => handleOpenStructureModal(null, "section", activePageId)}
                     onEnterAiMode={handleEnterAiMode}
                     pages={pages}
                     activePageId={activePageId}

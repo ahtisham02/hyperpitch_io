@@ -11,5 +11,10 @@ export const API_ENDPOINTS = {
   GET_BUYING_INTENT_IDS_PER_CATEGORY: '/get_buying_intent_ids_per_catagory',
   SEARCH_PEOPLE: '/search_people',
   GET_JOB_TITLES: '/get_job_titles',
-  GET_LOCATION: '/get_location'
+  GET_LOCATION: '/get_location',
+  UPDATE_SECTION: '/update-section',
+  ADD_SECTION: '/add-section',
+  REMOVE_SECTION: '/remove-section',
+  MOVE_SECTION: '/move-section',
+  HOST_PAGE: '/host-page'
 };

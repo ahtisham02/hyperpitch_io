@@ -17,6 +17,8 @@ import getapiRequest from "../../../utils/getapiRequest";
 import { useCredits } from "../../../utils/creditHelper";
 import ElementBuilderPage, { PagePreviewRenderer } from "./Header";
 import { mockTemplates } from "../../../utils/mockTemplates";
+import sectionApiService from "../../../utils/sectionApiService";
+import { generateHtmlHead, generateHtmlFooter } from "../../../utils/htmlGenerator";
 
 const mockGenerateId = (prefix = "tpl-id") =>
   `${prefix}-${Date.now().toString(36)}-${Math.random()
@@ -271,7 +273,21 @@ const SummaryCard = ({ title, icon, children }) => (
   </div>
 );
 
-const PublishSuccessModal = ({ isOpen, onAddDomain, onClose }) => {
+const PublishSuccessModal = ({ isOpen, onAddDomain, onClose, onHostPage, isHosting, hostingResult }) => {
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopyUrl = async () => {
+    if (hostingResult?.url) {
+      try {
+        await navigator.clipboard.writeText(hostingResult.url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 3000);
+      } catch (err) {
+        console.error('Failed to copy URL:', err);
+      }
+    }
+  };
+
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-slate-800/40 backdrop-blur-sm flex items-center justify-center z-[300] p-4 animate-fadeInModal">
@@ -297,24 +313,89 @@ const PublishSuccessModal = ({ isOpen, onAddDomain, onClose }) => {
           </svg>
         </div>
         <h3 className="text-2xl font-bold text-slate-800 mb-2">
-          Template Saved!
+          Campaign Saved!
         </h3>
         <p className="text-slate-500 mb-8">
-          Your template has been successfully saved and loaded.
+          Your campaign has been successfully saved.
         </p>
-        <div className="border-t border-slate-200 pt-6">
-          <h4 className="font-semibold text-slate-700 mb-1">
-            Ready to continue?
-          </h4>
-          <p className="text-sm text-slate-500 mb-5 max-w-sm mx-auto">
-            You can now review your campaign and proceed to the next step.
-          </p>
-          <div className="flex justify-center">
-            <StyledButton onClick={onClose} variant="primary">
-              Continue to Review
-            </StyledButton>
+        
+        {hostingResult ? (
+          <div className="border-t border-slate-200 pt-6">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+              <div className="flex items-center justify-center mb-2">
+                <LucideIcons.CheckCircle className="w-6 h-6 text-green-600 mr-2" />
+                <h4 className="font-semibold text-green-800">Live URL Generated!</h4>
+              </div>
+              <p className="text-sm text-green-700 mb-3">
+                Your campaign is now live and accessible at:
+              </p>
+              <div className="flex items-center justify-center bg-white border border-green-300 rounded-lg p-3 mb-3">
+                <span className="text-sm text-gray-700 font-mono flex-1 text-left truncate mr-2">
+                  {hostingResult.url}
+                </span>
+                <button
+                  onClick={handleCopyUrl}
+                  className="flex-shrink-0 p-2 hover:bg-gray-100 rounded-md transition-colors"
+                  title={copied ? "Copied!" : "Copy URL"}
+                >
+                  {copied ? (
+                    <LucideIcons.Check className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <LucideIcons.Copy className="w-4 h-4 text-gray-600" />
+                  )}
+                </button>
+              </div>
+              {/* <a 
+                href={hostingResult.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-block bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+              >
+                <LucideIcons.ExternalLink className="w-4 h-4 inline mr-1" />
+                View Live Campaign
+              </a> */}
+            </div>
+            <div className="flex justify-center gap-3">
+              <StyledButton onClick={onClose} variant="secondary">
+                Close
+              </StyledButton>
+              <StyledButton onClick={onAddDomain} variant="primary">
+                Add Domain
+              </StyledButton>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="border-t border-slate-200 pt-6">
+            <h4 className="font-semibold text-slate-700 mb-1">
+              Deploy now?
+            </h4>
+            <p className="text-sm text-slate-500 mb-5 max-w-sm mx-auto">
+              Get a live URL for your campaign instantly.
+            </p>
+            <div className="flex justify-center gap-3">
+              <StyledButton onClick={onClose} variant="secondary">
+                Skip for Now
+              </StyledButton>
+              <StyledButton 
+                onClick={onHostPage} 
+                variant="primary"
+                disabled={isHosting}
+              >
+                {isHosting ? (
+                  <>
+                    <LucideIcons.Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Deploying...
+                  </>
+                ) : (
+                  <>
+                    <LucideIcons.Globe className="w-4 h-4 mr-2" />
+                    Deploy Live
+                  </>
+                )}
+              </StyledButton>
+            </div>
+          </div>
+        )}
       </div>
       <style jsx>{`
         @keyframes fadeInModal {
@@ -406,6 +487,8 @@ export default function CampaignCreatorPage() {
   const [fileError, setFileError] = useState("");
   const [showContactDropdown, setShowContactDropdown] = useState(false);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
+  const [isHosting, setIsHosting] = useState(false);
+  const [hostingResult, setHostingResult] = useState(null);
 
   useEffect(() => {
     if (
@@ -867,9 +950,233 @@ export default function CampaignCreatorPage() {
 
   const handleCloseModalAndReset = () => {
     setShowPublishModal(false);
+    setHostingResult(null);
     localStorage.removeItem("campaign_creator_data");
     localStorage.removeItem("campaign_template_data");
     navigate("/campaigns");
+  };
+
+  const convertTemplateToHtml = (templateData) => {
+    console.log('🔍 convertTemplateToHtml called with:', templateData);
+    if (!templateData || !templateData.pages) {
+      console.log('❌ No templateData or pages found');
+      return '';
+    }
+    
+    let html = generateHtmlHead('Campaign Page');
+    console.log('🔍 Generated HTML head length:', html.length);
+    
+    const pageKeys = Object.keys(templateData.pages);
+    if (pageKeys.length > 0) {
+      const page = templateData.pages[pageKeys[0]];
+      
+      // Add navbar if exists
+      if (templateData.globalNavbar) {
+        html += '<nav class="bg-white shadow-sm border-b">\n<div class="max-w-7xl mx-auto px-4">\n<div class="flex justify-between items-center py-4">\n';
+        html += `<div class="text-xl font-bold">${templateData.globalNavbar.props?.brandName || 'Brand'}</div>\n`;
+        html += '<div class="space-x-6">\n';
+        if (templateData.globalNavbar.props?.links) {
+          templateData.globalNavbar.props.links.forEach(link => {
+            html += `<a href="${link.url || '#'}" class="text-gray-600 hover:text-gray-900">${link.text || 'Link'}</a>\n`;
+          });
+        }
+        html += '</div>\n</div>\n</div>\n</nav>\n';
+      }
+      
+      // Add page content - include ALL sections including footer
+      if (page.layout && page.layout.length > 0) {
+        page.layout.forEach((section, index) => {
+          console.log(`🔍 Processing section ${index}:`, section);
+          console.log(`🔍 Section ${index} className:`, section.props?.className);
+          console.log(`🔍 Section ${index} columns:`, section.columns?.length);
+          
+          // Check if this section contains footer content
+          if (section.columns) {
+            section.columns.forEach((column, colIndex) => {
+              if (column.elements) {
+                column.elements.forEach((element, elIndex) => {
+                  if (element.type === 'htmlContent' && element.props?.originalHtml) {
+                    console.log(`🔍 Section ${index}, Column ${colIndex}, Element ${elIndex} HTML:`, element.props.originalHtml.substring(0, 200));
+                  }
+                });
+              }
+            });
+          }
+          
+          html += '<section';
+          if (section.props?.className) {
+            html += ` class="${section.props.className}"`;
+          }
+          if (section.props?.style) {
+            html += ` style="${section.props.style}"`;
+          }
+          html += '>\n';
+          
+          // Add layout container with proper grid classes
+          if (section.layoutContainerClassName) {
+            html += `<div class="${section.layoutContainerClassName}">\n`;
+          }
+          
+          if (section.columns) {
+            section.columns.forEach(column => {
+              html += '<div';
+              if (column.props?.className) {
+                html += ` class="${column.props.className}"`;
+              }
+              if (column.props?.style) {
+                html += ` style="${column.props.style}"`;
+              }
+              html += '>\n';
+              
+              if (column.elements) {
+                column.elements.forEach(element => {
+                  if (element.type === 'htmlContent' && element.props?.originalHtml) {
+                    const elementHtml = element.props.originalHtml + '\n';
+                    html += elementHtml;
+                    console.log(`🔍 Added HTML content to section ${index}:`, elementHtml.substring(0, 100));
+                  } else if (element.type === 'heading') {
+                    const tag = element.props?.level || 'h1';
+                    let headingHtml = `<${tag}`;
+                    if (element.props?.className) {
+                      headingHtml += ` class="${element.props.className}"`;
+                    }
+                    headingHtml += `>${element.props?.text || 'Heading'}</${tag}>\n`;
+                    html += headingHtml;
+                  } else if (element.type === 'paragraph') {
+                    let paragraphHtml = '<p';
+                    if (element.props?.className) {
+                      paragraphHtml += ` class="${element.props.className}"`;
+                    }
+                    paragraphHtml += `>${element.props?.text || 'Paragraph'}</p>\n`;
+                    html += paragraphHtml;
+                  } else if (element.type === 'button') {
+                    let buttonHtml = '<button';
+                    if (element.props?.className) {
+                      buttonHtml += ` class="${element.props.className}"`;
+                    }
+                    buttonHtml += `>${element.props?.text || 'Button'}</button>\n`;
+                    html += buttonHtml;
+                  }
+                });
+              }
+              
+              html += '</div>\n';
+            });
+          }
+          
+          // Close layout container if it was opened
+          if (section.layoutContainerClassName) {
+            html += '</div>\n';
+          }
+          
+          html += '</section>\n';
+        });
+      }
+      
+      // Check if there's a globalFooter that should be added
+      console.log('🔍 Checking for globalFooter:', templateData.globalFooter);
+      if (templateData.globalFooter) {
+        console.log('🔍 Found globalFooter, adding it to HTML');
+        console.log('🔍 globalFooter content:', templateData.globalFooter);
+        
+        // If globalFooter has HTML content, use it
+        if (templateData.globalFooter.originalHtml) {
+          console.log('🔍 Adding globalFooter originalHtml:', templateData.globalFooter.originalHtml.substring(0, 200));
+          html += templateData.globalFooter.originalHtml;
+        } else {
+          // Otherwise use default footer
+        html += '<footer class="bg-gray-100 py-8">\n<div class="max-w-7xl mx-auto px-4 text-center">\n';
+        html += '<p class="text-gray-600">© 2024 Campaign. All rights reserved.</p>\n';
+        html += '</div>\n</footer>\n';
+        }
+      } else {
+        console.log('🔍 No globalFooter found');
+        // Add a default footer since none was found
+        html += '<footer class="bg-gray-100 py-8">\n<div class="max-w-7xl mx-auto px-4 text-center">\n';
+        html += '<p class="text-gray-600">© 2024 Campaign. All rights reserved.</p>\n';
+        html += '</div>\n</footer>\n';
+        console.log('🔍 Added default footer');
+      }
+    }
+    
+    html += generateHtmlFooter();
+    console.log('🔍 Final HTML length:', html.length);
+    console.log('🔍 Final HTML preview:', html.substring(0, 300));
+    console.log('🔍 Final HTML contains footer:', html.includes('footer'));
+    console.log('🔍 Final HTML footer content:', html.match(/<footer[^>]*>[\s\S]*?<\/footer>/i)?.[0]?.substring(0, 200));
+    return html;
+  };
+
+  const handleHostPage = async () => {
+    if (!templateConfig.templateData) {
+      toast.error("No template data available for hosting");
+      return;
+    }
+
+    setIsHosting(true);
+    try {
+      console.log('🔍 Template data structure:', templateConfig.templateData);
+      
+      // Try multiple ways to extract HTML content
+      let htmlContent = '';
+      
+      // Check if there's originalHtml at page level first
+      const pageKeys = Object.keys(templateConfig.templateData.pages || {});
+      if (pageKeys.length > 0) {
+        const firstPage = templateConfig.templateData.pages[pageKeys[0]];
+        console.log('🔍 First page structure:', firstPage);
+        console.log('🔍 Page has originalHtml:', !!firstPage.originalHtml);
+        
+        if (firstPage.originalHtml) {
+          console.log('🔍 Page originalHtml length:', firstPage.originalHtml.length);
+          console.log('🔍 Page originalHtml preview:', firstPage.originalHtml.substring(0, 300));
+          console.log('🔍 Page originalHtml contains footer:', firstPage.originalHtml.includes('footer'));
+          
+          // Use originalHtml with our CSS wrapper
+          htmlContent = generateHtmlHead('Campaign Page') + firstPage.originalHtml + generateHtmlFooter();
+          console.log('🔍 Using page originalHtml with CSS wrapper');
+        }
+      }
+      
+      // If no originalHtml found, use template generation
+      if (!htmlContent) {
+        console.log('🔍 No page originalHtml found, generating HTML with CSS from template structure');
+        htmlContent = convertTemplateToHtml(templateConfig.templateData);
+      }
+      
+      
+      console.log('🔍 Extracted HTML content length:', htmlContent.length);
+      console.log('🔍 HTML content preview:', htmlContent.substring(0, 500));
+      console.log('🔍 HTML contains CSS:', htmlContent.includes('tailwind.config'));
+      console.log('🔍 HTML contains custom styles:', htmlContent.includes('custom-checkbox'));
+      
+      if (!htmlContent || htmlContent.trim().length === 0) {
+        toast.error("No HTML content available for hosting. Please ensure your template has content or try creating a template first.");
+        console.log('❌ No HTML content found. Template data:', templateConfig.templateData);
+        return;
+      }
+
+      const htmlFile = new File([htmlContent], 'index.html', { type: 'text/html' });
+      console.log('🔍 File being sent:', {
+        name: htmlFile.name,
+        type: htmlFile.type,
+        size: htmlFile.size
+      });
+      
+      const result = await sectionApiService.hostPage([htmlFile], campaignDetails.campaignName, false, 'campaign');
+      
+      if (result.success) {
+        setHostingResult(result);
+        toast.success("Campaign deployed successfully!");
+      } else {
+        toast.error(result.error || "Failed to deploy campaign");
+      }
+    } catch (error) {
+      console.error("Hosting error:", error);
+      toast.error(error.response?.data?.error || "Failed to deploy campaign");
+    } finally {
+      setIsHosting(false);
+    }
   };
 
   const handleTemplateDataFromBuilder = useCallback((builderData) => {
@@ -1555,10 +1862,14 @@ export default function CampaignCreatorPage() {
           isOpen={showPublishModal}
           onAddDomain={() => {
             setShowPublishModal(false);
+            setHostingResult(null);
             resetCampaignStates();
             navigate("/domains");
           }}
           onClose={handleCloseModalAndReset}
+          onHostPage={handleHostPage}
+          isHosting={isHosting}
+          hostingResult={hostingResult}
         />
       </div>
 
