@@ -19,11 +19,95 @@ import ElementBuilderPage, { PagePreviewRenderer } from "./Header";
 import { mockTemplates } from "../../../utils/mockTemplates";
 import sectionApiService from "../../../utils/sectionApiService";
 import { generateHtmlHead, generateHtmlFooter } from "../../../utils/htmlGenerator";
+import SearchAndSelectView from "../../SearchAndSelectView";
 
 const mockGenerateId = (prefix = "tpl-id") =>
   `${prefix}-${Date.now().toString(36)}-${Math.random()
     .toString(36)
     .substring(2, 7)}`;
+
+const CampaignTypeChoiceModal = ({ isOpen, onClose, onSelectType }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-slate-800/40 backdrop-blur-sm flex items-center justify-center z-[300] p-4 animate-fadeInModal">
+      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-2xl text-center transform animate-scaleUpModal border border-slate-200">
+        <div className="mx-auto flex items-center justify-center h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-green-100 mb-5 sm:mb-6 ring-4 ring-green-200/70">
+          <LucideIcons.Sparkles className="h-8 w-8 sm:h-10 sm:w-10 text-green-600" />
+        </div>
+        <h3 className="text-2xl font-bold text-slate-800 mb-2">
+          Choose Campaign Creation Method
+        </h3>
+        <p className="text-slate-500 mb-8">
+          How would you like to create your campaign?
+        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <button
+            onClick={() => onSelectType('manual')}
+            className="p-6 border-2 border-slate-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all duration-200 group"
+          >
+            <div className="flex flex-col items-center">
+              <div className="p-3 bg-slate-100 rounded-full mb-4 group-hover:bg-green-100 transition-colors">
+                <LucideIcons.PenTool className="w-8 h-8 text-slate-600 group-hover:text-green-600" />
+              </div>
+              <h4 className="text-lg font-semibold text-slate-800 mb-2">Create My Own</h4>
+              <p className="text-sm text-slate-600">
+                Design and customize your campaign from scratch with full control
+              </p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => onSelectType('ai')}
+            className="p-6 border-2 border-slate-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all duration-200 group"
+          >
+            <div className="flex flex-col items-center">
+              <div className="p-3 bg-slate-100 rounded-full mb-4 group-hover:bg-green-100 transition-colors">
+                <LucideIcons.Sparkles className="w-8 h-8 text-slate-600 group-hover:text-green-600" />
+              </div>
+              <h4 className="text-lg font-semibold text-slate-800 mb-2">AI Generate</h4>
+              <p className="text-sm text-slate-600">
+                Let AI create a personalized landing page for your selected user
+              </p>
+            </div>
+          </button>
+        </div>
+
+        <button
+          onClick={onClose}
+          className="px-6 py-2 text-slate-600 hover:text-slate-800 transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
+      <style jsx>{`
+        @keyframes fadeInModal {
+          0% { opacity: 0; }
+          100% { opacity: 1; }
+        }
+        .animate-fadeInModal {
+          animation: fadeInModal 0.15s ease-out forwards;
+        }
+        @keyframes scaleUpModal {
+          0% {
+            transform: scale(0.95) translateY(10px);
+            opacity: 0;
+          }
+          100% {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+          }
+        }
+        .animate-scaleUpModal {
+          animation: scaleUpModal 0.2s cubic-bezier(0.22, 1, 0.36, 1) 0.05s forwards;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+
 
 const TopStepperNav = ({ currentStep, steps, setCurrentStep, canProceed }) => (
   <nav className="w-full py-4 px-2 md:px-0 mb-6 md:mb-8">
@@ -489,6 +573,10 @@ export default function CampaignCreatorPage() {
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [isHosting, setIsHosting] = useState(false);
   const [hostingResult, setHostingResult] = useState(null);
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
+  const [campaignType, setCampaignType] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     if (
@@ -517,6 +605,12 @@ export default function CampaignCreatorPage() {
       );
     }
   }, [templateConfig.templateData]);
+
+  useEffect(() => {
+    if (!isEditing && !campaignType) {
+      setShowChoiceModal(true);
+    }
+  }, [isEditing, campaignType]);
 
   useEffect(() => {
     const savedData = localStorage.getItem("campaign_creator_data");
@@ -746,12 +840,17 @@ export default function CampaignCreatorPage() {
     loadCampaignForEdit();
   }, [campaignId, navigate, token, location.state, resetCampaignStates]);
 
-  const steps = [
-    { id: 1, name: "Campaign Details" },
-    { id: 2, name: "Audience Source" },
-    { id: 3, name: "Template Design" },
-    { id: 4, name: "Review & Save" },
-  ];
+  const steps = campaignType === 'ai' 
+    ? [
+        { id: 1, name: "Search & Select User" },
+        { id: 2, name: "Preview & Save" },
+      ]
+    : [
+        { id: 1, name: "Campaign Details" },
+        { id: 2, name: "Audience Source" },
+        { id: 3, name: "Template Design" },
+        { id: 4, name: "Review & Save" },
+      ];
 
   useEffect(() => {
     if (dataSource.type === "fromContacts") {
@@ -853,28 +952,39 @@ export default function CampaignCreatorPage() {
   }, [contactsInSelectedList, searchTermInList]);
 
   const canProceedToNext = useCallback(() => {
-    switch (currentStep) {
-      case 1:
-        return !!(
-          campaignDetails.campaignName &&
-          campaignDetails.startTime &&
-          campaignDetails.endTime
-        );
-      case 2:
-        if (dataSource.type === "file")
-          return !!dataSource.file || !!dataSource.fileName;
-        else if (dataSource.type === "fromContacts")
+    if (campaignType === 'ai') {
+      switch (currentStep) {
+        case 1:
+          return !!selectedUser;
+        case 2:
+          return !!templateConfig.templateData;
+        default:
+          return true;
+      }
+    } else {
+      switch (currentStep) {
+        case 1:
           return !!(
-            dataSource.contactListId && dataSource.selectedContactIds.length > 0
+            campaignDetails.campaignName &&
+            campaignDetails.startTime &&
+            campaignDetails.endTime
           );
-        return false;
-      case 3:
-        return (
-          (templateConfig.type && !!templateConfig.templateData) ||
-          (location.state?.fromEditor && location.state?.templateData)
-        );
-      default:
-        return true;
+        case 2:
+          if (dataSource.type === "file")
+            return !!dataSource.file || !!dataSource.fileName;
+          else if (dataSource.type === "fromContacts")
+            return !!(
+              dataSource.contactListId && dataSource.selectedContactIds.length > 0
+            );
+          return false;
+        case 3:
+          return (
+            (templateConfig.type && !!templateConfig.templateData) ||
+            (location.state?.fromEditor && location.state?.templateData)
+          );
+        default:
+          return true;
+      }
     }
   }, [
     currentStep,
@@ -882,6 +992,8 @@ export default function CampaignCreatorPage() {
     dataSource,
     templateConfig,
     location.state,
+    campaignType,
+    selectedUser,
   ]);
 
   const nextStep = () => {
@@ -891,11 +1003,19 @@ export default function CampaignCreatorPage() {
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
   const handleSaveCampaign = async () => {
-    if (!campaignDetails.campaignName) {
-      toast.warn("Campaign Name is required.");
-      setCurrentStep(1);
-      return;
+    if (campaignType === 'ai') {
+      if (!selectedUser || !templateConfig.templateData) {
+        toast.warn("No user selected or template generated.");
+        return;
+      }
+    } else {
+      if (!campaignDetails.campaignName) {
+        toast.warn("Campaign Name is required.");
+        setCurrentStep(1);
+        return;
+      }
     }
+    
     if (!isEditing) {
       if (credits < CAMPAIGN_COST) {
         toast.error(
@@ -907,21 +1027,29 @@ export default function CampaignCreatorPage() {
     setIsSubmitting(true);
     const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     const formData = new FormData();
-    formData.append("campaignName", campaignDetails.campaignName);
-    formData.append(
-      "startTime",
-      new Date(campaignDetails.startTime).toISOString()
-    );
-    formData.append("endTime", new Date(campaignDetails.endTime).toISOString());
-    formData.append(
-      "script",
-      JSON.stringify(templateConfig.templateData || {})
-    );
-    if (dataSource.type === "file" && dataSource.file) {
-      formData.append("audienceFile", dataSource.file, dataSource.fileName);
-    }
-    if (dataSource.type === "fromContacts" && dataSource.contactListId) {
-      formData.append("contactListId", dataSource.contactListId);
+    
+    if (campaignType === 'ai') {
+      formData.append("campaignName", `AI Generated Campaign - ${selectedUser?.name || 'User'}`);
+      formData.append("startTime", new Date().toISOString());
+      formData.append("endTime", new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());
+      formData.append("script", JSON.stringify(templateConfig.templateData || {}));
+    } else {
+      formData.append("campaignName", campaignDetails.campaignName);
+      formData.append(
+        "startTime",
+        new Date(campaignDetails.startTime).toISOString()
+      );
+      formData.append("endTime", new Date(campaignDetails.endTime).toISOString());
+      formData.append(
+        "script",
+        JSON.stringify(templateConfig.templateData || {})
+      );
+      if (dataSource.type === "file" && dataSource.file) {
+        formData.append("audienceFile", dataSource.file, dataSource.fileName);
+      }
+      if (dataSource.type === "fromContacts" && dataSource.contactListId) {
+        formData.append("contactListId", dataSource.contactListId);
+      }
     }
     const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
     try {
@@ -954,6 +1082,100 @@ export default function CampaignCreatorPage() {
     localStorage.removeItem("campaign_creator_data");
     localStorage.removeItem("campaign_template_data");
     navigate("/campaigns");
+  };
+
+  const handleCampaignTypeSelect = (type) => {
+    setCampaignType(type);
+    setShowChoiceModal(false);
+    if (type === 'manual') {
+      setCurrentStep(1);
+    } else if (type === 'ai') {
+      setCurrentStep(1);
+    }
+  };
+
+  const handleUserSelected = async (userData) => {
+    setSelectedUser(userData);
+    setIsGenerating(true);
+    
+    try {
+      const BASE_URL = import.meta.env.VITE_API_BASE_URL_AI;
+      
+      const contactInfo = {
+        full_name: userData.name || userData.full_name || "John Doe",
+        company: userData.organization?.name || userData.company || "TechCorp",
+        email: userData.email || userData.primary_email || "john.doe@techcorp.com"
+      };
+
+      const payload = {
+        profile_data: {
+          full_name: contactInfo.full_name,
+          company: contactInfo.company,
+          email: contactInfo.email,
+          weaknesses: [
+            "Limited experience in corporate environments",
+            "Need for technical skill diversification", 
+            "Limited public portfolio"
+          ],
+          strengths: [
+            "Strong technical foundation",
+            "Proven startup leadership",
+            "Experience mentoring others"
+          ]
+        },
+        product_name: "Amazon Web Services",
+        product_benefits: "Cloud computing, scalable infrastructure, and enterprise-grade solutions",
+        campaign_url: "https://aws.amazon.com",
+        credly_link: `https://credly.com/users/${contactInfo.full_name.toLowerCase().replace(/\s+/g, '-')}`
+      };
+
+      const response = await axios.post(
+        `${BASE_URL}/profile/generate-landing-page`,
+        payload,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data.success && response.data.html_content) {
+        const pageId = mockGenerateId("page");
+        const templateData = {
+          pages: {
+            [pageId]: {
+              id: pageId,
+              name: "AI Generated Landing Page",
+              layout: [],
+              originalHtml: response.data.html_content
+            }
+          },
+          activePageId: pageId,
+          globalNavbar: null,
+          globalFooter: null,
+          pageTitle: "AI Generated Landing Page"
+        };
+
+        setTemplateConfig({
+          type: "generate",
+          templateData: templateData,
+          templateName: "AI Generated Landing Page"
+        });
+        setCurrentStep(2);
+        toast.success("Landing page generated successfully!");
+      } else {
+        toast.error("Failed to generate landing page. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error generating landing page:", error);
+      toast.error(
+        error.response?.data?.message || 
+        "Failed to generate landing page. Please try again."
+      );
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const convertTemplateToHtml = (templateData) => {
@@ -1242,65 +1464,99 @@ export default function CampaignCreatorPage() {
     setShowTemplateEditor(false);
   };
 
+
   const renderStepContent = () => {
     let content;
     switch (currentStep) {
       case 1:
-        content = (
-          <>
-            {" "}
-            <InputField
-              label="Campaign Name"
-              name="campaignName"
-              value={campaignDetails.campaignName}
-              onChange={handleDetailChange}
-              placeholder="e.g., Q4 Product Showcase"
-              required
-              icon={<LucideIcons.Edit3 />}
-            />{" "}
-            <div className="grid md:grid-cols-2 gap-x-5">
+        if (campaignType === 'ai') {
+          content = (
+              <SearchAndSelectView
+                onCancel={() => navigate("/campaigns")}
+                onUsersSelected={handleUserSelected}
+              />
+          );
+        } else {
+          content = (
+            <>
               {" "}
               <InputField
-                label="Start Date & Time"
-                name="startTime"
-                type="datetime-local"
-                value={campaignDetails.startTime}
+                label="Campaign Name"
+                name="campaignName"
+                value={campaignDetails.campaignName}
                 onChange={handleDetailChange}
+                placeholder="e.g., Q4 Product Showcase"
                 required
-                icon={<LucideIcons.CalendarPlus />}
+                icon={<LucideIcons.Edit3 />}
               />{" "}
-              <InputField
-                label="End Date & Time"
-                name="endTime"
-                type="datetime-local"
-                value={campaignDetails.endTime}
-                onChange={handleDetailChange}
-                required
-                icon={<LucideIcons.CalendarMinus />}
-              />{" "}
-            </div>{" "}
-          </>
-        );
+              <div className="grid md:grid-cols-2 gap-x-5">
+                {" "}
+                <InputField
+                  label="Start Date & Time"
+                  name="startTime"
+                  type="datetime-local"
+                  value={campaignDetails.startTime}
+                  onChange={handleDetailChange}
+                  required
+                  icon={<LucideIcons.CalendarPlus />}
+                />{" "}
+                <InputField
+                  label="End Date & Time"
+                  name="endTime"
+                  type="datetime-local"
+                  value={campaignDetails.endTime}
+                  onChange={handleDetailChange}
+                  required
+                  icon={<LucideIcons.CalendarMinus />}
+                />{" "}
+              </div>{" "}
+            </>
+          );
+        }
         break;
       case 2:
-        content = (
-          <>
-            <div className="space-y-3 mb-6">
-              <OptionCard
-                title="Upload File (.xls, .xlsx)"
-                description="Import contacts directly from a spreadsheet."
-                selected={dataSource.type === "file"}
-                onClick={() => handleDataSourceTypeChange("file")}
-                icon={<LucideIcons.FileUp />}
-              />
-              <OptionCard
-                title="From My Contacts"
-                description="Select from your saved contact lists."
-                selected={dataSource.type === "fromContacts"}
-                onClick={() => handleDataSourceTypeChange("fromContacts")}
-                icon={<UserCheck />}
-              />
+        if (campaignType === 'ai') {
+          content = (
+            <div className="bg-white p-5 md:p-6 rounded-xl shadow-lg border border-slate-200">
+              <h3 className="text-lg font-semibold text-slate-800 mb-3">
+                Preview Generated Landing Page
+              </h3>
+              <p className="text-sm text-slate-600 mb-4">
+                Review the AI-generated landing page for {selectedUser?.name || 'selected user'}
+              </p>
+              
+              {templateConfig.templateData && (
+                <div className="border-2 border-slate-200 rounded-lg shadow-inner bg-white min-h-[400px] overflow-x-auto">
+                  <iframe
+                    srcDoc={templateConfig.templateData.pages[templateConfig.templateData.activePageId]?.originalHtml}
+                    className="w-full h-full border-0"
+                    style={{ minHeight: '600px' }}
+                    title="Generated Landing Page Preview"
+                  />
+                </div>
+              )}
+
             </div>
+          );
+        } else {
+          content = (
+            <>
+              <div className="space-y-3 mb-6">
+                <OptionCard
+                  title="Upload File (.xls, .xlsx)"
+                  description="Import contacts directly from a spreadsheet."
+                  selected={dataSource.type === "file"}
+                  onClick={() => handleDataSourceTypeChange("file")}
+                  icon={<LucideIcons.FileUp />}
+                />
+                <OptionCard
+                  title="From My Contacts"
+                  description="Select from your saved contact lists."
+                  selected={dataSource.type === "fromContacts"}
+                  onClick={() => handleDataSourceTypeChange("fromContacts")}
+                  icon={<UserCheck />}
+                />
+              </div>
             {dataSource.type === "file" && (
               <div className="mt-5 p-4 border border-slate-200 rounded-xl bg-slate-50/70 animate-fadeIn">
                 <h3 className="text-base font-semibold text-slate-700 mb-3">
@@ -1538,6 +1794,7 @@ export default function CampaignCreatorPage() {
             )}
           </>
         );
+        }
         break;
       case 3:
         const isReturningFromEditor =
@@ -1588,8 +1845,7 @@ export default function CampaignCreatorPage() {
                     "Custom Template"}
                 </h3>
                 <p className="text-xs text-slate-500 mb-3">
-                  Template created successfully. You can proceed to the next
-                  step.
+                  Template created successfully. You can proceed to the next step.
                 </p>
                 <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                   <p className="text-sm text-green-700 font-medium">
@@ -1742,20 +1998,31 @@ export default function CampaignCreatorPage() {
                   </p>
                   {currentTemplateData &&
                   currentTemplateData.pages &&
-                  currentTemplateData.activePageId &&
-                  PagePreviewRenderer ? (
+                  currentTemplateData.activePageId ? (
                     <div className="border-2 border-slate-200 rounded-lg shadow-inner bg-white min-h-[400px] overflow-x-auto">
-                      <PagePreviewRenderer
-                        pageLayout={
-                          currentTemplateData.pages[
-                            currentTemplateData.activePageId
-                          ]?.layout || []
-                        }
-                        globalNavbar={currentTemplateData.globalNavbar}
-                        globalFooter={currentTemplateData.globalFooter}
-                        activePageId={currentTemplateData.activePageId}
-                        onNavigate={() => {}}
-                      />
+                      {PagePreviewRenderer ? (
+                        <PagePreviewRenderer
+                          pageLayout={
+                            currentTemplateData.pages[
+                              currentTemplateData.activePageId
+                            ]?.layout || []
+                          }
+                          globalNavbar={currentTemplateData.globalNavbar}
+                          globalFooter={currentTemplateData.globalFooter}
+                          activePageId={currentTemplateData.activePageId}
+                          onNavigate={() => {}}
+                        />
+                      ) : (
+                        <div className="p-4 bg-slate-100/70 rounded-lg text-slate-500 text-center min-h-[150px] flex flex-col items-center justify-center border border-slate-200">
+                          <LucideIcons.ImageOff className="w-6 h-6 mb-1.5 text-slate-400" />
+                          <p className="font-medium text-xs">
+                            No template preview available.
+                          </p>
+                          <p className="text-[11px]">
+                            Please complete the template design step.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="p-4 bg-slate-100/70 rounded-lg text-slate-500 text-center min-h-[150px] flex flex-col items-center justify-center border border-slate-200">
@@ -1782,7 +2049,7 @@ export default function CampaignCreatorPage() {
         );
     }
     return (
-      <div className="bg-white p-5 md:p-6 rounded-xl shadow-lg border border-slate-200">
+      <div>
         {" "}
         {content}{" "}
         <div className="mt-8 pt-5 border-t border-slate-200/80 flex justify-between items-center">
@@ -1871,6 +2138,15 @@ export default function CampaignCreatorPage() {
           isHosting={isHosting}
           hostingResult={hostingResult}
         />
+        
+        <CampaignTypeChoiceModal
+          isOpen={showChoiceModal}
+          onClose={() => {
+            setShowChoiceModal(false);
+            navigate("/campaigns");
+          }}
+          onSelectType={handleCampaignTypeSelect}
+        />
       </div>
 
       {showTemplateEditor && (
@@ -1902,6 +2178,8 @@ export default function CampaignCreatorPage() {
           </div>
         </div>
       )}
+
+
       <style jsx global>{`
         @keyframes fadeIn {
           from {

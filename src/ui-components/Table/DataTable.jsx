@@ -12,6 +12,27 @@ const DataTable = ({ data, pagination, onPageChange, rowSelection, onRowSelectio
 
   const { userToken } = useSelector((state) => state.auth);
 
+  // Filter data based on globalFilter
+  const filteredData = React.useMemo(() => {
+    if (!globalFilter || globalFilter.trim() === '') {
+      return data;
+    }
+    
+    const filterValue = globalFilter.toLowerCase();
+    return data.filter((row) => {
+      // Search in name, title, company name, and location
+      const name = (row.name || `${row.first_name || ''} ${row.last_name || ''}`.trim()).toLowerCase();
+      const title = (row.title || '').toLowerCase();
+      const companyName = (row.organization?.name || '').toLowerCase();
+      const location = (row.city || row.formatted_address || '').toLowerCase();
+      
+      return name.includes(filterValue) || 
+             title.includes(filterValue) || 
+             companyName.includes(filterValue) || 
+             location.includes(filterValue);
+    });
+  }, [data, globalFilter]);
+
   const handleReveal = async (row, type) => {
     const rowId = row.id;
     setRevealedData(prev => ({ ...prev, [rowId]: { ...prev[rowId], [type]: { status: 'loading' } } }));
@@ -153,8 +174,8 @@ const DataTable = ({ data, pagination, onPageChange, rowSelection, onRowSelectio
               </tr>
             </thead>
             <tbody>
-              {data && data.length > 0 ? (
-                data.map((row, index) => (
+              {filteredData && filteredData.length > 0 ? (
+                filteredData.map((row, index) => (
                   <motion.tr 
                     key={row.id || index} 
                     initial={{ opacity: 0 }} 

@@ -32,7 +32,7 @@ const FilterSection = ({ title, icon: Icon, children }) => (
 
 const PairedInput = ({ label, icon: Icon, value1, value2, name1, name2, onChange, placeholder1, placeholder2 }) => (
   <div>
-         <label className="text-sm font-medium block mb-1.5 flex items-center gap-2 text-slate-700">{Icon && <Icon className="text-slate-500" size={16}/>}<span>{label}</span></label>
+         <label className="text-sm font-medium mb-1.5 flex items-center gap-2 text-slate-700">{Icon && <Icon className="text-slate-500" size={16}/>}<span>{label}</span></label>
     <div className="flex items-center gap-2">
                  <input type="number" name={name1} value={value1} onChange={onChange} placeholder={placeholder1} className="w-full p-2 bg-white rounded-lg border border-slate-300 min-h-[42px] focus:outline-none focus:ring-2 focus:ring-emerald-500/50"/>
         <span className="text-gray-400">-</span>
@@ -158,6 +158,7 @@ const FilterDrawer = ({ isOpen, onClose, onApply, isLoading, onIntentEdit, buyin
   const removeIncludeListId = useCallback(idToRemove => handleLocalFilterChange('includeListIds', localFilters.includeListIds.filter(id => id !== idToRemove)), [localFilters.includeListIds, handleLocalFilterChange]);
   
   const handleApplyClick = () => {
+      console.log('FilterDrawer: Applying filters:', localFilters);
       onApply(localFilters);
       onClose();
   };

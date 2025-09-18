@@ -45,8 +45,18 @@ const AsyncMultiSelect = ({
     try {
       const response = await fetch(`${API_BASE_URL}${fetchEndpoint}?query=${encodeURIComponent(searchQuery)}`);
       const responseData = await response.json();
-      const data = responseData.data || [];
+      console.log('AsyncMultiSelect API Response:', responseData);
+      
+      // Handle the response format properly
+      let data = [];
+      if (responseData.data && Array.isArray(responseData.data)) {
+        data = responseData.data;
+      } else if (Array.isArray(responseData)) {
+        data = responseData;
+      }
+      
       const formattedSuggestions = data.map(optionFormatter);
+      console.log('Formatted suggestions:', formattedSuggestions);
       setSuggestions(formattedSuggestions);
       setHasSearched(true);
     } catch (error) {
@@ -92,7 +102,7 @@ const AsyncMultiSelect = ({
 
   return (
     <div className={`relative ${className}`} ref={wrapperRef}>
-      <label className="text-sm font-medium block mb-1.5 flex items-center gap-2 text-slate-700">
+      <label className="text-sm font-medium mb-1.5 flex items-center gap-2 text-slate-700">
         {Icon && <Icon className="text-slate-500" size={16}/>}
         <span>{label}</span>
       </label>
