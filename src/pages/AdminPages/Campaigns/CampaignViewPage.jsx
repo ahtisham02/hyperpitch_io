@@ -90,6 +90,16 @@ export default function CampaignViewPage() {
     const { script, status, createdAt, updatedAt } = campaign;
     const templateConfig = script ? JSON.parse(script) : { type: 'none' };
     
+    // Debug logging
+    console.log('Campaign script:', script);
+    console.log('Parsed templateConfig:', templateConfig);
+    console.log('Active page ID:', templateConfig.activePageId);
+    console.log('Pages:', templateConfig.pages);
+    if (templateConfig.pages && templateConfig.activePageId) {
+        console.log('Active page:', templateConfig.pages[templateConfig.activePageId]);
+        console.log('Has originalHtml:', !!templateConfig.pages[templateConfig.activePageId]?.originalHtml);
+    }
+    
     const templateName = templateConfig.selectedTemplateId
         ? (mockTemplates.find(t => t.id === templateConfig.selectedTemplateId)?.name || "Selected Template")
         : (templateConfig.templateData ? "Custom Designed Template" : "No Template Configured");
@@ -147,41 +157,110 @@ export default function CampaignViewPage() {
                                 <h3 className="text-xl font-semibold text-slate-700 tracking-tight">Landing Page Preview</h3>
                             </div>
                             <p className="mb-3 text-sm text-slate-500">Template: <span className="font-medium text-slate-600">{templateName}</span></p>
-                            <div className="mb-5 flex justify-center space-x-2 p-1.5 bg-slate-100 rounded-lg shadow-inner">
+                            <div className="mb-6 flex justify-center space-x-3 p-2 bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100 rounded-xl shadow-inner border border-slate-300/60 backdrop-blur-sm">
                                 {['desktop', 'tablet', 'mobile'].map(device => (
                                     <button
                                         key={device}
                                         onClick={() => setPreviewDevice(device)}
-                                        title={`${device.charAt(0).toUpperCase() + device.slice(1)} View`}
-                                        className={`px-4 py-2 rounded-md text-xs font-medium transition-all duration-200 flex items-center space-x-1.5 transform hover:scale-105
-                                            ${previewDevice === device ? 'bg-green-600 text-white shadow-lg' : 'text-slate-600 hover:bg-slate-200 hover:text-slate-800'}`}
+                                        title={`Switch to ${device.charAt(0).toUpperCase() + device.slice(1)} View`}
+                                        className={`px-5 py-3 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center space-x-2 transform hover:scale-105 border-2 shadow-sm
+                                            ${previewDevice === device 
+                                                ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-xl border-green-800 ring-2 ring-green-500/30' 
+                                                : 'text-slate-600 hover:bg-white hover:text-slate-800 border-slate-300 hover:border-slate-400 hover:shadow-md bg-white/80 backdrop-blur-sm'
+                                            }`}
                                     >
-                                        {device === 'desktop' && <LucideIcons.Monitor size={14}/>}
-                                        {device === 'tablet' && <LucideIcons.Tablet size={14}/>}
-                                        {device === 'mobile' && <LucideIcons.Smartphone size={14}/>}
-                                        <span>{device.charAt(0).toUpperCase() + device.slice(1)}</span>
+                                        {device === 'desktop' && <LucideIcons.Monitor size={16} className="transition-transform group-hover:rotate-12"/>}
+                                        {device === 'tablet' && <LucideIcons.Tablet size={16} className="transition-transform group-hover:rotate-12"/>}
+                                        {device === 'mobile' && <LucideIcons.Smartphone size={16} className="transition-transform group-hover:rotate-12"/>}
+                                        <span className="font-bold">{device.charAt(0).toUpperCase() + device.slice(1)}</span>
                                     </button>
                                 ))}
                             </div>
-                            <div className="flex-grow border-2 border-slate-300 rounded-xl overflow-hidden shadow-2xl bg-slate-200" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column' }}>
-                                {templateConfig.templateData && templateConfig.templateData.pages && templateConfig.templateData.activePageId && PagePreviewRenderer ? (
-                                    <div className="w-full h-full overflow-auto custom-scrollbar-preview">
-                                         <PagePreviewRenderer
-                                            pageLayout={templateConfig.templateData.pages[templateConfig.templateData.activePageId]?.layout || []}
-                                            globalNavbar={templateConfig.templateData.globalNavbar}
-                                            globalFooter={templateConfig.templateData.globalFooter}
-                                            activePageId={templateConfig.templateData.activePageId}
-                                            previewDevice={previewDevice}
-                                            onNavigate={() => {}}
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="flex-grow p-8 bg-slate-100/70 rounded-lg text-slate-500 text-center flex flex-col items-center justify-center">
-                                        <LucideIcons.ImageOff size={48} className="mb-4 text-slate-400"/>
-                                        <p className="font-semibold text-lg">No Template Visual Available</p>
-                                        <p className="text-sm mt-1.5">The template data might be missing or not configured for this campaign.</p>
-                                    </div>
-                                )}
+                            <div className="flex-grow border-2 border-slate-300/80 rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400 backdrop-blur-sm" style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column' }}>
+                                {(() => {
+                                    // Check both possible data structures
+                                    const hasTemplateData = templateConfig.templateData && templateConfig.templateData.pages && templateConfig.templateData.activePageId;
+                                    const hasDirectPages = templateConfig.pages && templateConfig.activePageId;
+                                    
+                                    console.log('hasTemplateData:', hasTemplateData);
+                                    console.log('hasDirectPages:', hasDirectPages);
+                                    
+                                    if (hasTemplateData || hasDirectPages) {
+                                        const pages = hasTemplateData ? templateConfig.templateData.pages : templateConfig.pages;
+                                        const activePageId = hasTemplateData ? templateConfig.templateData.activePageId : templateConfig.activePageId;
+                                        const activePage = pages[activePageId];
+                                        
+                                        console.log('Active page found:', activePage);
+                                        console.log('Has originalHtml:', !!activePage?.originalHtml);
+                                        
+                                        // Get device-specific styles
+                                        const getDeviceStyles = () => {
+                                            switch (previewDevice) {
+                                                case 'mobile':
+                                                    return { width: '390px', margin: '0 auto' };
+                                                case 'tablet':
+                                                    return { width: '768px', margin: '0 auto' };
+                                                case 'desktop':
+                                                default:
+                                                    return { width: '100%' };
+                                            }
+                                        };
+                                        
+                                        // Check if page has originalHtml content
+                                        if (activePage && activePage.originalHtml) {
+                                            return (
+                                                <div className="w-full h-full overflow-auto custom-scrollbar-preview flex justify-center">
+                                                    <div 
+                                                        className="bg-white shadow-2xl rounded-lg overflow-hidden transition-all duration-300"
+                                                        style={getDeviceStyles()}
+                                                    >
+                                                        <iframe
+                                                            srcDoc={activePage.originalHtml}
+                                                            className="w-full border-0"
+                                                            style={{ minHeight: '600px' }}
+                                                            title="Campaign Preview"
+                                                            sandbox="allow-scripts allow-same-origin"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+                                        
+                                        // Fallback to PagePreviewRenderer if no originalHtml
+                                        if (PagePreviewRenderer) {
+                                            return (
+                                                <div className="w-full h-full overflow-auto custom-scrollbar-preview flex justify-center">
+                                                    <div 
+                                                        className="bg-white shadow-2xl rounded-lg overflow-hidden transition-all duration-300"
+                                                        style={getDeviceStyles()}
+                                                    >
+                                                        <PagePreviewRenderer
+                                                            pageLayout={activePage?.layout || []}
+                                                            globalNavbar={hasTemplateData ? templateConfig.templateData.globalNavbar : templateConfig.globalNavbar}
+                                                            globalFooter={hasTemplateData ? templateConfig.templateData.globalFooter : templateConfig.globalFooter}
+                                                            activePageId={activePageId}
+                                                            previewDevice={previewDevice}
+                                                            onNavigate={() => {}}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+                                    }
+                                    
+                                    // Final fallback
+                                    return (
+                                        <div className="flex-grow p-8 bg-slate-100/70 rounded-lg text-slate-500 text-center flex flex-col items-center justify-center">
+                                            <LucideIcons.ImageOff size={48} className="mb-4 text-slate-400"/>
+                                            <p className="font-semibold text-lg">No Template Visual Available</p>
+                                            <p className="text-sm mt-1.5">The template data might be missing or not configured for this campaign.</p>
+                                            <div className="mt-4 text-xs text-slate-400">
+                                                <p>Debug: hasTemplateData: {hasTemplateData ? 'true' : 'false'}</p>
+                                                <p>Debug: hasDirectPages: {hasDirectPages ? 'true' : 'false'}</p>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         </div>
                     </div>

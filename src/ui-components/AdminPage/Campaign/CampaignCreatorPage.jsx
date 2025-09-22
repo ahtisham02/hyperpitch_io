@@ -239,13 +239,13 @@ const StyledButton = ({
   iconRight,
 }) => {
   const baseStyle =
-    "px-5 !z-0 py-2 rounded-lg font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-150 ease-in-out inline-flex items-center justify-center group transform hover:-translate-y-px active:translate-y-0";
+    "px-6 !z-0 py-3 rounded-xl font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300 ease-in-out inline-flex items-center justify-center group transform hover:-translate-y-1 active:translate-y-0 shadow-sm";
   const greenButton =
-    "bg-[#2e8b57] !z-0 hover:bg-green-700 text-white shadow-md hover:shadow-lg focus:ring-green-500 focus:ring-offset-white active:bg-green-800";
+    "bg-gradient-to-r from-[#2e8b57] to-green-600 !z-0 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl focus:ring-green-500/50 focus:ring-offset-white active:from-green-800 active:to-green-900 hover:shadow-green-500/30 border border-green-700/20";
   const variantStyles = {
     primary: greenButton,
     secondary:
-      "bg-slate-100 !z-0 hover:bg-slate-200 text-slate-700 focus:ring-slate-400 border border-slate-300 hover:border-slate-400 shadow-sm hover:shadow-md active:bg-slate-300 focus:ring-offset-white",
+      "bg-gradient-to-r from-slate-100 to-slate-200 !z-0 hover:from-slate-200 hover:to-slate-300 text-slate-700 focus:ring-slate-400/50 border-2 border-slate-300/60 hover:border-slate-400 shadow-md hover:shadow-lg active:from-slate-300 active:to-slate-400 focus:ring-offset-white hover:shadow-slate-500/20 transition-all duration-300",
     launch: `${greenButton} text-base px-6 py-2.5`,
     success: `${greenButton} text-base px-6 py-2.5`,
   };
@@ -285,13 +285,13 @@ const OptionCard = ({
     type="button"
     onClick={onClick}
     disabled={disabled}
-    className={`w-full p-4 border rounded-xl text-left transition-all duration-150 ease-in-out group ${
+        className={`w-full p-5 border-2 rounded-2xl text-left transition-all duration-300 ease-in-out group backdrop-blur-sm ${
       selected
-        ? "border-green-500 bg-green-50 ring-1 ring-green-500/80 shadow-lg transform scale-[1.01]"
-        : `border-slate-300 bg-white ${
+        ? "border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 ring-2 ring-green-500/30 shadow-xl transform scale-[1.02] shadow-green-500/20"
+        : `border-slate-300/60 bg-white/90 ${
             disabled
-              ? "opacity-60 cursor-not-allowed bg-slate-50"
-              : "hover:border-green-400/70 hover:bg-green-50/30 hover:shadow-md"
+              ? "opacity-60 cursor-not-allowed bg-slate-50/80"
+              : "hover:border-green-400/80 hover:bg-gradient-to-r hover:from-green-50/50 hover:to-emerald-50/50 hover:shadow-lg hover:shadow-green-500/15 hover:scale-[1.01]"
           }`
     }`}
   >

@@ -153,9 +153,26 @@ export default function CampaignListPage() {
                     </Link>
                 </header>
 
-                <div className="mb-6 relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><LucideIcons.Search size={18} className="text-slate-400" /></div>
-                    <input type="text" placeholder="Search campaigns by name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 sm:text-sm bg-white" />
+                <div className="mb-6 relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <LucideIcons.Search size={18} className="text-slate-400 group-focus-within:text-green-500 transition-colors duration-200" />
+                    </div>
+                    <input 
+                        type="text" 
+                        placeholder="Search campaigns by name..." 
+                        value={searchTerm} 
+                        onChange={(e) => setSearchTerm(e.target.value)} 
+                        className="block w-full pl-10 pr-10 py-3 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500 sm:text-sm bg-white transition-all duration-300 hover:border-slate-400 hover:shadow-md focus:shadow-lg" 
+                    />
+                    {searchTerm && (
+                        <button 
+                            onClick={() => setSearchTerm('')} 
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-r-xl transition-all duration-200 group/clear"
+                            title="Clear search"
+                        >
+                            <LucideIcons.X size={16} className="group-hover/clear:scale-110 transition-transform" />
+                        </button>
+                    )}
                 </div>
 
                 {filteredCampaigns.length > 0 ? (
@@ -187,16 +204,22 @@ export default function CampaignListPage() {
                             ))}
                         </div>
 
-                        <div className="hidden md:block bg-white shadow-xl rounded-xl border border-slate-200 overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-slate-200">
-                                    <thead className="bg-slate-100"><tr className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                        <th className="px-6 py-3">Campaign Name</th><th className="px-6 py-3">Status</th><th className="px-6 py-3">Start Date</th>
-                                        <th className="px-6 py-3 text-center">Audience Source</th><th className="px-6 py-3">Last Updated</th><th className="px-6 py-3 text-center">Actions</th>
-                                    </tr></thead>
+                        <div className="hidden md:block bg-white shadow-2xl rounded-2xl border border-slate-200/80 overflow-hidden backdrop-blur-sm">
+                            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
+                                <table className="min-w-full divide-y divide-slate-200/60">
+                                    <thead className="bg-gradient-to-r from-slate-50 via-slate-100 to-slate-50 border-b border-slate-200/60">
+                                        <tr className="text-left text-xs font-bold text-slate-700 uppercase tracking-widest">
+                                            <th className="px-6 py-5 font-extrabold">Campaign Name</th>
+                                            <th className="px-6 py-5 font-extrabold">Status</th>
+                                            <th className="px-6 py-5 font-extrabold">Start Date</th>
+                                            <th className="px-6 py-5 text-center font-extrabold">Audience Source</th>
+                                            <th className="px-6 py-5 font-extrabold">Last Updated</th>
+                                            <th className="px-6 py-5 text-center font-extrabold">Actions</th>
+                                        </tr>
+                                    </thead>
                                     <tbody className="bg-white divide-y divide-slate-100">
                                         {filteredCampaigns.map((campaign) => (
-                                            <tr key={campaign.id} className="hover:bg-slate-50/70 transition-colors duration-150">
+                                            <tr key={campaign.id} className="hover:bg-gradient-to-r hover:from-slate-50/80 hover:to-slate-100/60 transition-all duration-300 hover:shadow-lg hover:scale-[1.01] group">
                                                 <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-medium text-slate-800">{campaign.campaignName || 'Unnamed Campaign'}</div><div className="text-xs text-slate-500">ID: {String(campaign.id).slice(-8)}</div></td>
                                                 <td className="px-6 py-4 whitespace-nowrap">{getStatusChip(campaign.status || 'Draft')}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">{campaign.startTime ? new Date(campaign.startTime).toLocaleDateString() : 'N/A'}</td>
