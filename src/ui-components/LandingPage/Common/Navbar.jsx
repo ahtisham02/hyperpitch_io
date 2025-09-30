@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Link } from 'react-scroll';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { Menu, X, Rocket } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import logo from '../../../assets/logo.png';
 
 const Logo = () => (
-    <Link to="home" smooth={true} duration={500} className="flex items-center gap-2 cursor-pointer">
-        <Rocket className="text-brand-green" size={32} />
-        <span className="text-xl font-bold text-dark-text">HyperPitch.io</span>
+    <Link to="home" smooth={true} duration={500} className="flex items-center cursor-pointer">
+        <img src={logo} alt="HyperPitch.io" className="h-14 w-44 mt-1" />
     </Link>
 );
 
@@ -17,10 +17,10 @@ const Navbar = () => {
   const { userToken } = useSelector((state) => state.auth);
 
   const navLinks = [
-    { to: 'examples', label: 'Examples' },
-    { to: 'how-it-works', label: 'How it works' },
     { to: 'features', label: 'Features' },
-    { to: 'reviews', label: 'Reviews' },
+    { to: 'how-it-works', label: 'How it Works' },
+    { to: 'capabilities', label: 'Capabilities' },
+    { to: 'advanced-features', label: 'Advanced' },
     { to: 'pricing', label: 'Pricing' },
     { to: 'faq', label: 'FAQ' },
   ];
@@ -65,13 +65,13 @@ const Navbar = () => {
             <>
               <button 
                 onClick={() => navigate('/login')} 
-                className="px-5 py-2 rounded-lg font-semibold text-dark-text bg-gray-100 hover:bg-gray-200 transition-colors"
+                className="px-5 py-2 font-semibold text-dark-text transition-colors"
               >
                 Login
               </button>
               <button 
                 onClick={() => navigate('/signup')} 
-                className="cursor-pointer px-5 py-2 rounded-lg font-semibold text-white bg-gradient-primary shadow-md shadow-brand-green/30 hover:opacity-90 transition-opacity"
+                className="cursor-pointer px-5 py-2 rounded-lg font-semibold text-white bg-brand-gradient shadow-md shadow-brand-green/30 hover:opacity-90 transition-opacity"
               >
                 Start Free Trial
               </button>
@@ -121,8 +121,8 @@ const Navbar = () => {
                   Login
                 </button>
                 <button 
-                  onClick={() => handleNavigate('/login')} 
-                  className="w-full text-center py-2 rounded-lg font-semibold text-white bg-gradient-primary"
+                  onClick={() => handleNavigate('/signup')} 
+                  className="w-full text-center py-2 rounded-lg font-semibold text-white bg-brand-gradient"
                 >
                   Start Free Trial
                 </button>

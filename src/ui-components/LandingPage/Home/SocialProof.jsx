@@ -28,7 +28,7 @@ const logos = [
 
 const SocialProof = () => {
   return (
-    <div className="py-12 bg-white">
+    <div className="py-12 bg-[#F0FDF4]">
       <div className="container mx-auto px-6 text-center">
         <p className="text-center font-semibold text-brand-green mb-2">
           TRUSTED LEADING BRANDS{" "}

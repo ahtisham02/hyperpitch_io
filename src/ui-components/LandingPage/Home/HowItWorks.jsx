@@ -2,40 +2,40 @@ import React from "react";
 import AnimatedSection from "../Common/AnimatedSection";
 
 const Step = ({ number, title, description }) => (
-  <div className="relative flex-1 text-center px-4 z-10">
-    <div className="mx-auto w-12 h-12 mb-4 rounded-full border-2 border-border-color flex items-center justify-center font-bold text-xl text-medium-text bg-white">
+  <div className="relative flex-1 text-center px-4 z-10 flex flex-col">
+    <div className="mx-auto w-12 h-12 mb-4 rounded-full border-2 border-[#10b981] flex items-center justify-center font-bold text-xl text-medium-text bg-white">
       {number}
     </div>
-    <h3 className="text-lg font-bold mb-2">{title}</h3>
-    <p className="text-medium-text max-w-xs mx-auto">{description}</p>
+    <h3 className="text-lg font-bold mb-2 min-h-[48px] flex items-end justify-center">{title}</h3>
+    <p className="text-medium-text max-w-xs mx-auto min-h-[48px]">{description}</p>
   </div>
 );
 
 const HowItWorks = () => {
   return (
-    <AnimatedSection id="how-it-works">
+    <AnimatedSection bg="bg-[#F9FAFB]" id="how-it-works">
       <p className="text-center font-semibold text-brand-green mb-2">
-        How it works?
+        How it works
       </p>
       <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-16">
-        Get your business online today
+      From List to Landing Page in Minutes
       </h2>
-      <div className="relative flex flex-col md:flex-row justify-between md:items-center space-y-12 md:space-y-0">
+      <div className="relative flex flex-col md:flex-row justify-between md:items-start space-y-12 md:space-y-0">
         <div className="hidden md:block absolute top-6 left-0 w-full h-0.5 dotted-line"></div>
         <Step
           number="1"
-          title="Describe your project"
-          description="A few words about your business, what you do, what you sell, or your main goal... Anything, really!"
+          title="Upload your leads"
+          description="Connect your CRM or drop in a CSV."
         />{" "}
         <Step
           number="2"
-          title="Our AI builds your landing page"
-          description="Artificial Intelligence generates copy that sells, unique logo and illustrations. Takes less than 1 minute!"
+          title="AI generates outreach"
+          description="Personalized emails + landing pages for each prospect."
         />
         <Step
           number="3"
-          title="Customize the content"
-          description="Upload pictures of your business, change the copy, edit buttons. Then just share your site!"
+          title="Send & track"
+          description="Every click and visit is logged in your CRM instantly."
         />
       </div>
     </AnimatedSection>

@@ -1,40 +1,38 @@
 import React from 'react';
 import { Link as ScrollLink } from 'react-scroll';
 import { Link as RouterLink } from 'react-router-dom';
-import { Rocket, Phone, Mail, MapPin } from 'lucide-react';
+import { Phone, Mail, MapPin } from 'lucide-react';
+import logo from '../../../assets/logo.png';
 
 const FooterLogo = () => (
     <div className="flex items-center gap-3">
-        <Rocket className="text-brand-green" size={40} />
-        <div>
-            <span className="text-2xl font-extrabold text-dark-text">HyperPitch.io</span>
-        </div>
+        <img src={logo} alt="HyperPitch.io" className="h-14 w-44" />
     </div>
 );
 
 const Footer = () => {
     const quickLinks = [
         { to: 'home', label: 'Home' },
-        { to: 'examples', label: 'Examples' },
-        { to: 'how-it-works', label: 'How it works' },
         { to: 'features', label: 'Features' },
+        { to: 'how-it-works', label: 'How it works' },
+        { to: 'capabilities', label: 'Capabilities' },
         { to: 'pricing', label: 'Pricing' },
     ];
     
     const legalLinks = [
-        { type: 'scroll', to: 'reviews', label: 'Reviews' },
+        { type: 'scroll', to: 'advanced-features', label: 'Advanced' },
         { type: 'scroll', to: 'faq', label: 'FAQ' },
         { type: 'route', to: '/terms-and-conditions', label: 'Terms & Conditions' },
         { type: 'route', to: '/privacy-policy', label: 'Privacy Policy' },
     ];
 
     return (
-        <footer className="bg-footer-bg text-gray-700 pt-20 pb-16">
+        <footer className="bg-[#F0FDF4] text-gray-700 pt-20 pb-16">
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[34fr_19fr_19fr_28fr] gap-12">
                     <div className="lg:col-span-1">
                         <FooterLogo />
-                        <p className="mt-4 text-sm leading-relaxed">Powering the next generation of beautiful, AI-driven landing pages.</p>
+                        <p className="mt-4 text-sm leading-relaxed">Pages shaped to each prospect’s world, so outreach feels personal.</p>
                         <p className="mt-8 text-xs text-gray-500">© 2025 HyperPitch.io All rights reserved.</p>
                     </div>
                     <div>

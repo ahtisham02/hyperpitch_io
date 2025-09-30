@@ -27,7 +27,7 @@ const PricingCard = ({ plan, price, features, isFeatured = false, planId, onClic
         <button
             onClick={() => onClick(planId)}
             disabled={isLoading}
-            className={`w-full py-3 rounded-lg font-semibold text-white ${isFeatured ? 'bg-gradient-pro' : 'bg-gradient-primary'} hover:opacity-90 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`w-full py-3 rounded-lg font-semibold text-white ${isFeatured ? 'bg-gradient-pro' : 'bg-brand-gradient'} hover:opacity-90 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
         >
             {isLoading ? 'Redirecting...' : 'Make Landing Page Now'}
         </button>
@@ -81,7 +81,7 @@ const Pricing = () => {
             <div className="absolute inset-0 bg-pricing-glow z-0"></div>
             <AnimatedSection id="pricing">
                 <p className="text-center font-semibold text-brand-green mb-2">Pricing</p>
-                <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-4">A landing page for 10x less than a designer price</h2>
+                <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-4">Pricing That Fits Your Outbound</h2>
                 <p className="text-center text-lg text-medium-text mb-12">Build a professional landing page in seconds. Launch your project today!</p>
                 <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto items-center">
                     <PricingCard

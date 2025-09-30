@@ -43,17 +43,17 @@ const FaqItem = ({ question, children }) => {
 
 const FAQ = () => {
     return (
-        <AnimatedSection id="faq" bg="bg-light-bg">
+        <AnimatedSection id="faq" bg="bg-[#F9FAFB]">
             <div className="grid md:grid-cols-3 gap-12">
                 <div className="md:col-span-1">
                     <p className="font-semibold text-brand-green mb-2">FAQ</p>
                     <h2 className="text-3xl md:text-4xl font-extrabold">Frequently Asked Questions</h2>
                 </div>
                 <div className="md:col-span-2">
-                    <FaqItem question="What do I get exactly?">You get a fully functional, responsive, and SEO-friendly landing page with AI-generated copy, logo, and illustrations.</FaqItem>
-                    <FaqItem question="I don't want to pay upfront, can I try it first?">Absolutely! You can generate a preview of your landing page completely for free. You only need to subscribe when you're ready to publish.</FaqItem>
-                    <FaqItem question="Can I get a refund if I'm not satisfied?">Yes, we offer a 7-day money-back guarantee. If you're not happy with the result, just contact our support for a full refund.</FaqItem>
-                    <FaqItem question="Can I still keep my landing pages after I cancel?">Yes, you retain full ownership of any pages you've created and exported. You'll just need to export your site before the subscription ends.</FaqItem>
+                    <FaqItem question="Is this just another email sender?">No. HyperPitch generates a unique, personalized landing page for every prospect and then plugs into your existing sending tools. Think of it as an intelligence layer that makes your emails convert better—not a replacement for your mailer.</FaqItem>
+                    <FaqItem question="Will prospects actually care about a page?">Yes. Prospects click more when content reflects their role, industry and pain points. Our users see higher CTR and replies because each page speaks directly to the person receiving it.</FaqItem>
+                    <FaqItem question="Do I need to rewrite all my outreach?">No. Keep your sequences. Drop in our smart links to personalized pages and optionally use our AI copy blocks to lightly tailor your existing templates.</FaqItem>
+                    <FaqItem question="How does this play with my current stack?">It slots right in. Outreach, SalesLoft, HubSpot, Salesforce—we connect so you can keep your workflow.</FaqItem>
                 </div>
             </div>
         </AnimatedSection>
