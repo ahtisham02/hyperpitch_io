@@ -64,7 +64,7 @@ const Hero = () => {
                         <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-dark-text leading-tight">Personalized <br />Landing Pages for <span className="text-brand-green">Every Prospect</span></h1>
                         <p className="mt-6 inline-block bg-light-bg px-3 py-1 rounded-md font-semibold text-sm">Automatic Personalization for Every Landing Page</p>
                         <p className="mt-6 text-base md:text-lg text-medium-text max-w-lg mx-auto lg:mx-0">Automatically generated landing pages built automatically with context written for each prospect's data.</p>
-                        
+
                         <div className="mt-10 relative max-w-lg mx-auto lg:mx-0 p-1 sm:p-1.5 rounded-full bg-white shadow-xl border border-gray-200">
                             <input
                                 type="text"
@@ -75,7 +75,7 @@ const Hero = () => {
                                            hover:shadow-lg hover:shadow-green-400/40
                                            focus:shadow-lg focus:shadow-green-400/40"
                             />
-                            <button onClick={() => navigate('/login')} className="absolute right-1 top-1/2 -translate-y-1/2 px-4 py-2 text-sm sm:right-2 sm:px-6 sm:py-2.5 sm:text-base rounded-full font-semibold text-white bg-brand-gradient hover:opacity-90 transition-opacity flex items-center gap-2">Get Started <Plus size={18} /></button>
+                            <button onClick={() => navigate('/dashboard')} className="absolute right-1 top-1/2 -translate-y-1/2 px-4 py-2 text-sm sm:right-2 sm:px-6 sm:py-2.5 sm:text-base rounded-full font-semibold text-white bg-brand-gradient hover:opacity-90 transition-opacity flex items-center gap-2">Get Started <Plus size={18} /></button>
                         </div>
 
                         {/* <div className="mt-8 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 justify-center lg:justify-start">

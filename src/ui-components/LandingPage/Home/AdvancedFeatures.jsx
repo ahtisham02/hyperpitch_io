@@ -2,6 +2,7 @@ import React from 'react';
 import { FileText } from 'lucide-react';
 import illustration from '../../../assets/key-features/4.png';
 import AnimatedSection from '../Common/AnimatedSection';
+import { useNavigate } from 'react-router-dom';
 
 const features = [
     {
@@ -36,12 +37,13 @@ const FeatureItem = ({ title, description }) => (
 );
 
 export default function AdvancedFeatures() {
+    const navigate = useNavigate();
     return (
         // Changed background color as requested
-        <AnimatedSection id="advanced-features" bg="bg-gray-50"> 
+        <AnimatedSection id="advanced-features" bg="bg-gray-50">
             <p className="text-center font-semibold text-brand-green mb-2">ADVANCED</p>
             <h2 className="text-3xl md:text-4xl font-extrabold text-dark-text text-center mb-12">Power For Teams That Need More</h2>
-            
+
             <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 items-start px-4">
                 <div className="space-y-6 flex flex-col">
                     {features.map((feature, index) => (
@@ -49,19 +51,19 @@ export default function AdvancedFeatures() {
                     ))}
                     <div className="pt-4">
                         {/* Updated button to be full-width with your requested styles */}
-                        <a 
-                           href="#demo" 
-                           className="block w-full text-center cursor-pointer px-5 py-3 rounded-lg font-semibold text-white bg-brand-gradient shadow-md shadow-brand-green/30 hover:opacity-90 transition-opacity"
+                        <button
+                            onClick={() => navigate('/dashboard')}
+                            className="block w-full text-center cursor-pointer px-5 py-3 rounded-lg font-semibold text-white bg-brand-gradient shadow-md shadow-brand-green/30 hover:opacity-90 transition-opacity"
                         >
                             Request A Demo
-                        </a>
+                        </button>
                     </div>
                 </div>
-                
+
                 <div className="mt-10 lg:mt-0">
-                     <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-[0_4px_30px_rgba(0,0,0,0.05)]">
-                        <img 
-                            src={illustration} 
+                    <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-[0_4px_30px_rgba(0,0,0,0.05)]">
+                        <img
+                            src={illustration}
                             alt="Advanced features illustration"
                             className="w-full h-auto rounded-xl"
                         />

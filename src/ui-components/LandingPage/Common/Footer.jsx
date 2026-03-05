@@ -18,7 +18,7 @@ const Footer = () => {
         { to: 'capabilities', label: 'Capabilities' },
         { to: 'pricing', label: 'Pricing' },
     ];
-    
+
     const legalLinks = [
         { type: 'scroll', to: 'advanced-features', label: 'Advanced' },
         { type: 'scroll', to: 'faq', label: 'FAQ' },
@@ -33,7 +33,7 @@ const Footer = () => {
                     <div className="lg:col-span-1">
                         <FooterLogo />
                         <p className="mt-4 text-sm leading-relaxed">Pages shaped to each prospect’s world, so outreach feels personal.</p>
-                        <p className="mt-8 text-xs text-gray-500">© 2025 HyperPitch.io All rights reserved.</p>
+                        <p className="mt-8 text-xs text-gray-500">© 2026 HyperPitch.io All rights reserved.</p>
                     </div>
                     <div>
                         <h4 className="font-bold text-dark-text mb-4">Quick Links</h4>
@@ -66,9 +66,9 @@ const Footer = () => {
                     <div>
                         <h4 className="font-bold text-dark-text mb-4">Contact Us</h4>
                         <ul className="space-y-4">
-                            <li className="flex items-center gap-3"><Phone size={16} className="text-brand-green"/> <a href="tel:+18773335540" className="text-sm hover:text-brand-green-light transition-colors">+1 (877) 333-5540</a></li>
-                            <li className="flex items-center gap-3"><Mail size={16} className="text-brand-green"/> <a href="mailto:contact@hyperpitch.io" className="text-sm hover:text-brand-green-light transition-colors">contact@hyperpitch.io</a></li>
-                            <li className="flex items-start gap-3"><MapPin size={16} className="text-brand-green mt-1"/> <span className="text-sm">2117 Lake Ave, Altadena 91001</span></li>
+                            <li className="flex items-center gap-3"><Phone size={16} className="text-brand-green" /> <a href="tel:+18773335540" className="text-sm hover:text-brand-green-light transition-colors">+1 (877) 333-5540</a></li>
+                            <li className="flex items-center gap-3"><Mail size={16} className="text-brand-green" /> <a href="mailto:contact@hyperpitch.io" className="text-sm hover:text-brand-green-light transition-colors">contact@hyperpitch.io</a></li>
+                            <li className="flex items-start gap-3"><MapPin size={16} className="text-brand-green mt-1" /> <span className="text-sm">2117 Lake Ave, Altadena 91001</span></li>
                         </ul>
                     </div>
                 </div>
