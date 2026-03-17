@@ -13,6 +13,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const googleAppId = import.meta.env.VITE_APP_GOOGLE_CLIENTID;
 
+
 root.render(
   // <React.StrictMode>
   <>
