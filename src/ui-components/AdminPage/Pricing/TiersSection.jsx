@@ -4,7 +4,7 @@ import * as LucideIcons from 'lucide-react';
 
 const PlanFeature = ({ text, included = true }) => (
   <li className={`flex items-start space-x-2 py-1 ${included ? 'text-slate-600' : 'text-slate-400 line-through'}`}>
-    {included ? 
+    {included ?
       <LucideIcons.CheckCircle size={16} className="text-green-500 flex-shrink-0 mt-0.5" /> :
       <LucideIcons.XCircle size={16} className="text-slate-400 flex-shrink-0 mt-0.5" />
     }
@@ -38,10 +38,10 @@ const PricingTierCard = ({ plan, onChoosePlan, isPopular = false, ctaText = "Get
     <button
       onClick={() => onChoosePlan(plan.id)}
       className={`w-full py-2.5 px-5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out
-                  ${isPopular 
-                    ? 'bg-[#2e8b57] text-white hover:bg-green-700 shadow-md shadow-green-500/20 transform hover:scale-[1.03]' 
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'
-                  }`}
+                  ${isPopular
+          ? 'bg-[#2e8b57] text-white hover:bg-green-700 shadow-md shadow-green-500/20 transform hover:scale-[1.03]'
+          : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'
+        }`}
     >
       {ctaText}
     </button>
@@ -57,7 +57,7 @@ export default function PricingTiersSection({ plans, billingCycle, onChoosePlan 
         ))}
       </div>
       <div className="mt-12 text-center">
-        <p className="text-xs sm:text-sm text-slate-500">Need an enterprise solution or have specific questions? <a href="mailto:sales@hyperpitch.io" className="font-medium text-[#2e8b57] hover:text-green-700 underline decoration-dotted underline-offset-2">Contact our sales team</a>.</p>
+        <p className="text-xs sm:text-sm text-slate-500">Need an enterprise solution or have specific questions? <a href="mailto:sysadmin@hyperpitch.info" className="font-medium text-[#2e8b57] hover:text-green-700 underline decoration-dotted underline-offset-2">Contact our sales team</a>.</p>
       </div>
     </section>
   );

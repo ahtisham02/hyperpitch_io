@@ -5,10 +5,10 @@ import { CustomDropdown } from '../Common/CustomDropdown';
 export default function GeneralSettingsPage() {
     const [siteTitle, setSiteTitle] = useState('Hyperpitch.io Platform');
     const [tagline, setTagline] = useState('Elevate Your Pitch.');
-    const [adminEmail, setAdminEmail] = useState('support@hyperpitch.io');
+    const [adminEmail, setAdminEmail] = useState('sysadmin@hyperpitch.info');
     const [membership, setMembership] = useState(true);
     const [selectedDefaultRole, setSelectedDefaultRole] = useState({ value: 'subscriber', label: 'Standard User' });
-    const [selectedSiteLanguage, setSelectedSiteLanguage] = useState({value: 'en_US', label: 'English (United States)'});
+    const [selectedSiteLanguage, setSelectedSiteLanguage] = useState({ value: 'en_US', label: 'English (United States)' });
     const [selectedTimezone, setSelectedTimezone] = useState({ value: 'America/New_York', label: 'America/New York' });
     const [companyName, setCompanyName] = useState('Hyperpitch Inc.');
     const [companyAddress, setCompanyAddress] = useState('123 Innovation Drive, Tech City, USA');
@@ -21,15 +21,15 @@ export default function GeneralSettingsPage() {
     };
 
     const userRoleOptions = [
-      {value: 'subscriber', label: 'Standard User'}, {value: 'editor', label: 'Content Editor'}, {value: 'administrator', label: 'Platform Administrator'},
+        { value: 'subscriber', label: 'Standard User' }, { value: 'editor', label: 'Content Editor' }, { value: 'administrator', label: 'Platform Administrator' },
     ];
     const languageOptions = [
-      {value: 'en_US', label: 'English (United States)'}, {value: 'es_ES', label: 'Español'}, {value: 'fr_FR', label: 'Français'}, {value: 'de_DE', label: 'Deutsch'},
+        { value: 'en_US', label: 'English (United States)' }, { value: 'es_ES', label: 'Español' }, { value: 'fr_FR', label: 'Français' }, { value: 'de_DE', label: 'Deutsch' },
     ];
     const timezoneOptions = [
-      { value: 'UTC-0', label: 'UTC+0' }, { value: 'America/New_York', label: 'America/New York (EST/EDT)' }, { value: 'America/Chicago', label: 'America/Chicago (CST/CDT)' }, { value: 'Europe/London', label: 'Europe/London (GMT/BST)' }, { value: 'Asia/Tokyo', label: 'Asia/Tokyo (JST)' },
+        { value: 'UTC-0', label: 'UTC+0' }, { value: 'America/New_York', label: 'America/New York (EST/EDT)' }, { value: 'America/Chicago', label: 'America/Chicago (CST/CDT)' }, { value: 'Europe/London', label: 'Europe/London (GMT/BST)' }, { value: 'Asia/Tokyo', label: 'Asia/Tokyo (JST)' },
     ];
-  
+
     const inputBase = "block w-full bg-white/70 border border-slate-300/70 rounded-lg py-2.5 px-3.5 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2e8b57]/60 focus:border-[#2e8b57] transition-all duration-150 ease-in-out text-sm";
     const labelBase = "block text-xs font-semibold text-slate-700 mb-1";
     const sectionWrapper = "bg-white/90 backdrop-blur-sm p-6 md:p-8 rounded-xl border border-slate-200/60";
@@ -98,7 +98,7 @@ export default function GeneralSettingsPage() {
                         </button>
                     </div>
                 </section>
-                
+
                 <section className={sectionWrapper}>
                     <h2 className="text-xl font-semibold text-slate-900 mb-6 flex items-center">
                         <LucideIcons.Languages size={24} className="mr-2.5 text-[#2e8b57]" />
@@ -132,7 +132,7 @@ export default function GeneralSettingsPage() {
                         <p className="text-xs text-slate-500 mt-1">Configure API access for integrations.</p>
                     </div>
                 </section>
-                
+
                 <div className="pt-6 flex flex-col sm:flex-row sm:justify-end sm:items-center gap-3">
                     <button type="button" className="px-5 py-2.5 rounded-lg text-slate-700 font-medium hover:bg-slate-100/80 transition-colors duration-150 text-sm order-2 sm:order-1 border border-slate-300">
                         Revert Changes

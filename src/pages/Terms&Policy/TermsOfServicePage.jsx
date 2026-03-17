@@ -241,7 +241,7 @@ export default function TermsOfServicePage() {
               <strong>Hyperpitch Inc.</strong>
               <br />
               Email:{" "}
-              <a href="mailto:legal@hyperpitch.io">legal@hyperpitch.io</a>
+              <a href="mailto:sysadmin@hyperpitch.info">sysadmin@hyperpitch.info</a>
             </p>
           </Section>
         </div>
